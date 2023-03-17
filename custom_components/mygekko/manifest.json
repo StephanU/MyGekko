@@ -1,6 +1,7 @@
 {
   "domain": "mygekko",
   "name": "MyGekko",
+  "version": "1.0.0",
   "documentation": "https://github.com/stephanu/mygekko",
   "issue_tracker": "https://github.com/stephanu/mygekko/issues",
   "dependencies": [],
