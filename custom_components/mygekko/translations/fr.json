@@ -1,0 +1,32 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "MyGekko",
+        "description": "Si vous avez besoin d'aide pour la configuration, regardez ici: https://github.com/stephanu/mygekko",
+        "data": {
+          "username": "Identifiant",
+          "apikey": "Clé Api",
+          "gekkoid": "ID Gekko"
+        }
+      }
+    },
+    "error": {
+      "auth": "Identifiant ou Clé Api ou ID Gekko erroné."
+    },
+    "abort": {
+      "single_instance_allowed": "Une seule instance est autorisée."
+    }
+  },
+  "options": {
+    "step": {
+      "user": {
+        "data": {
+          "binary_sensor": "Capteur binaire activé",
+          "sensor": "Capteur activé",
+          "switch": "Interrupteur activé"
+        }
+      }
+    }
+  }
+}

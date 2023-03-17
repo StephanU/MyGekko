@@ -1,0 +1,10 @@
+{
+  "domain": "mygekko",
+  "name": "MyGekko",
+  "documentation": "https://github.com/stephanu/mygekko",
+  "issue_tracker": "https://github.com/stephanu/mygekko/issues",
+  "dependencies": [],
+  "config_flow": true,
+  "codeowners": ["@stephanu"],
+  "requirements": ["pymygekko==0.0.3"]
+}
