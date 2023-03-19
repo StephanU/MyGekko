@@ -46,7 +46,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     gekkoid = entry.data.get(CONF_GEKKOID)
 
     session = async_get_clientsession(hass)
-    client = PyMyGekkoApiClient(username, apikey, gekkoid)
+    client = PyMyGekkoApiClient(username, apikey, gekkoid, session)
 
     coordinator = MyGekkoDataUpdateCoordinator(hass, client=client)
     await coordinator.async_refresh()
@@ -84,7 +84,7 @@ class MyGekkoDataUpdateCoordinator(DataUpdateCoordinator):
     async def _async_update_data(self):
         """Update data via library."""
         try:
-            return await self.api.async_get_data()
+            return await self.api.read_data()
         except Exception as exception:
             raise UpdateFailed() from exception
 

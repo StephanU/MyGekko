@@ -72,7 +72,7 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         """Return true if credentials is valid."""
         try:
             session = async_create_clientsession(self.hass)
-            client = PyMyGekkoApiClient(username, apikey, gekkoid)
+            client = PyMyGekkoApiClient(username, apikey, gekkoid, session)
             await client.try_connect()
             return True
         except Exception:  # pylint: disable=broad-except
