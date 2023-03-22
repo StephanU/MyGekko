@@ -46,7 +46,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     gekkoid = entry.data.get(CONF_GEKKOID)
 
     session = async_get_clientsession(hass)
-    client = MyGekkoApiClient(username, apikey, gekkoid, session, entry.options.get(CONF_DEMO_MODE, True))
+    client = MyGekkoApiClient(
+        username, apikey, gekkoid, session, entry.options.get(CONF_DEMO_MODE, True)
+    )
 
     coordinator = MyGekkoDataUpdateCoordinator(hass, client=client)
     await coordinator.async_refresh()

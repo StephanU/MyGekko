@@ -106,8 +106,10 @@ class MyGekkoOptionsFlowHandler(config_entries.OptionsFlow):
                     for x in sorted(PLATFORMS)
                 },
                 {
-                    vol.Required(CONF_DEMO_MODE, default=self.options.get(CONF_DEMO_MODE, False)): bool
-                }
+                    vol.Required(
+                        CONF_DEMO_MODE, default=self.options.get(CONF_DEMO_MODE, False)
+                    ): bool
+                },
             ),
         )
 

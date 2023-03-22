@@ -12,7 +12,7 @@ async def async_setup_entry(hass, entry, async_add_devices):
     """Setup cover platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
     blinds = coordinator.api.get_blinds()
-    if blinds != None:
+    if blinds is not None:
         async_add_devices(MyGekkoCover(coordinator, blind) for blind in blinds)
 
 
