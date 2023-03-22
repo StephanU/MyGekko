@@ -1,5 +1,6 @@
 """MyGekkoEntity class"""
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from PyMyGekko.resources import Entity
 
 from .const import ATTRIBUTION
 from .const import DOMAIN
@@ -8,20 +9,20 @@ from .const import VERSION
 
 
 class MyGekkoEntity(CoordinatorEntity):
-    def __init__(self, coordinator, config_entry):
+    def __init__(self, coordinator, entity: Entity):
         super().__init__(coordinator)
-        self.config_entry = config_entry
+        self.entity = entity
 
     @property
     def unique_id(self):
         """Return a unique ID to use for this entity."""
-        return self.config_entry.entry_id
+        return self.entity.id
 
     @property
     def device_info(self):
         return {
             "identifiers": {(DOMAIN, self.unique_id)},
-            "name": NAME,
+            "name": self.entity.name,
             "model": VERSION,
             "manufacturer": NAME,
         }
@@ -31,6 +32,6 @@ class MyGekkoEntity(CoordinatorEntity):
         """Return the state attributes."""
         return {
             "attribution": ATTRIBUTION,
-            "id": str(self.coordinator.data.get("id")),
+            "id": "cover_" + str(self.entity.id),
             "integration": DOMAIN,
         }

@@ -5,9 +5,9 @@ from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 
 
-from PyMyGekko.PyMyGekkoApiClient import PyMyGekkoApiClient
+from PyMyGekko import MyGekkoApiClient
 
-from .const import CONF_USERNAME
+from .const import CONF_DEMO_MODE, CONF_USERNAME
 from .const import CONF_APIKEY
 from .const import CONF_GEKKOID
 from .const import DOMAIN
@@ -72,7 +72,7 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         """Return true if credentials is valid."""
         try:
             session = async_create_clientsession(self.hass)
-            client = PyMyGekkoApiClient(username, apikey, gekkoid, session)
+            client = MyGekkoApiClient(username, apikey, gekkoid, session)
             await client.try_connect()
             return True
         except Exception:  # pylint: disable=broad-except
@@ -104,6 +104,9 @@ class MyGekkoOptionsFlowHandler(config_entries.OptionsFlow):
                 {
                     vol.Required(x, default=self.options.get(x, True)): bool
                     for x in sorted(PLATFORMS)
+                },
+                {
+                    vol.Required(CONF_DEMO_MODE, default=self.options.get(CONF_DEMO_MODE, False)): bool
                 }
             ),
         )

@@ -24,8 +24,10 @@
         "data": {
           "binary_sensor": "Binary sensor enabled",
           "sensor": "Sensor enabled",
+          "cover": "Cover enabled",
           "switch": "Switch enabled"
-        }
+        },
+        "demo_mode": "Demo Mode"
       }
     }
   }

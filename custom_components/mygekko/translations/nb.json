@@ -24,8 +24,10 @@
         "data": {
           "binary_sensor": "Binær sensor aktivert",
           "sensor": "Sensor aktivert",
+          "cover": "Cover aktivert",
           "switch": "Bryter aktivert"
-        }
+        },
+        "demo_mode": "Demo modus"
       }
     }
   }

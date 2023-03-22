@@ -19,11 +19,11 @@ BINARY_SENSOR = "binary_sensor"
 SENSOR = "sensor"
 SWITCH = "switch"
 COVER = "cover"
-PLATFORMS = [BINARY_SENSOR, SENSOR, SWITCH, COVER]
+PLATFORMS = [COVER]
 
 
 # Configuration and options
-CONF_ENABLED = "enabled"
+CONF_DEMO_MODE = "demo_mode"
 CONF_USERNAME = "username"
 CONF_APIKEY = "apikey"
 CONF_GEKKOID = "gekkoid"

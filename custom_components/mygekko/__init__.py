@@ -16,9 +16,9 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
-from PyMyGekko.PyMyGekkoApiClient import PyMyGekkoApiClient
+from PyMyGekko import MyGekkoApiClient
 
-from .const import CONF_USERNAME
+from .const import CONF_DEMO_MODE, CONF_USERNAME
 from .const import CONF_APIKEY
 from .const import CONF_GEKKOID
 from .const import DOMAIN
@@ -46,7 +46,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     gekkoid = entry.data.get(CONF_GEKKOID)
 
     session = async_get_clientsession(hass)
-    client = PyMyGekkoApiClient(username, apikey, gekkoid, session)
+    client = MyGekkoApiClient(username, apikey, gekkoid, session, entry.options.get(CONF_DEMO_MODE, True))
 
     coordinator = MyGekkoDataUpdateCoordinator(hass, client=client)
     await coordinator.async_refresh()
@@ -73,7 +73,7 @@ class MyGekkoDataUpdateCoordinator(DataUpdateCoordinator):
     def __init__(
         self,
         hass: HomeAssistant,
-        client: PyMyGekkoApiClient,
+        client: MyGekkoApiClient,
     ) -> None:
         """Initialize."""
         self.api = client

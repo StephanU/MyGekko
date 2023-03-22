@@ -1,5 +1,7 @@
 # MyGekko
 
+This project is a work in progress. No guarantee to work until 1.0.0
+
 [![GitHub Release][releases-shield]][releases]
 [![GitHub Activity][commits-shield]][commits]
 [![License][license-shield]](LICENSE)
@@ -14,18 +16,14 @@
 [![Discord][discord-shield]][discord]
 [![Community Forum][forum-shield]][forum]
 
-**TO BE REMOVED: If you need help, as a developer, to use this custom component tempalte,
-please look at the [User Guide in the Cookiecutter documentation](https://cookiecutter-homeassistant-custom-component.readthedocs.io/en/stable/quickstart.html)**
-
 **This component will set up the following platforms.**
 
 | Platform        | Description                                                               |
 | --------------- | ------------------------------------------------------------------------- |
 | `binary_sensor` | Show something `True` or `False`.                                         |
-| `sensor`        | Show info from MyGekko API. |
+| `sensor`        | Show info from MyGekko API.                                               |
 | `switch`        | Switch something `True` or `False`.                                       |
-
-![example][exampleimg]
+| `cover`         | Cover device for each found blind.                                        |
 
 ## Installation
 
@@ -37,7 +35,7 @@ please look at the [User Guide in the Cookiecutter documentation](https://cookie
 6. Restart Home Assistant
 7. In the HA UI go to "Configuration" -> "Integrations" click "+" and search for "MyGekko"
 
-Using your HA configuration directory (folder) as a starting point you should now also have this:
+Using your HA configuration directory (folder) as a starting point you should now also have something like this:
 
 ```text
 custom_components/mygekko/translations/en.json

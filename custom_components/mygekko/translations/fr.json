@@ -24,8 +24,10 @@
         "data": {
           "binary_sensor": "Capteur binaire activé",
           "sensor": "Capteur activé",
+          "cover": "Couverture activé",
           "switch": "Interrupteur activé"
-        }
+        },
+        "demo_mode": "Mode démo"
       }
     }
   }
