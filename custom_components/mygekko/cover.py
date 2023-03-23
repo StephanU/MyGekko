@@ -22,7 +22,7 @@ class MyGekkoCover(MyGekkoEntity, CoverEntity):
     def __init__(self, coordinator, blind: Blind):
         super().__init__(coordinator, blind)
         self._blind = blind
-        self._attr_device_class = CoverDeviceClass.BLIND
+        self._attr_device_class = CoverDeviceClass.SHUTTER
         self._attr_is_closed = self._blind.position == 100.00
         self._attr_current_cover_position = self._blind.position
 
