@@ -9,15 +9,14 @@ from .const import VERSION
 
 
 class MyGekkoEntity(CoordinatorEntity):
+    _attr_name = None
     _attr_has_entity_name = True
-    def __init__(self, coordinator, entity: Entity):
+
+    def __init__(self, coordinator, entity: Entity, platform: str):
         super().__init__(coordinator)
         self.entity = entity
-
-    @property
-    def unique_id(self):
-        """Return a unique ID to use for this entity."""
-        return self.entity.id
+        self._attr_unique_id = platform + "_" + self.entity.id
+        print(self.unique_id)
 
     @property
     def device_info(self):
@@ -26,13 +25,4 @@ class MyGekkoEntity(CoordinatorEntity):
             "name": self.entity.name,
             "model": VERSION,
             "manufacturer": NAME,
-        }
-
-    @property
-    def device_state_attributes(self):
-        """Return the state attributes."""
-        return {
-            "attribution": ATTRIBUTION,
-            "id": "cover_" + str(self.entity.id),
-            "integration": DOMAIN,
         }

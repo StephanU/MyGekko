@@ -19,7 +19,8 @@ BINARY_SENSOR = "binary_sensor"
 SENSOR = "sensor"
 SWITCH = "switch"
 COVER = "cover"
-PLATFORMS = [COVER]
+LIGHT = "light"
+PLATFORMS = [COVER, LIGHT]
 
 
 # Configuration and options

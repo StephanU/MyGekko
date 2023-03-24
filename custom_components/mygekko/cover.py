@@ -6,7 +6,7 @@ from homeassistant.core import callback
 from homeassistant.components.cover import ATTR_POSITION, CoverEntity, CoverDeviceClass
 from PyMyGekko.resources.Blinds import Blind, BlindState
 
-from .const import DOMAIN
+from .const import COVER, DOMAIN
 from .entity import MyGekkoEntity
 
 
@@ -24,10 +24,9 @@ class MyGekkoCover(MyGekkoEntity, CoverEntity):
     _attr_device_class = CoverDeviceClass.SHUTTER
 
     def __init__(self, coordinator, blind: Blind):
-        super().__init__(coordinator, blind)
+        super().__init__(coordinator, blind, COVER)
         self._blind = blind
-
-        self._attr_current_cover_position = self._blind.position
+        print(blind.id, blind.name)
 
     @callback
     def _handle_coordinator_update(self) -> None:
@@ -68,3 +67,7 @@ class MyGekkoCover(MyGekkoEntity, CoverEntity):
 
     async def async_set_cover_position(self, **kwargs: Any) -> None:
         await self._blind.set_position(float(kwargs[ATTR_POSITION]))
+
+    async def async_set_cover_tilt_position(self, **kwargs: Any) -> None:
+        """Move the cover tilt to a specific position."""
+        await ...
