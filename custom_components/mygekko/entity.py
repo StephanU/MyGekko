@@ -9,6 +9,7 @@ from .const import VERSION
 
 
 class MyGekkoEntity(CoordinatorEntity):
+    _attr_has_entity_name = True
     def __init__(self, coordinator, entity: Entity):
         super().__init__(coordinator)
         self.entity = entity

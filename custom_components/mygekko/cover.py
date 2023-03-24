@@ -1,5 +1,6 @@
 """Cover platform for MyGekko."""
 
+from math import floor
 from typing import Any
 from homeassistant.core import callback
 from homeassistant.components.cover import ATTR_POSITION, CoverEntity, CoverDeviceClass
@@ -35,7 +36,7 @@ class MyGekkoCover(MyGekkoEntity, CoverEntity):
 
     @property
     def is_closed(self) -> bool | None:
-        return self._blind.position == 100.00
+        return floor(self._blind.position) == 0
 
     @property
     def current_cover_position(self) -> int | None:
