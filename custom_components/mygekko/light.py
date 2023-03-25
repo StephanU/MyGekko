@@ -11,7 +11,6 @@ async def async_setup_entry(hass, entry, async_add_devices):
     """Setup light platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
     lights = coordinator.api.get_lights()
-    print(lights)
     if lights is not None:
         async_add_devices(MyGekkoLight(coordinator, light) for light in lights)
 

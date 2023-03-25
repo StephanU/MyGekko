@@ -16,7 +16,6 @@ class MyGekkoEntity(CoordinatorEntity):
         super().__init__(coordinator)
         self.entity = entity
         self._attr_unique_id = platform + "_" + self.entity.id
-        print(self.unique_id)
 
     @property
     def device_info(self):

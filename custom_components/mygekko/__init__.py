@@ -47,7 +47,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     session = async_get_clientsession(hass)
     client = MyGekkoApiClient(
-        username, apikey, gekkoid, session, True
+        username, apikey, gekkoid, session
     )
 
     coordinator = MyGekkoDataUpdateCoordinator(hass, client=client)
