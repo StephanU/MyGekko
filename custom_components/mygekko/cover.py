@@ -48,19 +48,19 @@ class MyGekkoCover(MyGekkoEntity, CoverEntity):
 
     @property
     def is_closing(self) -> bool:
-        return self._blind.state == BlindState.DOWN
+        return self._blind.state == BlindState.DOWN or self._blind.state == BlindState.HOLD_DOWN
 
     @property
     def is_opening(self) -> bool:
-        return self._blind.state == BlindState.UP
+        return self._blind.state == BlindState.UP or self._blind.state == BlindState.HOLD_UP
 
     async def async_open_cover(self, **kwargs: Any):
         """Open the cover."""
-        await self._blind.set_state(BlindState.UP)
+        await self._blind.set_state(BlindState.UP_HOLD)
 
     async def async_close_cover(self, **kwargs: Any):
         """Close cover."""
-        await self._blind.set_state(BlindState.DOWN)
+        await self._blind.set_state(BlindState.DOWN_HOLD)
 
     async def async_stop_cover(self, **kwargs: Any):
         """Stop the cover."""
