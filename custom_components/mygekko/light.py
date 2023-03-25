@@ -1,7 +1,7 @@
 """Light platform for MyGekko."""
 from homeassistant.core import callback
 from homeassistant.components.light import LightEntity, ColorMode
-from PyMyGekko.resources.Lights import Light, LightState
+from PyMyGekko.resources.Lights import Light, LightState, LightFeature
 
 from .const import DOMAIN, LIGHT
 from .entity import MyGekkoEntity
@@ -22,12 +22,14 @@ class MyGekkoLight(MyGekkoEntity, LightEntity):
 
     def __init__(self, coordinator, light: Light):
         super().__init__(coordinator, light, LIGHT)
-        print(light.id, light.name)
         self._light = light
-        self._attr_supported_color_modes = set()
-        self._attr_supported_color_modes.add(ColorMode.ONOFF)
         self._attr_color_mode = ColorMode.ONOFF
 
+        supported_features = self._light.supported_features
+        self._attr_supported_color_modes = set()
+
+        if LightFeature.ON_OFF in supported_features:
+            self._attr_supported_color_modes.add(ColorMode.ONOFF)
 
     @callback
     def _handle_coordinator_update(self) -> None:
