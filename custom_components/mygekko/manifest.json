@@ -7,5 +7,5 @@
   "dependencies": [],
   "config_flow": true,
   "codeowners": ["@stephanu"],
-  "requirements": ["pymygekko==0.0.4rc17"]
+  "requirements": ["pymygekko==0.0.4rc20"]
 }

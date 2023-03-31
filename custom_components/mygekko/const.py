@@ -3,7 +3,7 @@
 NAME = "MyGekko"
 DOMAIN = "mygekko"
 DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "0.0.4"
+VERSION = "0.0.5"
 
 ATTRIBUTION = "Data provided by http://jsonplaceholder.typicode.com/"
 ISSUE_URL = "https://github.com/stephanu/mygekko/issues"
@@ -20,7 +20,8 @@ SENSOR = "sensor"
 SWITCH = "switch"
 COVER = "cover"
 LIGHT = "light"
-PLATFORMS = [COVER, LIGHT]
+CLIMATE = "climate"
+PLATFORMS = [COVER, LIGHT, CLIMATE]
 
 
 # Configuration and options
