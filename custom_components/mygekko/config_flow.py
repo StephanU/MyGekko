@@ -3,13 +3,12 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
-
-
 from PyMyGekko import MyGekkoApiClient
 
-from .const import CONF_DEMO_MODE, CONF_USERNAME
 from .const import CONF_APIKEY
+from .const import CONF_DEMO_MODE
 from .const import CONF_GEKKOID
+from .const import CONF_USERNAME
 from .const import DOMAIN
 from .const import PLATFORMS
 
