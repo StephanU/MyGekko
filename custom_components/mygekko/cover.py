@@ -1,12 +1,19 @@
 """Cover platform for MyGekko."""
-
 from math import ceil
 from typing import Any
-from homeassistant.core import callback
-from homeassistant.components.cover import ATTR_POSITION, ATTR_TILT_POSITION, CoverEntity, CoverDeviceClass, CoverEntityFeature
-from PyMyGekko.resources.Blinds import Blind, BlindState, BlindFeature
 
-from .const import COVER, DOMAIN
+from homeassistant.components.cover import ATTR_POSITION
+from homeassistant.components.cover import ATTR_TILT_POSITION
+from homeassistant.components.cover import CoverDeviceClass
+from homeassistant.components.cover import CoverEntity
+from homeassistant.components.cover import CoverEntityFeature
+from homeassistant.core import callback
+from PyMyGekko.resources.Blinds import Blind
+from PyMyGekko.resources.Blinds import BlindFeature
+from PyMyGekko.resources.Blinds import BlindState
+
+from .const import COVER
+from .const import DOMAIN
 from .entity import MyGekkoEntity
 
 
@@ -30,7 +37,11 @@ class MyGekkoCover(MyGekkoEntity, CoverEntity):
         self._attr_supported_features = 0
 
         if BlindFeature.OPEN_CLOSE_STOP in supported_features:
-            self._attr_supported_features |= (CoverEntityFeature.OPEN | CoverEntityFeature.CLOSE | CoverEntityFeature.STOP)
+            self._attr_supported_features |= (
+                CoverEntityFeature.OPEN
+                | CoverEntityFeature.CLOSE
+                | CoverEntityFeature.STOP
+            )
 
         if BlindFeature.SET_POSITION in supported_features:
             self._attr_supported_features |= CoverEntityFeature.SET_POSITION
@@ -42,7 +53,6 @@ class MyGekkoCover(MyGekkoEntity, CoverEntity):
                 | CoverEntityFeature.STOP_TILT
                 | CoverEntityFeature.SET_TILT_POSITION
             )
-
 
     @callback
     def _handle_coordinator_update(self) -> None:
@@ -72,11 +82,17 @@ class MyGekkoCover(MyGekkoEntity, CoverEntity):
 
     @property
     def is_closing(self) -> bool:
-        return self._blind.state == BlindState.DOWN or self._blind.state == BlindState.HOLD_DOWN
+        return (
+            self._blind.state == BlindState.DOWN
+            or self._blind.state == BlindState.HOLD_DOWN
+        )
 
     @property
     def is_opening(self) -> bool:
-        return self._blind.state == BlindState.UP or self._blind.state == BlindState.HOLD_UP
+        return (
+            self._blind.state == BlindState.UP
+            or self._blind.state == BlindState.HOLD_UP
+        )
 
     async def async_open_cover(self, **kwargs: Any):
         """Open the cover."""
@@ -108,5 +124,3 @@ class MyGekkoCover(MyGekkoEntity, CoverEntity):
     async def async_set_cover_tilt_position(self, **kwargs: Any) -> None:
         """Move the cover tilt to a specific position."""
         await self._blind.set_tilt_position(float(kwargs[ATTR_TILT_POSITION]))
-
-

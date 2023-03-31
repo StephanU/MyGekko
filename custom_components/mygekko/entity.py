@@ -2,7 +2,6 @@
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from PyMyGekko.resources import Entity
 
-from .const import ATTRIBUTION
 from .const import DOMAIN
 from .const import NAME
 from .const import VERSION

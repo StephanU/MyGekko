@@ -1,9 +1,15 @@
 """Light platform for MyGekko."""
+from homeassistant.components.light import ATTR_BRIGHTNESS
+from homeassistant.components.light import ATTR_RGB_COLOR
+from homeassistant.components.light import ColorMode
+from homeassistant.components.light import LightEntity
 from homeassistant.core import callback
-from homeassistant.components.light import LightEntity, ColorMode, ATTR_RGB_COLOR, ATTR_BRIGHTNESS
-from PyMyGekko.resources.Lights import Light, LightState, LightFeature
+from PyMyGekko.resources.Lights import Light
+from PyMyGekko.resources.Lights import LightFeature
+from PyMyGekko.resources.Lights import LightState
 
-from .const import DOMAIN, LIGHT
+from .const import DOMAIN
+from .const import LIGHT
 from .entity import MyGekkoEntity
 
 
@@ -17,7 +23,6 @@ async def async_setup_entry(hass, entry, async_add_devices):
 
 class MyGekkoLight(MyGekkoEntity, LightEntity):
     """mygekko Light class."""
-
 
     def __init__(self, coordinator, light: Light):
         super().__init__(coordinator, light, LIGHT)

@@ -18,12 +18,12 @@ This project is a work in progress. No guarantee to work until 1.0.0
 
 **This component will set up the following platforms.**
 
-| Platform        | Description                                                               |
-| --------------- | ------------------------------------------------------------------------- |
-| `binary_sensor` | Show something `True` or `False`.                                         |
-| `sensor`        | Show info from MyGekko API.                                               |
-| `switch`        | Switch something `True` or `False`.                                       |
-| `cover`         | Cover device for each found blind.                                        |
+| Platform        | Description                         |
+| --------------- | ----------------------------------- |
+| `binary_sensor` | Show something `True` or `False`.   |
+| `sensor`        | Show info from MyGekko API.         |
+| `switch`        | Switch something `True` or `False`. |
+| `cover`         | Cover device for each found blind.  |
 
 ## Installation
 
