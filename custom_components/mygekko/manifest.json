@@ -7,5 +7,6 @@
   "dependencies": [],
   "config_flow": true,
   "codeowners": ["@stephanu"],
-  "requirements": ["pymygekko==0.0.4rc21"]
+  "requirements": ["pymygekko==0.0.4rc21"],
+  "iot_class": "cloud_polling"
 }
