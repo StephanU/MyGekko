@@ -107,7 +107,8 @@ class MyGekkoCover(MyGekkoEntity, CoverEntity):
         await self._blind.set_state(BlindState.STOP)
 
     async def async_set_cover_position(self, **kwargs: Any) -> None:
-        await self._blind.set_position(float(kwargs[ATTR_POSITION]))
+        # myGekko blinds are closed on 100 and open on 0
+        await self._blind.set_position(100.0 - float(kwargs[ATTR_POSITION]))
 
     async def async_open_cover_tilt(self, **kwargs: Any):
         """Open the cover."""
@@ -123,4 +124,5 @@ class MyGekkoCover(MyGekkoEntity, CoverEntity):
 
     async def async_set_cover_tilt_position(self, **kwargs: Any) -> None:
         """Move the cover tilt to a specific position."""
-        await self._blind.set_tilt_position(float(kwargs[ATTR_TILT_POSITION]))
+        # myGekko blinds are closed on 100 and open on 0
+        await self._blind.set_tilt_position(100.0 - float(kwargs[ATTR_TILT_POSITION]))

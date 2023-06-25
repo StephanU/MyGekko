@@ -11,17 +11,13 @@ ISSUE_URL = "https://github.com/stephanu/mygekko/issues"
 # Icons
 ICON = "mdi:format-quote-close"
 
-# Device classes
-BINARY_SENSOR_DEVICE_CLASS = "connectivity"
 
 # Platforms
-BINARY_SENSOR = "binary_sensor"
 SENSOR = "sensor"
-SWITCH = "switch"
 COVER = "cover"
 LIGHT = "light"
 CLIMATE = "climate"
-PLATFORMS = [COVER, LIGHT, CLIMATE]
+PLATFORMS = [COVER, LIGHT, CLIMATE, SENSOR]
 
 
 # Configuration and options
