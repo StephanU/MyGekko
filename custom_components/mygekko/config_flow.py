@@ -4,6 +4,7 @@ from homeassistant import config_entries
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from PyMyGekko import MyGekkoApiClient
+from PyMyGekko import MyGekkoError
 
 from .const import CONF_APIKEY
 from .const import CONF_DEMO_MODE
@@ -74,7 +75,7 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             client = MyGekkoApiClient(username, apikey, gekkoid, session)
             await client.try_connect()
             return True
-        except Exception:  # pylint: disable=broad-except
+        except MyGekkoError:
             pass
         return False
 
