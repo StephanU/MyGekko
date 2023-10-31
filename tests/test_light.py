@@ -1,4 +1,4 @@
-"""Test MyGekko switch."""
+"""Test MyGekko light."""
 from unittest.mock import call
 from unittest.mock import patch
 
@@ -12,18 +12,18 @@ from custom_components.mygekko.const import (
     DOMAIN,
 )
 from custom_components.mygekko.const import (
-    SWITCH,
+    LIGHT,
 )
-from homeassistant.components.switch import SERVICE_TURN_OFF
-from homeassistant.components.switch import SERVICE_TURN_ON
+from homeassistant.components.light import SERVICE_TURN_OFF
+from homeassistant.components.light import SERVICE_TURN_ON
 from homeassistant.const import ATTR_ENTITY_ID
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from .const import MOCK_CONFIG
 
 
-async def test_switch_services(hass):
-    """Test switch services."""
+async def test_light_services(hass):
+    """Test light services."""
     # Create a mock entry so we don't have to go through config flow
     config_entry = MockConfigEntry(domain=DOMAIN, data=MOCK_CONFIG, entry_id="test")
     assert await async_setup_entry(hass, config_entry)
@@ -35,9 +35,9 @@ async def test_switch_services(hass):
         "custom_components.mygekko.MyGekkoApiClient.async_set_title"
     ) as title_func:
         await hass.services.async_call(
-            SWITCH,
+            LIGHT,
             SERVICE_TURN_OFF,
-            service_data={ATTR_ENTITY_ID: f"{SWITCH}.{DEFAULT_NAME}_{SWITCH}"},
+            service_data={ATTR_ENTITY_ID: f"{LIGHT}.{DEFAULT_NAME}_{LIGHT}"},
             blocking=True,
         )
         assert title_func.called
@@ -46,9 +46,9 @@ async def test_switch_services(hass):
         title_func.reset_mock()
 
         await hass.services.async_call(
-            SWITCH,
+            LIGHT,
             SERVICE_TURN_ON,
-            service_data={ATTR_ENTITY_ID: f"{SWITCH}.{DEFAULT_NAME}_{SWITCH}"},
+            service_data={ATTR_ENTITY_ID: f"{LIGHT}.{DEFAULT_NAME}_{LIGHT}"},
             blocking=True,
         )
         assert title_func.called
