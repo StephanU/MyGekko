@@ -18,22 +18,31 @@ def skip_notifications_fixture():
         yield
 
 
-# This fixture, when used, will result in calls to async_get_data to return None. To have the call
+# This fixture, when used, will result in calls to get_data to return None. To have the call
 # return a value, we would add the `return_value=<VALUE_TO_RETURN>` parameter to the patch call.
 @pytest.fixture(name="bypass_get_data")
 def bypass_get_data_fixture():
     """Skip calls to get data from API."""
-    with patch("custom_components.mygekko.MyGekkoApiClient.async_get_data"):
+    with patch("custom_components.mygekko.MyGekkoApiClient.get_data"):
         yield
 
 
-# In this fixture, we are forcing calls to async_get_data to raise an Exception. This is useful
+# This fixture, when used, will result in calls to try_connect to return None. To have the call
+# return a value, we would add the `return_value=<VALUE_TO_RETURN>` parameter to the patch call.
+@pytest.fixture(name="bypass_try_connect")
+def bypass_try_connect_fixture():
+    """Skip calls to get data from API."""
+    with patch("custom_components.mygekko.MyGekkoApiClient.try_connect"):
+        yield
+
+
+# In this fixture, we are forcing calls to try_connect to raise an Exception. This is useful
 # for exception handling.
-@pytest.fixture(name="error_on_get_data")
-def error_get_data_fixture():
+@pytest.fixture(name="error_on_try_connect")
+def error_try_connect_fixture():
     """Simulate error when retrieving data from API."""
     with patch(
-        "custom_components.mygekko.MyGekkoApiClient.async_get_data",
+        "custom_components.mygekko.MyGekkoApiClient.try_connect",
         side_effect=Exception,
     ):
         yield

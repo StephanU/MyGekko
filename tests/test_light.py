@@ -2,6 +2,7 @@
 from unittest.mock import call
 from unittest.mock import patch
 
+import pytest
 from custom_components.mygekko import (
     async_setup_entry,
 )
@@ -22,6 +23,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 from .const import MOCK_CONFIG
 
 
+@pytest.mark.asyncio
 async def test_light_services(hass):
     """Test light services."""
     # Create a mock entry so we don't have to go through config flow
