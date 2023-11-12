@@ -41,10 +41,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         _LOGGER.info(STARTUP_MESSAGE)
 
     _LOGGER.info("Testlog: async_setup_entry")
-    pymygekko_logger: logging.Logger = logging.getLogger("pymygekko")
-    log_level: int = _LOGGER.getEffectiveLevel()
-    pymygekko_logger.setLevel(log_level)
-    _LOGGER.info("Testlog: level", log_level, __package__)
 
     username = entry.data.get(CONF_USERNAME)
     apikey = entry.data.get(CONF_APIKEY)
