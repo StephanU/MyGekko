@@ -24,7 +24,10 @@
           "binary_sensor": "Binær sensor aktivert",
           "sensor": "Sensor aktivert",
           "cover": "Cover aktivert",
-          "switch": "Bryter aktivert"
+          "light": "Licht aktivert",
+          "climate": "Klimaat aktivert",
+          "switch": "Bryter aktivert",
+          "demo_mode": "Demomodus"
         },
         "demo_mode": "Demo modus"
       }

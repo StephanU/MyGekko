@@ -25,6 +25,7 @@
           "sensor": "Sensor enabled",
           "cover": "Cover enabled",
           "light": "Light enabled",
+          "climate": "Climate enabled",
           "switch": "Switch enabled",
           "demo_mode": "Demo Mode"
         }

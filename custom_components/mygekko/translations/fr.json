@@ -24,7 +24,10 @@
           "binary_sensor": "Capteur binaire activé",
           "sensor": "Capteur activé",
           "cover": "Couverture activé",
-          "switch": "Interrupteur activé"
+          "light": "Lumière activée",
+          "climate": "Climat activé",
+          "switch": "Interrupteur activé",
+          "demo_mode": "Mode démo"
         },
         "demo_mode": "Mode démo"
       }
