@@ -7,7 +7,7 @@
   "documentation": "https://github.com/stephanu/mygekko",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/stephanu/mygekko/issues",
-  "logger": ["pymygekko"],
-  "requirements": ["pymygekko==0.0.4rc28"],
+  "logger": ["custom_components.mygekko", "pymygekko"],
+  "requirements": ["pymygekko==0.0.4rc29"],
   "version": "1.0.0"
 }
