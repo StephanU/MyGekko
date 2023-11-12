@@ -40,7 +40,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         hass.data.setdefault(DOMAIN, {})
         _LOGGER.info(STARTUP_MESSAGE)
 
-    print("Testlog: async_setup_entry")
+    _LOGGER.info("Testlog: async_setup_entry")
 
     username = entry.data.get(CONF_USERNAME)
     apikey = entry.data.get(CONF_APIKEY)
@@ -48,16 +48,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     session = async_get_clientsession(hass)
 
-    print("Testlog: async_setup_entry: MyGekkoApiClient creation")
+    _LOGGER.info("Testlog: async_setup_entry: MyGekkoApiClient creation")
     client = MyGekkoApiClient(username, apikey, gekkoid, session)
 
-    print("Testlog: async_setup_entry: MyGekkoDataUpdateCoordinator creation")
+    _LOGGER.info("Testlog: async_setup_entry: MyGekkoDataUpdateCoordinator creation")
     coordinator = MyGekkoDataUpdateCoordinator(hass, client=client)
-    print("Testlog: async_setup_entry: MyGekkoDataUpdateCoordinator async_refresh")
+    _LOGGER.info(
+        "Testlog: async_setup_entry: MyGekkoDataUpdateCoordinator async_refresh"
+    )
     await coordinator.async_refresh()
 
     if not coordinator.last_update_success:
-        print("Testlog: async_setup_entry: ConfigEntryNotReady")
+        _LOGGER.info("Testlog: async_setup_entry: ConfigEntryNotReady")
         raise ConfigEntryNotReady
 
     hass.data[DOMAIN][entry.entry_id] = coordinator
@@ -89,11 +91,11 @@ class MyGekkoDataUpdateCoordinator(DataUpdateCoordinator):
 
     async def _async_update_data(self):
         """Update data via library."""
-        print("Testlog: _async_update_data ")
+        _LOGGER.info("Testlog: _async_update_data ")
         try:
             return await self.api.read_data()
         except Exception as exception:
-            print("Testlog: _async_update_data failed", exception)
+            _LOGGER.info("Testlog: _async_update_data failed", exception)
             raise UpdateFailed() from exception
 
 

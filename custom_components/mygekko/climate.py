@@ -32,7 +32,6 @@ class MyGekkoClimate(MyGekkoEntity, ClimateEntity):
 
     def __init__(self, coordinator, thermostat: Thermostat):
         super().__init__(coordinator, thermostat, CLIMATE)
-        print("Thermo", thermostat.id, thermostat.name)
         self._thermostat = thermostat
         supported_features = self._thermostat.supported_features
         self._attr_supported_features = 0
@@ -58,7 +57,6 @@ class MyGekkoClimate(MyGekkoEntity, ClimateEntity):
 
     async def async_set_temperature(self, **kwargs) -> None:
         """Set new target temperature."""
-        print(self._thermostat.id, kwargs[ATTR_TEMPERATURE])
         await self._thermostat.set_target_temperature(float(kwargs[ATTR_TEMPERATURE]))
 
     @property
