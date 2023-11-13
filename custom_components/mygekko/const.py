@@ -3,7 +3,7 @@
 NAME = "MyGekko"
 DOMAIN = "mygekko"
 DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "0.0.22"
+VERSION = "0.0.23"
 
 ATTRIBUTION = "Data provided by http://jsonplaceholder.typicode.com/"
 ISSUE_URL = "https://github.com/stephanu/mygekko/issues"
