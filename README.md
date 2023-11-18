@@ -18,14 +18,23 @@ This project is a work in progress. No guarantee to work until 1.0.0
 
 **This component will set up the following platforms.**
 
-| Platform        | Description                         |
-| --------------- | ----------------------------------- |
-| `binary_sensor` | Show something `True` or `False`.   |
-| `sensor`        | Show info from MyGekko API.         |
-| `switch`        | Switch something `True` or `False`. |
-| `cover`         | Cover device for each found blind.  |
+| Platform  | Description                               |
+| --------- | ----------------------------------------- |
+| `climate` | Thermostats (called roomtemps in MyGekko) |
+| `cover`   | Covers (called blinds in MyGekko)         |
+| `light`   | Lights                                    |
+| `switch`  | Switches (called loads in MyGekko)        |
 
 ## Installation
+
+### Via HACS
+
+1. Install [HACS](https://hacs.xyz/docs/setup/prerequisites)
+2. Add 'https://github.com/StephanU/MyGekko' as a [Custom Repository](https://hacs.xyz/docs/faq/custom_repositories)
+3. Restart Home Assistant
+4. In the HA UI go to "Configuration" -> "Integrations" click "+" and search for "MyGekko"
+
+### Manually
 
 1. Using the tool of choice open the directory (folder) for your HA configuration (where you find `configuration.yaml`).
 2. If you do not have a `custom_components` directory (folder) there, you need to create it.
@@ -57,7 +66,7 @@ custom_components/mygekko/switch.py
 
 ## Configuration is done in the UI
 
-<!---->
+The integration currently only supports access via the MyGekko server, so you need a MyGekko Plus subscription.
 
 ## Contributions are welcome!
 
