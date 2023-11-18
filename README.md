@@ -11,7 +11,8 @@ This project is a work in progress. No guarantee to work until 1.0.0
 
 [![hacs][hacsbadge]][hacs]
 [![Project Maintenance][maintenance-shield]][user_profile]
-[![BuyMeCoffee][buymecoffeebadge]][buymecoffee]
+
+<!--[![BuyMeCoffee][buymecoffeebadge]][buymecoffee]-->
 
 [![Discord][discord-shield]][discord]
 [![Community Forum][forum-shield]][forum]
