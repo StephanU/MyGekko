@@ -17,7 +17,8 @@ SENSOR = "sensor"
 COVER = "cover"
 LIGHT = "light"
 CLIMATE = "climate"
-PLATFORMS = [COVER, LIGHT, CLIMATE]
+SWITCH = "switch"
+PLATFORMS = [COVER, LIGHT, CLIMATE, SWITCH]
 
 
 # Configuration and options

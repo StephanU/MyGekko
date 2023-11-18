@@ -1,4 +1,6 @@
 """Light platform for MyGekko."""
+import logging
+
 from homeassistant.components.light import ATTR_BRIGHTNESS
 from homeassistant.components.light import ATTR_RGB_COLOR
 from homeassistant.components.light import ColorMode
@@ -11,6 +13,9 @@ from PyMyGekko.resources.Lights import LightState
 from .const import DOMAIN
 from .const import LIGHT
 from .entity import MyGekkoEntity
+
+
+_LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 async def async_setup_entry(hass, entry, async_add_devices):
@@ -47,12 +52,17 @@ class MyGekkoLight(MyGekkoEntity, LightEntity):
         self.async_write_ha_state()
 
     def is_on(self) -> bool | None:
+        _LOGGER.debug(
+            "The light state of %s is %s", self._light.name, self._light.state
+        )
         return self._light.state == LightState.ON
 
     async def async_turn_off(self, **kwargs):
+        _LOGGER.debug("Switch off light %s", self._light.name)
         await self._light.set_state(LightState.OFF)
 
     async def async_turn_on(self, **kwargs):
+        _LOGGER.debug("Switch on light %s", self._light.name)
         if ATTR_RGB_COLOR in kwargs and kwargs[ATTR_RGB_COLOR]:
             await self._light.set_rgb_color(kwargs[ATTR_RGB_COLOR])
         elif ATTR_BRIGHTNESS in kwargs and kwargs[ATTR_BRIGHTNESS]:
