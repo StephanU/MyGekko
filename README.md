@@ -19,12 +19,13 @@ This project is a work in progress. No guarantee to work until 1.0.0
 
 **This component will set up the following platforms.**
 
-| Platform  | Description                               |
-| --------- | ----------------------------------------- |
-| `climate` | Thermostats (called roomtemps in MyGekko) |
-| `cover`   | Covers (called blinds in MyGekko)         |
-| `light`   | Lights                                    |
-| `switch`  | Switches (called loads in MyGekko)        |
+| Platform       | Description                                       |
+| -------------- | ------------------------------------------------- |
+| `climate`      | Thermostats (called roomtemps in MyGekko)         |
+| `cover`        | Covers (called blinds in MyGekko)                 |
+| `light`        | Lights                                            |
+| `switch`       | Switches (called loads in MyGekko)                |
+| `water_heater` | Water Heater (called hotwater_systems in MyGekko) |
 
 ## Installation
 

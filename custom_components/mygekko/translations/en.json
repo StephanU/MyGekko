@@ -27,6 +27,7 @@
           "light": "Light enabled",
           "climate": "Climate enabled",
           "switch": "Switch enabled",
+          "water_heater": "Water Heater enabled",
           "demo_mode": "Demo Mode"
         }
       }

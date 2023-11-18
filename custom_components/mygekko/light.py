@@ -51,9 +51,10 @@ class MyGekkoLight(MyGekkoEntity, LightEntity):
         """Handle updated data from the coordinator."""
         self.async_write_ha_state()
 
+    @property
     def is_on(self) -> bool | None:
         _LOGGER.debug(
-            "The light state of %s is %s", self._light.name, self._light.state
+            "The light state of %s is %d", self._light.name, self._light.state
         )
         return self._light.state == LightState.ON
 
