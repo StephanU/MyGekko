@@ -30,10 +30,10 @@ class MyGekkoSwitch(MyGekkoEntity, SwitchEntity):
         self.async_write_ha_state()
 
     def is_on(self) -> bool | None:
-        return self._switch.state == SwitchState.PERMANENT_ON
+        return self._switch.state == SwitchState.ON_PERMANENT
 
     async def async_turn_off(self, **kwargs):
         await self._switch.set_state(SwitchState.OFF)
 
     async def async_turn_on(self, **kwargs):
-        await self._switch.set_state(SwitchState.PERMANENT_ON)
+        await self._switch.set_state(SwitchState.ON_PERMANENT)

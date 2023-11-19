@@ -75,9 +75,7 @@ class MyGekkoWaterHeater(MyGekkoEntity, WaterHeaterEntity):
 
     async def async_set_temperature(self, **kwargs: Any) -> None:
         """Set new target temperature."""
-        await self._water_heater.set_target_temperature(
-            self, float(kwargs[ATTR_TEMPERATURE])
-        )
+        await self._water_heater.set_target_temperature(float(kwargs[ATTR_TEMPERATURE]))
 
     @property
     def current_temperature(self) -> float | None:
