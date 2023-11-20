@@ -27,6 +27,7 @@
           "light": "Lumière activée",
           "climate": "Climat activé",
           "switch": "Interrupteur activé",
+          "scene": "Scène activée",
           "water_heater": "Chauffe-eau activé",
           "demo_mode": "Mode démo"
         },

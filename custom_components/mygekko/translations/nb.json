@@ -27,6 +27,7 @@
           "light": "Licht aktivert",
           "climate": "Klimaat aktivert",
           "switch": "Bryter aktivert",
+          "scene": "Scène aktivert",
           "water_heater": "Waterverwarming aktivert",
           "demo_mode": "Demomodus"
         },
