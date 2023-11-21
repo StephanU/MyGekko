@@ -11,11 +11,15 @@
 
 **This component will set up the following platforms.**
 
-| Platform        | Description                         |
-| --------------- | ----------------------------------- |
-| `binary_sensor` | Show something `True` or `False`.   |
-| `sensor`        | Show info from API.                 |
-| `switch`        | Switch something `True` or `False`. |
+| Platform       | Description                                                        |
+| -------------- | ------------------------------------------------------------------ |
+| `climate`      | Thermostats (called roomtemps in MyGekko)                          |
+| `cover`        | Covers (called blinds in MyGekko)                                  |
+| `light`        | Lights                                                             |
+| `switch`       | Switches (called loads in MyGekko)                                 |
+| `water_heater` | Water Heater (called hotwater_systems in MyGekko)                  |
+| `sensor`       | MyGekko energy_cost metrics and alarms_logics are added as sensors |
+| `scene`        | MyGekko actions are added as scenes                                |
 
 ![example][exampleimg]
 
@@ -30,7 +34,7 @@
 
 ## Configuration is done in the UI
 
-<!---->
+The integration currently only supports access via the MyGekko server, so you need a MyGekko Plus subscription.
 
 ## Credits
 
@@ -41,7 +45,7 @@ Code template was mainly taken from [@Ludeeus](https://github.com/ludeeus)'s [in
 ---
 
 [integration_blueprint]: https://github.com/custom-components/integration_blueprint
-[buymecoffee]: https://www.buymeacoffee.com/ludeeus
+[buymecoffee]: https://www.buymeacoffee.com/stephanu
 [buymecoffeebadge]: https://img.shields.io/badge/buy%20me%20a%20coffee-donate-yellow.svg?style=for-the-badge
 [commits-shield]: https://img.shields.io/github/commit-activity/y/stephanu/mygekko.svg?style=for-the-badge
 [commits]: https://github.com/stephanu/mygekko/commits/main

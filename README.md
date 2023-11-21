@@ -12,20 +12,22 @@ This project is a work in progress. No guarantee to work until 1.0.0
 [![hacs][hacsbadge]][hacs]
 [![Project Maintenance][maintenance-shield]][user_profile]
 
-<!--[![BuyMeCoffee][buymecoffeebadge]][buymecoffee]-->
+[![BuyMeCoffee][buymecoffeebadge]][buymecoffee]
 
 [![Discord][discord-shield]][discord]
 [![Community Forum][forum-shield]][forum]
 
 **This component will set up the following platforms.**
 
-| Platform       | Description                                       |
-| -------------- | ------------------------------------------------- |
-| `climate`      | Thermostats (called roomtemps in MyGekko)         |
-| `cover`        | Covers (called blinds in MyGekko)                 |
-| `light`        | Lights                                            |
-| `switch`       | Switches (called loads in MyGekko)                |
-| `water_heater` | Water Heater (called hotwater_systems in MyGekko) |
+| Platform       | Description                                                        |
+| -------------- | ------------------------------------------------------------------ |
+| `climate`      | Thermostats (called roomtemps in MyGekko)                          |
+| `cover`        | Covers (called blinds in MyGekko)                                  |
+| `light`        | Lights                                                             |
+| `switch`       | Switches (called loads in MyGekko)                                 |
+| `water_heater` | Water Heater (called hotwater_systems in MyGekko)                  |
+| `sensor`       | MyGekko energy_cost metrics and alarms_logics are added as sensors |
+| `scene`        | MyGekko actions are added as scenes                                |
 
 ## Installation
 
