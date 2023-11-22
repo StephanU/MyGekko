@@ -12,6 +12,7 @@ from PyMyGekko.resources.AlarmsLogics import AlarmsLogic
 from PyMyGekko.resources.EnergyCosts import EnergyCost
 
 from .const import DOMAIN
+from .const import MANUFACTURER
 from .const import NAME
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -120,12 +121,12 @@ async def async_setup_entry(hass, entry, async_add_devices):
     if energy_costs is not None:
         for energy_cost in energy_costs:
             if energy_cost.sensor_data and "values" in energy_cost.sensor_data:
-                for sensor in energy_cost.sensor_data["values"]:
+                for index, sensor in enumerate(energy_cost.sensor_data["values"]):
                     if sensor and "name" in sensor and sensor["name"] in SENSORS:
                         async_add_devices(
                             [
                                 MyGekkoEnergySensor(
-                                    energy_cost, sensor, SENSORS[sensor["name"]]
+                                    energy_cost, index, SENSORS[sensor["name"]]
                                 )
                             ]
                         )
@@ -152,9 +153,10 @@ class MyGekkoAlarmsLogicsSensor(SensorEntity):
                 (DOMAIN, "mygekko_controller_" + globals_network["gekkoname"])
             },
             name=globals_network["gekkoname"],
-            manufacturer=NAME,
+            manufacturer=MANUFACTURER,
             sw_version=globals_network["version"],
             hw_version=globals_network["hardware"],
+            model=globals_network["hardware"],
         )
 
         _LOGGER.debug("Added sensor %s %s", alarms_logic.name, self.unique_id)
@@ -173,15 +175,18 @@ class MyGekkoEnergySensor(SensorEntity):
     def __init__(
         self,
         energy_cost: EnergyCost,
-        sensor_data,
+        index,
         sensorEntityDescription: SensorEntityDescription,
     ):
         self.entity_description = sensorEntityDescription
         self._attr_unique_id = (
-            "energy_cost_" + energy_cost.id + "_" + sensor_data["name"]
+            "energy_cost_"
+            + energy_cost.id
+            + "_"
+            + energy_cost.sensor_data["values"][index]["name"]
         )
         self._energy_cost = energy_cost
-        self._sensor_data = sensor_data
+        self._index = index
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, "energy_cost_" + energy_cost.id)},
             name=energy_cost.name,
@@ -190,20 +195,22 @@ class MyGekkoEnergySensor(SensorEntity):
 
         _LOGGER.debug(
             "Added sensor %s %s %s",
-            sensor_data["name"],
+            energy_cost.sensor_data["values"][index]["name"],
             self.unique_id,
-            sensor_data["unit"],
+            energy_cost.sensor_data["values"][index]["unit"],
         )
 
     @property
     def state(self):
         """Return the state of the sensor."""
-        return self._sensor_data["value"]
+        return self._energy_cost.sensor_data["values"][self._index]["value"]
 
     @property
     def native_unit_of_measurement(self) -> str | None:
         """Return the unit of measurement."""
-        if (unit := self._sensor_data["unit"]) is None or unit == 0:
+        if (
+            unit := self._energy_cost.sensor_data["values"][self._index]["unit"]
+        ) is None or unit == 0:
             return None
 
         return SENSOR_UNIT_MAPPING[unit]
