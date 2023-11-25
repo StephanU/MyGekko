@@ -36,6 +36,11 @@ class MyGekkoCover(MyGekkoEntity, CoverEntity):
         supported_features = self._blind.supported_features
         self._attr_supported_features = 0
 
+        if BlindFeature.OPEN_CLOSE in supported_features:
+            self._attr_supported_features |= (
+                CoverEntityFeature.OPEN | CoverEntityFeature.CLOSE
+            )
+
         if BlindFeature.OPEN_CLOSE_STOP in supported_features:
             self._attr_supported_features |= (
                 CoverEntityFeature.OPEN
@@ -62,23 +67,31 @@ class MyGekkoCover(MyGekkoEntity, CoverEntity):
     @property
     def is_closed(self) -> bool | None:
         # myGekko blinds are closed on 100 and open on 0
-        return ceil(self._blind.position) == 100
+        return (
+            ceil(self._blind.position) == 100
+            if self._blind.position is not None
+            else None
+        )
 
     @property
     def current_cover_position(self) -> int | None:
         """Position of the cover."""
-        if self._blind.position is None:
-            return None
         # myGekko blinds are closed on 100 and open on 0
-        return 100 - int(self._blind.position)
+        return (
+            (100 - int(self._blind.position))
+            if self._blind.position is not None
+            else None
+        )
 
     @property
     def current_cover_tilt_position(self) -> int | None:
         """Tilt Position of the cover."""
-        if self._blind.tilt_position is None:
-            return None
         # myGekko blinds are closed on 100 and open on 0
-        return 100 - int(self._blind.tilt_position)
+        return (
+            (100 - int(self._blind.tilt_position))
+            if self._blind.tilt_position is not None
+            else None
+        )
 
     @property
     def is_closing(self) -> bool:
@@ -96,11 +109,11 @@ class MyGekkoCover(MyGekkoEntity, CoverEntity):
 
     async def async_open_cover(self, **kwargs: Any):
         """Open the cover."""
-        await self._blind.set_position(0.0)
+        await self._blind.set_state(BlindState.HOLD_UP)
 
     async def async_close_cover(self, **kwargs: Any):
         """Close cover."""
-        await self._blind.set_position(100.0)
+        await self._blind.set_state(BlindState.HOLD_DOWN)
 
     async def async_stop_cover(self, **kwargs: Any):
         """Stop the cover."""
