@@ -5,7 +5,6 @@ from PyMyGekko.resources.Loads import Load
 from PyMyGekko.resources.Loads import LoadState
 
 from .const import DOMAIN
-from .const import SWITCH
 from .entity import MyGekkoEntity
 
 
@@ -21,7 +20,7 @@ class MyGekkoSwitch(MyGekkoEntity, SwitchEntity):
     """mygekko Switch class."""
 
     def __init__(self, coordinator, load: Load):
-        super().__init__(coordinator, load, SWITCH)
+        super().__init__(coordinator, load, "loads")
         self._load = load
 
     @callback

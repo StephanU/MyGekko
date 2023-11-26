@@ -1,21 +1,16 @@
 """Sensor platform for MyGekko."""
-import logging
-
+from custom_components.mygekko.entity import MyGekkoControllerEntity
+from custom_components.mygekko.entity import MyGekkoEntity
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
 from homeassistant.components.sensor import SensorStateClass
 from homeassistant.const import UnitOfEnergy
 from homeassistant.const import UnitOfPower
-from homeassistant.helpers.entity import DeviceInfo
 from PyMyGekko.resources.AlarmsLogics import AlarmsLogic
 from PyMyGekko.resources.EnergyCosts import EnergyCost
 
 from .const import DOMAIN
-from .const import MANUFACTURER
-from .const import NAME
-
-_LOGGER: logging.Logger = logging.getLogger(__name__)
 
 SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
     SensorEntityDescription(
@@ -126,7 +121,10 @@ async def async_setup_entry(hass, entry, async_add_devices):
                         async_add_devices(
                             [
                                 MyGekkoEnergySensor(
-                                    energy_cost, index, SENSORS[sensor["name"]]
+                                    coordinator,
+                                    energy_cost,
+                                    index,
+                                    SENSORS[sensor["name"]],
                                 )
                             ]
                         )
@@ -135,31 +133,18 @@ async def async_setup_entry(hass, entry, async_add_devices):
     if alarms_logics is not None:
         for alarms_logic in alarms_logics:
             async_add_devices(
-                [MyGekkoAlarmsLogicsSensor(alarms_logic, globals_network)]
+                [MyGekkoAlarmsLogicsSensor(coordinator, alarms_logic, globals_network)]
             )
 
 
-class MyGekkoAlarmsLogicsSensor(SensorEntity):
+class MyGekkoAlarmsLogicsSensor(MyGekkoControllerEntity, SensorEntity):
     """mygekko AlarmsLogics Sensor class."""
 
     _attr_has_entity_name = True
 
-    def __init__(self, alarms_logic: AlarmsLogic, globals_network):
-        self._attr_unique_id = "alarms_logic_" + alarms_logic.id
-        self._attr_name = alarms_logic.name
+    def __init__(self, coordinator, alarms_logic: AlarmsLogic, globals_network):
+        super().__init__(coordinator, alarms_logic, globals_network, "alarms_logic")
         self._alarms_logic = alarms_logic
-        self._attr_device_info = DeviceInfo(
-            identifiers={
-                (DOMAIN, "mygekko_controller_" + globals_network["gekkoname"])
-            },
-            name=globals_network["gekkoname"],
-            manufacturer=MANUFACTURER,
-            sw_version=globals_network["version"],
-            hw_version=globals_network["hardware"],
-            model=globals_network["hardware"],
-        )
-
-        _LOGGER.debug("Added sensor %s %s", alarms_logic.name, self.unique_id)
 
     @property
     def state(self):
@@ -167,38 +152,25 @@ class MyGekkoAlarmsLogicsSensor(SensorEntity):
         return self._alarms_logic.value
 
 
-class MyGekkoEnergySensor(SensorEntity):
+class MyGekkoEnergySensor(MyGekkoEntity, SensorEntity):
     """mygekko EnergyCost Sensor class."""
-
-    _attr_has_entity_name = True
 
     def __init__(
         self,
+        coordinator,
         energy_cost: EnergyCost,
         index,
         sensorEntityDescription: SensorEntityDescription,
     ):
-        self.entity_description = sensorEntityDescription
-        self._attr_unique_id = (
-            "energy_cost_"
-            + energy_cost.id
-            + "_"
-            + energy_cost.sensor_data["values"][index]["name"]
+        super().__init__(
+            coordinator,
+            energy_cost,
+            "energy_cost",
+            energy_cost.sensor_data["values"][index]["name"],
         )
         self._energy_cost = energy_cost
+        self.entity_description = sensorEntityDescription
         self._index = index
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, "energy_cost_" + energy_cost.id)},
-            name=energy_cost.name,
-            manufacturer=NAME,
-        )
-
-        _LOGGER.debug(
-            "Added sensor %s %s %s",
-            energy_cost.sensor_data["values"][index]["name"],
-            self.unique_id,
-            energy_cost.sensor_data["values"][index]["unit"],
-        )
 
     @property
     def state(self):

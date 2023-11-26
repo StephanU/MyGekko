@@ -11,7 +11,6 @@ from PyMyGekko.resources.Lights import LightFeature
 from PyMyGekko.resources.Lights import LightState
 
 from .const import DOMAIN
-from .const import LIGHT
 from .entity import MyGekkoEntity
 
 
@@ -30,7 +29,7 @@ class MyGekkoLight(MyGekkoEntity, LightEntity):
     """mygekko Light class."""
 
     def __init__(self, coordinator, light: Light):
-        super().__init__(coordinator, light, LIGHT)
+        super().__init__(coordinator, light, "lights")
         self._light = light
 
         supported_features = self._light.supported_features

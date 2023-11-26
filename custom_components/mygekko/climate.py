@@ -9,7 +9,6 @@ from PyMyGekko.resources.RoomTemps import RoomTemp
 from PyMyGekko.resources.RoomTemps import RoomTempsFeature
 from PyMyGekko.resources.RoomTemps import RoomTempsMode
 
-from .const import CLIMATE
 from .const import DOMAIN
 from .entity import MyGekkoEntity
 
@@ -31,7 +30,7 @@ class MyGekkoClimate(MyGekkoEntity, ClimateEntity):
     _attr_preset_modes = ["Comfort", "Reduced", "Manual", "Standby"]
 
     def __init__(self, coordinator, room_temp: RoomTemp):
-        super().__init__(coordinator, room_temp, CLIMATE)
+        super().__init__(coordinator, room_temp, "room_temps")
         self._room_temp = room_temp
         supported_features = self._room_temp.supported_features
         self._attr_supported_features = 0

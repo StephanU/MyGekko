@@ -14,7 +14,6 @@ from PyMyGekko.resources.HotWaterSystems import HotWaterSystemFeature
 from PyMyGekko.resources.HotWaterSystems import HotWaterSystemState
 
 from .const import DOMAIN
-from .const import WATER_HEATER
 from .entity import MyGekkoEntity
 
 
@@ -38,7 +37,7 @@ class MyGekkoWaterHeater(MyGekkoEntity, WaterHeaterEntity):
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
 
     def __init__(self, coordinator, hotwater_system: HotWaterSystem):
-        super().__init__(coordinator, hotwater_system, WATER_HEATER)
+        super().__init__(coordinator, hotwater_system, "hotwater_systems")
         self._hotwater_system = hotwater_system
 
         supported_features = self._hotwater_system.supported_features

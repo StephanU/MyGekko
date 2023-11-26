@@ -12,7 +12,6 @@ from PyMyGekko.resources.Blinds import Blind
 from PyMyGekko.resources.Blinds import BlindFeature
 from PyMyGekko.resources.Blinds import BlindState
 
-from .const import COVER
 from .const import DOMAIN
 from .entity import MyGekkoEntity
 
@@ -31,7 +30,7 @@ class MyGekkoCover(MyGekkoEntity, CoverEntity):
     _attr_device_class = CoverDeviceClass.SHUTTER
 
     def __init__(self, coordinator, blind: Blind):
-        super().__init__(coordinator, blind, COVER)
+        super().__init__(coordinator, blind, "blinds")
         self._blind = blind
         supported_features = self._blind.supported_features
         self._attr_supported_features = 0
