@@ -18,7 +18,8 @@ CLIMATE = "climate"
 SWITCH = "switch"
 SCENE = "scene"
 WATER_HEATER = "water_heater"
-PLATFORMS = [COVER, LIGHT, CLIMATE, SWITCH, SCENE, WATER_HEATER, SENSOR]
+BUTTON = "button"
+PLATFORMS = [COVER, LIGHT, CLIMATE, SWITCH, SCENE, WATER_HEATER, SENSOR, BUTTON]
 
 
 # Configuration and options

@@ -22,7 +22,10 @@ async def async_setup_entry(hass, entry, async_add_devices):
     coordinator = hass.data[DOMAIN][entry.entry_id]
     lights = coordinator.api.get_lights()
     if lights is not None:
-        async_add_devices(MyGekkoLight(coordinator, light) for light in lights)
+        async_add_devices(
+            MyGekkoLight(coordinator, light)
+            for light in filter(lambda light: light.id.startswith("item"), lights)
+        )
 
 
 class MyGekkoLight(MyGekkoEntity, LightEntity):
