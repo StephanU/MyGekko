@@ -1,4 +1,4 @@
 -r requirements_dev.txt
 pytest-asyncio
 pytest-homeassistant-custom-component==0.13.79
-PyMyGekko==0.0.5rc10
+PyMyGekko==1.0.0

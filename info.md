@@ -13,6 +13,7 @@
 
 | Platform       | Description                                                        |
 | -------------- | ------------------------------------------------------------------ |
+| `button`       | For light groups in MyGekko                                        |
 | `climate`      | Thermostats (called roomtemps in MyGekko)                          |
 | `cover`        | Covers (called blinds in MyGekko)                                  |
 | `light`        | Lights                                                             |
@@ -21,7 +22,7 @@
 | `sensor`       | MyGekko energy_cost metrics and alarms_logics are added as sensors |
 | `scene`        | MyGekko actions are added as scenes                                |
 
-![example][exampleimg]
+![Dashboard Screenshot][dashboard-screenshot]
 
 {% if not installed %}
 
@@ -51,9 +52,9 @@ Code template was mainly taken from [@Ludeeus](https://github.com/ludeeus)'s [in
 [commits]: https://github.com/stephanu/mygekko/commits/main
 [hacs]: https://hacs.xyz
 [hacsbadge]: https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge
+[dashboard-screenshot]: DashboardScreenshot.png
 [discord]: https://discord.gg/Qa5fW2R
 [discord-shield]: https://img.shields.io/discord/330944238910963714.svg?style=for-the-badge
-[exampleimg]: example.png
 [forum-shield]: https://img.shields.io/badge/community-forum-brightgreen.svg?style=for-the-badge
 [forum]: https://community.home-assistant.io/
 [license]: https://github.com/stephanu/mygekko/blob/main/LICENSE
