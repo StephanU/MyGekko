@@ -1,5 +1,4 @@
 """Button platform for MyGekko."""
-from homeassistant.components.button import ButtonDeviceClass
 from homeassistant.components.button import ButtonEntity
 from PyMyGekko.resources.Lights import Light
 from PyMyGekko.resources.Lights import LightState
@@ -29,7 +28,7 @@ class MyGekkoLightGroupOnButton(MyGekkoEntity, ButtonEntity):
     def __init__(self, coordinator, light: Light):
         super().__init__(coordinator, light, "lights", "On")
         self._light = light
-        self._attr_device_class = ButtonDeviceClass.IDENTIFY
+        self._attr_icon = "mdi:lightbulb-on"
 
     async def async_press(self) -> None:
         self._light.set_state(LightState.ON)
@@ -41,6 +40,7 @@ class MyGekkoLightGroupOffButton(MyGekkoEntity, ButtonEntity):
     def __init__(self, coordinator, light: Light):
         super().__init__(coordinator, light, "lights", "Off")
         self._light = light
+        self._attr_icon = "mdi:lightbulb-off"
 
     async def async_press(self) -> None:
         self._light.set_state(LightState.OFF)
