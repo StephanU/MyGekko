@@ -8,6 +8,6 @@
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/stephanu/mygekko/issues",
   "loggers": ["PyMyGekko"],
-  "requirements": ["PyMyGekko==1.1.0rc1"],
+  "requirements": ["PyMyGekko==1.1.0rc2"],
   "version": "1.0.0"
 }

@@ -20,7 +20,7 @@ _LOGGER: logging.Logger = logging.getLogger(__name__)
 async def async_setup_entry(hass, entry, async_add_devices):
     """Setup light platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
-    lights = coordinator.api.get_lights()
+    lights: list[Light] = coordinator.api.get_lights()
     if lights is not None:
         async_add_devices(
             MyGekkoLight(coordinator, light)
