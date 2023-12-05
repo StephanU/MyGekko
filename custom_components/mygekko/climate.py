@@ -61,7 +61,7 @@ class MyGekkoClimate(MyGekkoEntity, ClimateEntity):
     @property
     def hvac_mode(self) -> HVACMode | str | None:
         """Return hvac operation ie. heat, cool mode."""
-        if self._room_temp.working_mode == RoomTempsMode.Off:
+        if self._room_temp.working_mode == RoomTempsMode.OFF:
             return HVACMode.OFF
         else:
             return HVACMode.AUTO
@@ -69,6 +69,6 @@ class MyGekkoClimate(MyGekkoEntity, ClimateEntity):
     async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
         """Set new target hvac mode."""
         if hvac_mode == HVACMode.OFF:
-            await self._room_temp.set_working_mode(RoomTempsMode.Off)
+            await self._room_temp.set_working_mode(RoomTempsMode.OFF)
         else:
-            await self._room_temp.set_working_mode(RoomTempsMode.Comfort)
+            await self._room_temp.set_working_mode(RoomTempsMode.COMFORT)

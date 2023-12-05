@@ -14,11 +14,15 @@ async def async_setup_entry(hass, entry, async_add_devices):
     if lights is not None:
         async_add_devices(
             MyGekkoLightGroupOnButton(coordinator, light)
-            for light in filter(lambda light: light.id.startswith("group"), lights)
+            for light in filter(
+                lambda light: light.entity_id.startswith("group"), lights
+            )
         )
         async_add_devices(
             MyGekkoLightGroupOffButton(coordinator, light)
-            for light in filter(lambda light: light.id.startswith("group"), lights)
+            for light in filter(
+                lambda light: light.entity_id.startswith("group"), lights
+            )
         )
 
 
@@ -31,7 +35,7 @@ class MyGekkoLightGroupOnButton(MyGekkoEntity, ButtonEntity):
         self._attr_icon = "mdi:lightbulb-on"
 
     async def async_press(self) -> None:
-        self._light.set_state(LightState.ON)
+        await self._light.set_state(LightState.ON)
 
 
 class MyGekkoLightGroupOffButton(MyGekkoEntity, ButtonEntity):
@@ -43,4 +47,4 @@ class MyGekkoLightGroupOffButton(MyGekkoEntity, ButtonEntity):
         self._attr_icon = "mdi:lightbulb-off"
 
     async def async_press(self) -> None:
-        self._light.set_state(LightState.OFF)
+        await self._light.set_state(LightState.OFF)

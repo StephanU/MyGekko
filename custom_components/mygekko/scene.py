@@ -33,5 +33,5 @@ class MyGekkoScene(MyGekkoControllerEntity, Scene):
         """Handle updated data from the coordinator."""
         self.async_write_ha_state()
 
-    async def activate(self, **kwargs: Any) -> None:
+    async def async_activate(self, **kwargs: Any) -> None:
         await self._action.set_state(ActionState.ON)

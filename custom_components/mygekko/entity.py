@@ -13,6 +13,8 @@ _LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 class MyGekkoEntity(CoordinatorEntity):
+    """Base Class for MyGekko entities"""
+
     _attr_name = None
     _attr_has_entity_name = True
 
@@ -21,7 +23,7 @@ class MyGekkoEntity(CoordinatorEntity):
     ):
         super().__init__(coordinator)
 
-        device_id = f"{entity_prefix}{entity.id}"
+        device_id = f"{entity_prefix}{entity.entity_id}"
         device_name = entity.name
 
         self._attr_unique_id = f"{device_id}{entity_suffix}"
@@ -39,6 +41,8 @@ class MyGekkoEntity(CoordinatorEntity):
 
 
 class MyGekkoControllerEntity(CoordinatorEntity):
+    """Base Class for MyGekko controller entities"""
+
     _attr_name = None
     _attr_has_entity_name = True
 
@@ -50,7 +54,7 @@ class MyGekkoControllerEntity(CoordinatorEntity):
         device_id = f"mygekko_controller_{globals_network['gekkoname']}"
         device_name = globals_network["gekkoname"]
 
-        self._attr_unique_id = f"{device_id}{entity_prefix}{entity.id}"
+        self._attr_unique_id = f"{device_id}{entity_prefix}{entity.entity_id}"
         self._attr_name = f"{entity.name}"
 
         self._attr_device_info = DeviceInfo(

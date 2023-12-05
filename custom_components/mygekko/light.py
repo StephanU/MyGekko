@@ -24,7 +24,9 @@ async def async_setup_entry(hass, entry, async_add_devices):
     if lights is not None:
         async_add_devices(
             MyGekkoLight(coordinator, light)
-            for light in filter(lambda light: light.id.startswith("item"), lights)
+            for light in filter(
+                lambda light: light.entity_id.startswith("item"), lights
+            )
         )
 
 

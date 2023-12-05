@@ -205,7 +205,7 @@ class MyGekkoAlarmsLogicsSensor(MyGekkoControllerEntity, SensorEntity):
         self._alarms_logic = alarms_logic
 
     @property
-    def state(self):
+    def native_value(self):
         """Return the state of the sensor."""
         return self._alarms_logic.value
 
@@ -231,7 +231,7 @@ class MyGekkoEnergySensor(MyGekkoEntity, SensorEntity):
         self._index = index
 
     @property
-    def state(self):
+    def native_value(self):
         """Return the state of the sensor."""
         return self._energy_cost.sensor_data["values"][self._index]["value"]
 
@@ -258,7 +258,7 @@ class MyGekkoRoomTempsHumiditySensor(MyGekkoEntity, SensorEntity):
         self.entity_description = SENSORS["humidity"]
 
     @property
-    def state(self):
+    def native_value(self):
         """Return the state of the sensor."""
         return self._room_temp.humidity
 
@@ -275,7 +275,7 @@ class MyGekkoRoomTempsAirQualitySensor(MyGekkoEntity, SensorEntity):
         self.entity_description = SENSORS["air_quality"]
 
     @property
-    def state(self):
+    def native_value(self):
         """Return the state of the sensor."""
         return self._room_temp.air_quality
 
@@ -294,7 +294,7 @@ class MyGekkoHotwaterSystemsBottomTemperatureSensor(MyGekkoEntity, SensorEntity)
         self.entity_description = SENSORS["temperature"]
 
     @property
-    def state(self):
+    def native_value(self):
         """Return the state of the sensor."""
         return self._hotwater_system.current_temperature_bottom
 
@@ -313,6 +313,6 @@ class MyGekkoHotwaterSystemsTopTemperatureSensor(MyGekkoEntity, SensorEntity):
         self.entity_description = SENSORS["temperature"]
 
     @property
-    def state(self):
+    def native_value(self):
         """Return the state of the sensor."""
         return self._hotwater_system.current_temperature_top
