@@ -1,17 +1,42 @@
 {
   "config": {
     "step": {
-      "user": {
-        "description": "Si vous avez besoin d'aide pour la configuration, regardez ici: https://github.com/stephanu/mygekko",
+      "connection_selection": {
+        "description": "L'intégration peut se connecter à votre appareil MyGekko localement ou via l'API MyGekko Plus Query.",
         "data": {
-          "username": "Identifiant",
-          "apikey": "Clé Api",
+          "connection_type": "Type de connexion"
+        }
+      },
+      "connection_mygekko_cloud": {
+        "description": "Veuillez saisir les informations d'identification suivantes pour vous connecter via l'API MyGekko Plus Query.",
+        "data": {
+          "username": "Nom d'utilisateur",
+          "api_key": "Clé Api",
           "gekkoid": "ID Gekko"
+        },
+        "data_description": {
+          "username": "Votre nom d'utilisateur MyGekko Plus.",
+          "api_key": "La clé est générée via 'Paramètres avancés' dans le menu MyGekko Plus.",
+          "gekkoid": "Votre identifiant MyGekko est affiché dans le menu System info (engrenage > Informations sur le système > myGEKKO ID)."
+        }
+      },
+      "connection_local": {
+        "description": "Veuillez saisir les informations d'identification suivantes pour vous connecter à votre MyGekko localement.",
+        "data": {
+          "ip_address": "Adresse IP",
+          "username": "Nom d'utilisateur",
+          "password": "Mot de passe"
+        },
+        "data_description": {
+          "ip_address": "L'adresse IP de votre MyGekko.",
+          "username": "Le nom d'utilisateur d'un utilisateur de l'API de requête locale.",
+          "password": "Le mot de passe de l'utilisateur."
         }
       }
     },
     "error": {
-      "auth": "Identifiant ou Clé Api ou ID Gekko erroné."
+      "auth_cloud": "Nom d'utilisateur ou Clé Api ou ID Gekko erroné.",
+      "auth_local": "Nom d'utilisateur ou le mot de passe ou l'adresse IP erroné."
     },
     "abort": {
       "single_instance_allowed": "Une seule instance est autorisée."
@@ -29,9 +54,9 @@
           "switch": "Interrupteur activé",
           "scene": "Scène activée",
           "water_heater": "Chauffe-eau activé",
+          "button": "Bouton activé",
           "demo_mode": "Mode démo"
-        },
-        "demo_mode": "Mode démo"
+        }
       }
     }
   }

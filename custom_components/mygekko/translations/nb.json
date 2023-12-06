@@ -1,17 +1,42 @@
 {
   "config": {
     "step": {
-      "user": {
-        "description": "Hvis du trenger hjep til konfigurasjon ta en titt her: https://github.com/stephanu/mygekko",
+      "connection_selection": {
+        "description": "De integratie kan lokaal of via de MyGekko Plus Query API verbinding maken met je MyGekko-apparaat.",
+        "data": {
+          "connection_type": "Type aansluiting"
+        }
+      },
+      "connection_mygekko_cloud": {
+        "description": "Voer de volgende referenties in om verbinding te maken via de MyGekko Plus Query API.",
         "data": {
           "username": "Brukernavn",
-          "apikey": "Api sleutel",
+          "api_key": "Api-sleutel",
           "gekkoid": "Gekko ID"
+        },
+        "data_description": {
+          "username": "Uw MyGekko Plus-Brukernavn.",
+          "api_key": "De sleutel wordt gegenereerd via 'Geavanceerde instellingen' in het MyGekko Plus-menu.",
+          "gekkoid": "Uw MyGekko-ID wordt weergegeven in het menu Systeeminfo (Toestel > Systeeminfo > myGEKKO ID)."
+        }
+      },
+      "connection_local": {
+        "description": "Voer de volgende gegevens in om lokaal verbinding te maken met uw MyGekko.",
+        "data": {
+          "ip_address": "IP-adres",
+          "username": "Brukernavn",
+          "password": "Wachtwoord"
+        },
+        "data_description": {
+          "ip_address": "Het IP-adres van uw MyGekko.",
+          "username": "De Brukernavn van een gebruiker van de lokale query API.",
+          "password": "Het wachtwoord van de gebruiker."
         }
       }
     },
     "error": {
-      "auth": "Brukernavn/Api sleutel/Gekko ID er feil."
+      "auth": "Brukernavn/Api sleutel/Gekko ID er feil.",
+      "auth_local": "Brukernavn/Wachtwoord/IP-adres er feil."
     },
     "abort": {
       "single_instance_allowed": "Denne integrasjonen kan kun konfigureres en gang."
@@ -29,9 +54,9 @@
           "switch": "Bryter aktivert",
           "scene": "Scène aktivert",
           "water_heater": "Waterverwarming aktivert",
+          "button": "Bouton activé",
           "demo_mode": "Demomodus"
-        },
-        "demo_mode": "Demo modus"
+        }
       }
     }
   }

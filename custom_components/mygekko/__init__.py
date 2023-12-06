@@ -9,27 +9,36 @@ import logging
 from datetime import timedelta
 
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import CONF_API_KEY
+from homeassistant.const import CONF_IP_ADDRESS
+from homeassistant.const import CONF_PASSWORD
+from homeassistant.const import CONF_USERNAME
 from homeassistant.core import Config
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryError
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.helpers.update_coordinator import UpdateFailed
-from PyMyGekko import MyGekkoApiClient
+from PyMyGekko import MyGekkoApiClientBase
+from PyMyGekko import MyGekkoLocalApiClient
+from PyMyGekko import MyGekkoQueryApiClient
 
-from .const import CONF_APIKEY
+from .const import CONF_CONNECTION_LOCAL
+from .const import CONF_CONNECTION_MY_GEKKO_CLOUD
+from .const import CONF_CONNECTION_TYPE
 from .const import CONF_GEKKOID
-from .const import CONF_USERNAME
 from .const import DOMAIN
 from .const import PLATFORMS
 from .const import STARTUP_MESSAGE
+
 
 SCAN_INTERVAL = timedelta(seconds=30)
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
-async def async_setup(hass: HomeAssistant, config: Config):
+async def async_setup(_hass: HomeAssistant, _config: Config):
     """Set up this integration using YAML is not supported."""
     return True
 
@@ -40,15 +49,31 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         hass.data.setdefault(DOMAIN, {})
         _LOGGER.info(STARTUP_MESSAGE)
 
-    _LOGGER.debug("async_setup_entry")
+    _LOGGER.debug("async_setup_entry %s", entry.data.get(CONF_CONNECTION_TYPE))
 
-    username = entry.data.get(CONF_USERNAME)
-    apikey = entry.data.get(CONF_APIKEY)
-    gekkoid = entry.data.get(CONF_GEKKOID)
+    client = None
 
-    session = async_get_clientsession(hass)
+    if entry.data.get(CONF_CONNECTION_TYPE) == CONF_CONNECTION_MY_GEKKO_CLOUD:
+        username = entry.data.get(CONF_USERNAME)
+        apikey = entry.data.get(CONF_API_KEY)
+        gekkoid = entry.data.get(CONF_GEKKOID)
 
-    client = MyGekkoApiClient(username, apikey, gekkoid, session)
+        session = async_get_clientsession(hass)
+
+        client = MyGekkoQueryApiClient(username, apikey, gekkoid, session)
+
+    if entry.data.get(CONF_CONNECTION_TYPE) == CONF_CONNECTION_LOCAL:
+        username = entry.data.get(CONF_USERNAME)
+        password = entry.data.get(CONF_PASSWORD)
+        ip_address = entry.data.get(CONF_IP_ADDRESS)
+
+        session = async_get_clientsession(hass)
+
+        client = MyGekkoLocalApiClient(username, password, session, ip_address)
+
+    if client is None:
+        _LOGGER.exception("async_refresh failed: client is None")
+        raise ConfigEntryError
 
     coordinator = MyGekkoDataUpdateCoordinator(hass, client=client)
     await coordinator.async_refresh()
@@ -70,13 +95,37 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     return True
 
 
+async def async_migrate_entry(hass, config_entry: ConfigEntry):
+    """Migrate old entry."""
+    _LOGGER.debug("Migrating from version %s", config_entry.version)
+
+    if config_entry.version == 1:
+        new = {**config_entry.data}
+        new[CONF_CONNECTION_TYPE] = CONF_CONNECTION_MY_GEKKO_CLOUD
+
+        config_entry.version = 2
+        hass.config_entries.async_update_entry(config_entry, data=new)
+
+    if config_entry.version == 2:
+        new = {**config_entry.data}
+        new[CONF_API_KEY] = new["apikey"]
+        new.pop("apikey")
+
+        config_entry.version = 3
+        hass.config_entries.async_update_entry(config_entry, data=new)
+
+    _LOGGER.debug("Migration to version %s successful", config_entry.version)
+
+    return True
+
+
 class MyGekkoDataUpdateCoordinator(DataUpdateCoordinator):
     """Class to manage fetching data from the API."""
 
     def __init__(
         self,
         hass: HomeAssistant,
-        client: MyGekkoApiClient,
+        client: MyGekkoApiClientBase,
     ) -> None:
         """Initialize."""
         self.api = client

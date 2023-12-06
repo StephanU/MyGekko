@@ -1,17 +1,42 @@
 {
   "config": {
     "step": {
-      "user": {
-        "description": "If you need help with the configuration have a look here: https://github.com/stephanu/mygekko",
+      "connection_selection": {
+        "description": "The integration can connect to your MyGekko device locally or via the MyGekko Plus Query API.",
+        "data": {
+          "connection_type": "Connection Type"
+        }
+      },
+      "connection_mygekko_cloud": {
+        "description": "Please enter the following credentials to connect via the MyGekko Plus Query API.",
         "data": {
           "username": "Username",
-          "apikey": "Api Key",
+          "api_key": "Api Key",
           "gekkoid": "Gekko ID"
+        },
+        "data_description": {
+          "username": "Your MyGekko Plus user name.",
+          "api_key": "The key is generated via 'Advanced settings' in the MyGekko Plus menu.",
+          "gekkoid": "Your MyGekko ID is displayed in the System info menu (Gear > System Information > myGEKKO ID)."
+        }
+      },
+      "connection_local": {
+        "description": "Please enter the following credentials to connect to your MyGekko locally.",
+        "data": {
+          "ip_address": "IP Address",
+          "username": "Username",
+          "password": "Password"
+        },
+        "data_description": {
+          "ip_address": "The IP address of your MyGekko.",
+          "username": "The user name of a user of the local query API.",
+          "password": "The user's password."
         }
       }
     },
     "error": {
-      "auth": "Username/Aoi Key/Gekko ID is wrong."
+      "auth_cloud": "Username/Api Key/Gekko ID is wrong.",
+      "auth_local": "Username/Password/IP address is wrong."
     },
     "abort": {
       "single_instance_allowed": "Only a single instance is allowed."
@@ -29,6 +54,7 @@
           "switch": "Switch enabled",
           "scene": "Scene enabled",
           "water_heater": "Water Heater enabled",
+          "button": "Button enabled",
           "demo_mode": "Demo Mode"
         }
       }
