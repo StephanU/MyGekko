@@ -35,7 +35,7 @@
 
 ## Configuration is done in the UI
 
-The integration currently only supports access via the MyGekko server, so you need a MyGekko Plus subscription.
+The integration supports access via the MyGekko Query Api (you need a MyGekko Plus subscription) or by connecting to your MyGekko locally.
 
 ## Credits
 
