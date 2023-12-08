@@ -59,5 +59,51 @@
         }
       }
     }
+  },
+  "entity": {
+    "climate": {
+      "mygekko_roomtemp": {
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "1": "Off",
+              "8": "Comfort",
+              "16": "Reduced",
+              "64": "Manual",
+              "256": "Standby"
+            }
+          }
+        }
+      }
+    },
+    "select": {
+      "mygekko_vent_bypass": {
+        "name": "Bypass",
+        "state": {
+          "0": "Auto",
+          "1": "Manual",
+          "2": "Summer"
+        }
+      },
+      "mygekko_vent_working_level": {
+        "name": "Level",
+        "state": {
+          "1": "Level 1",
+          "2": "Level 2",
+          "3": "Level 3",
+          "4": "Level 4",
+          "0": "Off"
+        }
+      },
+      "mygekko_vent_working_mode": {
+        "name": "Operating Mode",
+        "state": {
+          "0": "Auto",
+          "1": "Manual",
+          "2": "Pluggit Auto",
+          "3": "Pluggit week"
+        }
+      }
+    }
   }
 }

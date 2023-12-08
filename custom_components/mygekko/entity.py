@@ -27,7 +27,6 @@ class MyGekkoEntity(CoordinatorEntity):
         device_name = entity.name
 
         self._attr_unique_id = f"{device_id}{entity_suffix}"
-        self._attr_name = entity_suffix if entity_suffix != "" else None
 
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, device_id)},
@@ -35,9 +34,7 @@ class MyGekkoEntity(CoordinatorEntity):
             name=device_name,
         )
 
-        _LOGGER.debug(
-            "Added MyGekko entity id='%s' name='%s'", self.unique_id, self.name
-        )
+        _LOGGER.debug("Added MyGekko entity id='%s'", self.unique_id)
 
 
 class MyGekkoControllerEntity(CoordinatorEntity):
