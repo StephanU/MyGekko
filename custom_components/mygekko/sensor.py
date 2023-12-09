@@ -24,115 +24,123 @@ from .const import DOMAIN
 SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
     SensorEntityDescription(
         key="actPower",
-        name="Actual Power",
+        translation_key="mygekko_energycost_actPower",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.POWER,
     ),
     SensorEntityDescription(
         key="powerMax",
         name="Power Max",
+        translation_key="mygekko_energycost_powerMax",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.POWER,
     ),
     SensorEntityDescription(
         key="energySum",
         name="Energy Sum",
+        translation_key="mygekko_energycost_energySum",
         state_class=SensorStateClass.TOTAL_INCREASING,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
         key="energyToday",
         name="Energy Today",
+        translation_key="mygekko_energycost_energyToday",
         state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
         key="energyMonth",
         name="Energy Month",
+        translation_key="mygekko_energycost_energyMonth",
         state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
         key="energyToday6",
         name="Energy Today 6",
+        translation_key="mygekko_energycost_energyToday6",
         state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
         key="energyToday12",
         name="Energy Today 12",
+        translation_key="mygekko_energycost_energyToday12",
         state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
         key="energyToday18",
         name="Energy Today 18",
+        translation_key="mygekko_energycost_energyToday18",
         state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
         key="energyToday24",
         name="Energy Today 24",
+        translation_key="mygekko_energycost_energyToday24",
         state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
         key="energyYesterd6",
         name="Energy Yesterday 6",
+        translation_key="mygekko_energycost_energyYesterd6",
         state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
         key="energyYesterd12",
         name="Energy Yesterday 12",
+        translation_key="mygekko_energycost_energyYesterd12",
         state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
         key="energyYesterd18",
         name="Energy Yesterday 18",
+        translation_key="mygekko_energycost_energyYesterd18",
         state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
         key="energyYesterd24",
         name="Energy Yesterday 24",
+        translation_key="mygekko_energycost_energyYesterd24",
         state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
         key="energyYear",
         name="Energy Year",
+        translation_key="mygekko_energycost_energyYear",
         state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
         key="voc",
-        name="VOC",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.VOLATILE_ORGANIC_COMPOUNDS_PARTS,
     ),
     SensorEntityDescription(
         key="air_quality",
-        name="Air Quality",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.AQI,
     ),
     SensorEntityDescription(
         key="co2",
-        name="CO2",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.CO2,
     ),
     SensorEntityDescription(
         key="humidity",
-        name="Humidity",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.HUMIDITY,
     ),
     SensorEntityDescription(
         key="temperature",
-        name="Temperature",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TEMPERATURE,
     ),
@@ -176,8 +184,6 @@ async def async_setup_entry(hass, entry, async_add_devices):
 
     room_temps: list[RoomTemp] = coordinator.api.get_room_temps()
     for room_temp in room_temps:
-        if RoomTempsFeature.HUMIDITY in room_temp.supported_features:
-            async_add_devices([MyGekkoRoomTempsHumiditySensor(coordinator, room_temp)])
         if RoomTempsFeature.AIR_QUALITY in room_temp.supported_features:
             async_add_devices(
                 [MyGekkoRoomTempsAirQualitySensor(coordinator, room_temp)]
@@ -253,12 +259,13 @@ class MyGekkoEnergySensor(MyGekkoEntity, SensorEntity):
         index,
         sensorEntityDescription: SensorEntityDescription,
     ):
-        super().__init__(
+        super(MyGekkoEnergySensor, self).__init__(
             coordinator,
             energy_cost,
             "energy_cost",
             energy_cost.sensor_data["values"][index]["name"],
         )
+
         self._energy_cost = energy_cost
         self.entity_description = sensorEntityDescription
         self._index = index

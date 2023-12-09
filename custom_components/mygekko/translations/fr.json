@@ -58,6 +58,50 @@
           "demo_mode": "Mode démo"
         }
       }
+    },
+    "sensor": {
+      "mygekko_energycost_actPower": {
+        "name": "Puissance actuelle"
+      },
+      "mygekko_energycost_powerMax": {
+        "name": "Puissance nominale"
+      },
+      "mygekko_energycost_energySum": {
+        "name": "Énergie totale"
+      },
+      "mygekko_energycost_energyToday": {
+        "name": "Total Energy Today"
+      },
+      "mygekko_energycost_energyMonth": {
+        "name": "Énergie totale ce mois-ci"
+      },
+      "mygekko_energycost_energyToday6": {
+        "name": "Energie totale aujourd'hui de 00:00 à 06:00"
+      },
+      "mygekko_energycost_energyToday12": {
+        "name": "Total Energy Aujourd'hui De 06:00 à 12:00"
+      },
+      "mygekko_energycost_energyToday18": {
+        "name": "Total Energy Aujourd'hui De 12h00 à 18h00"
+      },
+      "mygekko_energycost_energyToday24": {
+        "name": "Total Energy Aujourd'hui De 18:00 à 24:00"
+      },
+      "mygekko_energycost_energyYesterd6": {
+        "name": "Énergie totale hier de 00:00 à 06:00"
+      },
+      "mygekko_energycost_energyYesterd12": {
+        "name": "Énergie totale hier de 06:00 à 12:00"
+      },
+      "mygekko_energycost_energyYesterd18": {
+        "name": "Énergie totale hier De 12:00 à 18:00"
+      },
+      "mygekko_energycost_energyYesterd24": {
+        "name": "Énergie totale hier De 18:00 à 24:00"
+      },
+      "mygekko_energycost_energyYear": {
+        "name": "Énergie totale cette année"
+      }
     }
   }
 }

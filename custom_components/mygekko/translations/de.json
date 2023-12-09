@@ -109,7 +109,46 @@
     },
     "sensor": {
       "mygekko_energycost_actPower": {
-        "name": "Tatsächliche Leistung"
+        "name": "Aktuelle Leistung"
+      },
+      "mygekko_energycost_powerMax": {
+        "name": "Nennleistung"
+      },
+      "mygekko_energycost_energySum": {
+        "name": "Energie insgesamt"
+      },
+      "mygekko_energycost_energyToday": {
+        "name": "Energie insgesamt (heute)"
+      },
+      "mygekko_energycost_energyMonth": {
+        "name": "Energie insgesamt (dieser Monat)"
+      },
+      "mygekko_energycost_energyToday6": {
+        "name": "Energie insgesamt (heute von 00:00 bis 06:00)"
+      },
+      "mygekko_energycost_energyToday12": {
+        "name": "Energie insgesamt (heute von 06:00 bis 12:00)"
+      },
+      "mygekko_energycost_energyToday18": {
+        "name": "Energie insgesamt (heute von 12:00 bis 18:00)"
+      },
+      "mygekko_energycost_energyToday24": {
+        "name": "Energie insgesamt (heute von 18:00 bis 24:00)"
+      },
+      "mygekko_energycost_energyYesterd6": {
+        "name": "Energie insgesamt (gestern von 00:00 bis 06:00)"
+      },
+      "mygekko_energycost_energyYesterd12": {
+        "name": "Energie insgesamt (gestern von 06:00 bis 12:00)"
+      },
+      "mygekko_energycost_energyYesterd18": {
+        "name": "Energie insgesamt (gestern von 12:00 bis 18:00)"
+      },
+      "mygekko_energycost_energyYesterd24": {
+        "name": "Energie insgesamt (gestern von 18:00 bis 24:00)"
+      },
+      "mygekko_energycost_energyYear": {
+        "name": "Energie insgesamt (dieses Jahr)"
       }
     }
   }

@@ -58,6 +58,50 @@
           "demo_mode": "Demomodus"
         }
       }
+    },
+    "sensor": {
+      "mygekko_energycost_actPower": {
+        "name": "Huidig vermogen"
+      },
+      "mygekko_energycost_powerMax": {
+        "name": "Nominaal vermogen"
+      },
+      "mygekko_energycost_energySum": {
+        "name": "Totaal Energie"
+      },
+      "mygekko_energycost_energyToday": {
+        "name": "Totale energie vandaag"
+      },
+      "mygekko_energycost_energyMonth": {
+        "name": "Totaal energie deze maand"
+      },
+      "mygekko_energycost_energyToday6": {
+        "name": "Totale Energie Vandaag Van 00:00 tot 06:00"
+      },
+      "mygekko_energycost_energyToday12": {
+        "name": "Totale Energie Vandaag Van 06:00 tot 12:00"
+      },
+      "mygekko_energycost_energyToday18": {
+        "name": "Totale Energie Vandaag Van 12:00 tot 18:00"
+      },
+      "mygekko_energycost_energyToday24": {
+        "name": "Totale Energie Vandaag Van 18:00 tot 24:00"
+      },
+      "mygekko_energycost_energyYesterd6": {
+        "name": "Totale energie gisteren van 00:00 tot 06:00"
+      },
+      "mygekko_energycost_energyYesterd12": {
+        "name": "Totaal Energie Gisteren Van 06:00 tot 12:00"
+      },
+      "mygekko_energycost_energyYesterd18": {
+        "name": "Totaal Energie Gisteren Van 12:00 tot 18:00"
+      },
+      "mygekko_energycost_energyYesterd24": {
+        "name": "Totaal Energie Gisteren Van 18:00 tot 24:00"
+      },
+      "mygekko_energycost_energyYear": {
+        "name": "Totale energie dit jaar"
+      }
     }
   }
 }

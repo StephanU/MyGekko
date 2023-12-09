@@ -104,6 +104,50 @@
           "3": "Pluggit week"
         }
       }
+    },
+    "sensor": {
+      "mygekko_energycost_actPower": {
+        "name": "Current Power"
+      },
+      "mygekko_energycost_powerMax": {
+        "name": "Nominal Power"
+      },
+      "mygekko_energycost_energySum": {
+        "name": "Total Energy"
+      },
+      "mygekko_energycost_energyToday": {
+        "name": "Total Energy Today"
+      },
+      "mygekko_energycost_energyMonth": {
+        "name": "Total Energy This Month"
+      },
+      "mygekko_energycost_energyToday6": {
+        "name": "Total Energy Today From 00:00 to 06:00"
+      },
+      "mygekko_energycost_energyToday12": {
+        "name": "Total Energy Today From 06:00 to 12:00"
+      },
+      "mygekko_energycost_energyToday18": {
+        "name": "Total Energy Today From 12:00 to 18:00"
+      },
+      "mygekko_energycost_energyToday24": {
+        "name": "Total Energy Today From 18:00 to 24:00"
+      },
+      "mygekko_energycost_energyYesterd6": {
+        "name": "Total Energy Yesterday From 00:00 to 06:00"
+      },
+      "mygekko_energycost_energyYesterd12": {
+        "name": "Total Energy Yesterday From 06:00 to 12:00"
+      },
+      "mygekko_energycost_energyYesterd18": {
+        "name": "Total Energy Yesterday From 12:00 to 18:00"
+      },
+      "mygekko_energycost_energyYesterd24": {
+        "name": "Total Energy Yesterday From 18:00 to 24:00"
+      },
+      "mygekko_energycost_energyYear": {
+        "name": "Total Energy This Year"
+      }
     }
   }
 }
