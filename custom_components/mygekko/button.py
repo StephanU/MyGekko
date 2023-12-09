@@ -29,10 +29,13 @@ async def async_setup_entry(hass, entry, async_add_devices):
 class MyGekkoLightGroupOnButton(MyGekkoEntity, ButtonEntity):
     """mygekko Light class."""
 
+    _attr_name = None
+
     def __init__(self, coordinator, light: Light):
         super().__init__(coordinator, light, "lights", "On")
         self._light = light
         self._attr_icon = "mdi:lightbulb-on"
+        self._attr_name = f"{light.name} On"
 
     async def async_press(self) -> None:
         await self._light.set_state(LightState.ON)
@@ -45,6 +48,7 @@ class MyGekkoLightGroupOffButton(MyGekkoEntity, ButtonEntity):
         super().__init__(coordinator, light, "lights", "Off")
         self._light = light
         self._attr_icon = "mdi:lightbulb-off"
+        self._attr_name = f"{light.name} Off"
 
     async def async_press(self) -> None:
         await self._light.set_state(LightState.OFF)

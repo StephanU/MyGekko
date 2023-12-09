@@ -89,7 +89,6 @@ class MyGekkoVentWorkingLevelSelect(MyGekkoEntity, SelectEntity):
         self._vent = vent
         self.entity_description = SelectEntityDescription(
             key="mygekko_vent_working_level",
-            name="asd",
             translation_key="mygekko_vent_working_level",
             options=[
                 str(VentWorkingLevel.LEVEL_1),

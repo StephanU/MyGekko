@@ -19,6 +19,8 @@ async def async_setup_entry(hass, entry, async_add_devices):
 class MyGekkoSwitch(MyGekkoEntity, SwitchEntity):
     """mygekko Switch class."""
 
+    _attr_name = None
+
     def __init__(self, coordinator, load: Load):
         super().__init__(coordinator, load, "loads")
         self._load = load

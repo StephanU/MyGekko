@@ -237,8 +237,6 @@ async def async_setup_entry(hass, entry, async_add_devices):
 class MyGekkoAlarmsLogicsSensor(MyGekkoControllerEntity, SensorEntity):
     """mygekko AlarmsLogics Sensor class."""
 
-    _attr_has_entity_name = True
-
     def __init__(self, coordinator, alarms_logic: AlarmsLogic, globals_network):
         super().__init__(coordinator, alarms_logic, globals_network, "alarms_logic")
         self._alarms_logic = alarms_logic
@@ -289,7 +287,6 @@ class MyGekkoEnergySensor(MyGekkoEntity, SensorEntity):
 class MyGekkoRoomTempsHumiditySensor(MyGekkoEntity, SensorEntity):
     """mygekko Humidity Sensor class."""
 
-    _attr_has_entity_name = True
     _attr_native_unit_of_measurement = PERCENTAGE
 
     def __init__(self, coordinator, room_temp: RoomTemp):
@@ -306,7 +303,6 @@ class MyGekkoRoomTempsHumiditySensor(MyGekkoEntity, SensorEntity):
 class MyGekkoRoomTempsAirQualitySensor(MyGekkoEntity, SensorEntity):
     """mygekko AirQuality Sensor class."""
 
-    _attr_has_entity_name = True
     _attr_native_unit_of_measurement = CONCENTRATION_PARTS_PER_MILLION
 
     def __init__(self, coordinator, room_temp: RoomTemp):
@@ -323,7 +319,6 @@ class MyGekkoRoomTempsAirQualitySensor(MyGekkoEntity, SensorEntity):
 class MyGekkoHotwaterSystemsBottomTemperatureSensor(MyGekkoEntity, SensorEntity):
     """mygekko Bottom Temperature Sensor class."""
 
-    _attr_has_entity_name = True
     _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
 
     def __init__(self, coordinator, hotwater_system: HotWaterSystem):
@@ -332,6 +327,7 @@ class MyGekkoHotwaterSystemsBottomTemperatureSensor(MyGekkoEntity, SensorEntity)
         )
         self._hotwater_system = hotwater_system
         self.entity_description = SENSORS["temperature"]
+        self._attr_translation_key = "mygekko_hotwatersystem_bottom_temperature"
 
     @property
     def native_value(self):
@@ -342,7 +338,6 @@ class MyGekkoHotwaterSystemsBottomTemperatureSensor(MyGekkoEntity, SensorEntity)
 class MyGekkoHotwaterSystemsTopTemperatureSensor(MyGekkoEntity, SensorEntity):
     """mygekko Top Temperature Sensor class."""
 
-    _attr_has_entity_name = True
     _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
 
     def __init__(self, coordinator, hotwater_system: HotWaterSystem):
@@ -351,6 +346,7 @@ class MyGekkoHotwaterSystemsTopTemperatureSensor(MyGekkoEntity, SensorEntity):
         )
         self._hotwater_system = hotwater_system
         self.entity_description = SENSORS["temperature"]
+        self._attr_translation_key = "mygekko_hotwatersystem_top_temperature"
 
     @property
     def native_value(self):
@@ -361,7 +357,6 @@ class MyGekkoHotwaterSystemsTopTemperatureSensor(MyGekkoEntity, SensorEntity):
 class MyGekkoVentHumiditySensor(MyGekkoEntity, SensorEntity):
     """mygekko Vent Humidity Sensor class."""
 
-    _attr_has_entity_name = True
     _attr_native_unit_of_measurement = PERCENTAGE
 
     def __init__(self, coordinator, vent: Vent):
@@ -378,7 +373,6 @@ class MyGekkoVentHumiditySensor(MyGekkoEntity, SensorEntity):
 class MyGekkoVentAirQualitySensor(MyGekkoEntity, SensorEntity):
     """mygekko Vent Air Quality Sensor class."""
 
-    _attr_has_entity_name = True
     _attr_native_unit_of_measurement = PERCENTAGE
 
     def __init__(self, coordinator, vent: Vent):
@@ -395,7 +389,6 @@ class MyGekkoVentAirQualitySensor(MyGekkoEntity, SensorEntity):
 class MyGekkoVentCo2Sensor(MyGekkoEntity, SensorEntity):
     """mygekko Vent CO2 Sensor class."""
 
-    _attr_has_entity_name = True
     _attr_native_unit_of_measurement = CONCENTRATION_PARTS_PER_MILLION
 
     def __init__(self, coordinator, vent: Vent):
@@ -412,13 +405,13 @@ class MyGekkoVentCo2Sensor(MyGekkoEntity, SensorEntity):
 class MyGekkoVentExhaustAirTemperatureSensor(MyGekkoEntity, SensorEntity):
     """mygekko Top Temperature Sensor class."""
 
-    _attr_has_entity_name = True
     _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
 
     def __init__(self, coordinator, vent: Vent):
         super().__init__(coordinator, vent, "vents", "Exhaust Air Temperature")
         self._vent = vent
         self.entity_description = SENSORS["temperature"]
+        self._attr_translation_key = "mygekko_vent_exhaust_air_temperature"
 
     @property
     def native_value(self):
@@ -429,13 +422,13 @@ class MyGekkoVentExhaustAirTemperatureSensor(MyGekkoEntity, SensorEntity):
 class MyGekkoVentExhaustAirWorkingLevelSensor(MyGekkoEntity, SensorEntity):
     """mygekko Top Temperature Sensor class."""
 
-    _attr_has_entity_name = True
     _attr_native_unit_of_measurement = PERCENTAGE
     _attr_icon = "mdi:gauge"
 
     def __init__(self, coordinator, vent: Vent):
         super().__init__(coordinator, vent, "vents", "Exhaust Air Working Level")
         self._vent = vent
+        self._attr_translation_key = "mygekko_vent_exhaust_air_working_level"
 
     @property
     def native_value(self):
@@ -446,13 +439,13 @@ class MyGekkoVentExhaustAirWorkingLevelSensor(MyGekkoEntity, SensorEntity):
 class MyGekkoVentOutgoingAirTemperatureSensor(MyGekkoEntity, SensorEntity):
     """mygekko Top Temperature Sensor class."""
 
-    _attr_has_entity_name = True
     _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
 
     def __init__(self, coordinator, vent: Vent):
         super().__init__(coordinator, vent, "vents", "Outgoing Air Temperature")
         self._vent = vent
         self.entity_description = SENSORS["temperature"]
+        self._attr_translation_key = "mygekko_vent_outgoing_air_temperature"
 
     @property
     def native_value(self):
@@ -463,13 +456,13 @@ class MyGekkoVentOutgoingAirTemperatureSensor(MyGekkoEntity, SensorEntity):
 class MyGekkoVentOutsideAirTemperatureSensor(MyGekkoEntity, SensorEntity):
     """mygekko Top Temperature Sensor class."""
 
-    _attr_has_entity_name = True
     _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
 
     def __init__(self, coordinator, vent: Vent):
         super().__init__(coordinator, vent, "vents", "Outside Air Temperature")
         self._vent = vent
         self.entity_description = SENSORS["temperature"]
+        self._attr_translation_key = "mygekko_vent_outside_air_temperature"
 
     @property
     def native_value(self):
@@ -480,13 +473,13 @@ class MyGekkoVentOutsideAirTemperatureSensor(MyGekkoEntity, SensorEntity):
 class MyGekkoVentSupplyAirTemperatureSensor(MyGekkoEntity, SensorEntity):
     """mygekko Top Temperature Sensor class."""
 
-    _attr_has_entity_name = True
     _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
 
     def __init__(self, coordinator, vent: Vent):
         super().__init__(coordinator, vent, "vents", "Supply Air Temperature")
         self._vent = vent
         self.entity_description = SENSORS["temperature"]
+        self._attr_translation_key = "mygekko_vent_supply_air_temperature"
 
     @property
     def native_value(self):
@@ -497,13 +490,13 @@ class MyGekkoVentSupplyAirTemperatureSensor(MyGekkoEntity, SensorEntity):
 class MyGekkoVentSupplyAirWorkingLevelSensor(MyGekkoEntity, SensorEntity):
     """mygekko Supply Air Working Level class."""
 
-    _attr_has_entity_name = True
     _attr_native_unit_of_measurement = PERCENTAGE
     _attr_icon = "mdi:gauge"
 
     def __init__(self, coordinator, vent: Vent):
         super().__init__(coordinator, vent, "vents", "Supply Air Working Level")
         self._vent = vent
+        self._attr_translation_key = "mygekko_vent_supply_air_working_level"
 
     @property
     def native_value(self):

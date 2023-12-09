@@ -15,7 +15,6 @@ _LOGGER: logging.Logger = logging.getLogger(__name__)
 class MyGekkoEntity(CoordinatorEntity):
     """Base Class for MyGekko entities"""
 
-    _attr_name = None
     _attr_has_entity_name = True
 
     def __init__(
@@ -40,7 +39,6 @@ class MyGekkoEntity(CoordinatorEntity):
 class MyGekkoControllerEntity(CoordinatorEntity):
     """Base Class for MyGekko controller entities"""
 
-    _attr_name = None
     _attr_has_entity_name = True
 
     def __init__(

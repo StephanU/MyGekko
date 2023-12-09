@@ -149,6 +149,30 @@
       },
       "mygekko_energycost_energyYear": {
         "name": "Energie insgesamt (dieses Jahr)"
+      },
+      "mygekko_hotwatersystem_bottom_temperature": {
+        "name": "Wassertemperatur unten"
+      },
+      "mygekko_hotwatersystem_top_temperature": {
+        "name": "Wassertemperatur oben"
+      },
+      "mygekko_vent_exhaust_air_temperature": {
+        "name": "Ablufttemperatur"
+      },
+      "mygekko_vent_exhaust_air_working_level": {
+        "name": "Abluft Arbeitspegel"
+      },
+      "mygekko_vent_outgoing_air_temperature": {
+        "name": "Temperatur der ausströmenden Luft"
+      },
+      "mygekko_vent_outside_air_temperature": {
+        "name": "Außenlufttemperatur"
+      },
+      "mygekko_vent_supply_air_temperature": {
+        "name": "Zulufttemperatur"
+      },
+      "mygekko_vent_supply_air_working_level": {
+        "name": "Zuluft Arbeitspegel"
       }
     }
   }

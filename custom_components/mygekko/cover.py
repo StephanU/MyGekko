@@ -27,6 +27,7 @@ async def async_setup_entry(hass, entry, async_add_devices):
 class MyGekkoCover(MyGekkoEntity, CoverEntity):
     """mygekko Cover class."""
 
+    _attr_name = None
     _attr_device_class = CoverDeviceClass.SHUTTER
 
     def __init__(self, coordinator, blind: Blind):

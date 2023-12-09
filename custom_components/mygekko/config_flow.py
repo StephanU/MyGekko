@@ -10,9 +10,9 @@ from homeassistant.const import CONF_PASSWORD
 from homeassistant.const import CONF_USERNAME
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
-from PyMyGekko import MyGekkoError
 from PyMyGekko import MyGekkoLocalApiClient
 from PyMyGekko import MyGekkoQueryApiClient
+from PyMyGekko.data_provider import MyGekkoError
 
 from .const import CONF_CONNECTION_LOCAL
 from .const import CONF_CONNECTION_LOCAL_LABEL

@@ -33,6 +33,8 @@ async def async_setup_entry(hass, entry, async_add_devices):
 class MyGekkoLight(MyGekkoEntity, LightEntity):
     """mygekko Light class."""
 
+    _attr_name = None
+
     def __init__(self, coordinator, light: Light):
         super().__init__(coordinator, light, "lights")
         self._light = light

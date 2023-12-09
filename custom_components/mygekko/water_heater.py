@@ -34,6 +34,7 @@ async def async_setup_entry(hass, entry, async_add_devices):
 class MyGekkoWaterHeater(MyGekkoEntity, WaterHeaterEntity):
     """mygekko water heater class."""
 
+    _attr_name = None
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
 
     def __init__(self, coordinator, hotwater_system: HotWaterSystem):

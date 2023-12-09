@@ -101,6 +101,30 @@
       },
       "mygekko_energycost_energyYear": {
         "name": "Totale energie dit jaar"
+      },
+      "mygekko_hotwatersystem_bottom_temperature": {
+        "name": "Watertemperatuur Bodem"
+      },
+      "mygekko_hotwatersystem_top_temperature": {
+        "name": "Watertemperatuur boven"
+      },
+      "mygekko_vent_exhaust_air_temperature": {
+        "name": "Uitlaatluchttemperatuur"
+      },
+      "mygekko_vent_exhaust_air_working_level": {
+        "name": "Uitlaatlucht Werkniveau"
+      },
+      "mygekko_vent_outgoing_air_temperature": {
+        "name": "Uitgaande luchttemperatuur"
+      },
+      "mygekko_vent_outside_air_temperature": {
+        "name": "Temperatuur buitenlucht"
+      },
+      "mygekko_vent_supply_air_temperature": {
+        "name": "Temperatuur toevoerlucht"
+      },
+      "mygekko_vent_supply_air_working_level": {
+        "name": "Toevoerlucht Werkniveau"
       }
     }
   }
