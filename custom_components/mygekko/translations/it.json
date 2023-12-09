@@ -1,0 +1,177 @@
+{
+  "config": {
+    "step": {
+      "connection_selection": {
+        "description": "L'integrazione può connettersi al dispositivo MyGekko localmente o tramite l'API MyGekko Plus Query.",
+        "data": {
+          "connection_type": "Tipo di connessione"
+        }
+      },
+      "connection_mygekko_cloud": {
+        "description": "Inserire le seguenti credenziali per connettersi tramite l'API di MyGekko Plus Query.",
+        "data": {
+          "username": "Nome utente",
+          "api_key": "Chiave Api",
+          "gekkoid": "ID Gekko"
+        },
+        "data_description": {
+          "username": "Il vostro nome utente MyGekko Plus.",
+          "api_key": "La chiave viene generata tramite 'Impostazioni avanzate' nel menu di MyGekko Plus.",
+          "gekkoid": "L'ID MyGekko viene visualizzato nel menu Informazioni sul sistema (Ingranaggio > Informazioni sul sistema > ID myGEKKO)."
+        }
+      },
+      "connection_local": {
+        "description": "Inserite le seguenti credenziali per connettervi al vostro MyGekko locale.",
+        "data": {
+          "ip_address": "Indirizzo IP",
+          "username": "Nome utente",
+          "password": "Password"
+        },
+        "data_description": {
+          "ip_address": "L'indirizzo IP del vostro MyGekko.",
+          "username": "Il nome utente di un utente dell'API di interrogazione locale.",
+          "password": "La password dell'utente."
+        }
+      }
+    },
+    "error": {
+      "auth_cloud": "Il nome utente/chiave API/ID Gekko è sbagliato.",
+      "auth_local": "Nome utente/Password/Indirizzo IP errati."
+    },
+    "abort": {
+      "single_instance_allowed": "È consentita una sola istanza."
+    }
+  },
+  "options": {
+    "step": {
+      "user": {
+        "data": {
+          "binary_sensor": "Sensore binario abilitato",
+          "sensor": "Sensore abilitato",
+          "cover": "Cala abilitato",
+          "light": "Luce abilitata",
+          "climate": "Clima abilitato",
+          "switch": "Interruttore abilitato",
+          "scene": "Scena abilitata",
+          "water_heater": "Scaldabagno abilitato",
+          "button": "Pulsante abilitato",
+          "demo_mode": "Modalità demo"
+        }
+      }
+    }
+  },
+  "entity": {
+    "climate": {
+      "mygekko_roomtemp": {
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "1": "Spento",
+              "8": "Comfort",
+              "16": "Ridotto",
+              "64": "Manuale",
+              "256": "Standby"
+            }
+          }
+        }
+      }
+    },
+    "select": {
+      "mygekko_vent_bypass": {
+        "name": "Bypass",
+        "state": {
+          "0": "Auto",
+          "1": "Manuale",
+          "2": "Estate"
+        }
+      },
+      "mygekko_vent_working_level": {
+        "name": "Livello",
+        "state": {
+          "1": "Livello 1",
+          "2": "Livello 2",
+          "3": "Livello 3",
+          "4": "Livello 4",
+          "0": "Spento"
+        }
+      },
+      "mygekko_vent_working_mode": {
+        "name": "Modalità operativa",
+        "state": {
+          "0": "Auto",
+          "1": "Manuale",
+          "2": "Pluggit Auto",
+          "3": "Pluggit Settimana"
+        }
+      }
+    },
+    "sensor": {
+      "mygekko_energycost_actPower": {
+        "name": "Potenza attuale"
+      },
+      "mygekko_energycost_powerMax": {
+        "name": "Potenza nominale"
+      },
+      "mygekko_energycost_energySum": {
+        "name": "Energia totale"
+      },
+      "mygekko_energycost_energyToday": {
+        "name": "Energia totale oggi"
+      },
+      "mygekko_energycost_energyMonth": {
+        "name": "Energia totale questo mese"
+      },
+      "mygekko_energycost_energyToday6": {
+        "name": "Energia totale Oggi Dalle 00:00 alle 06:00"
+      },
+      "mygekko_energycost_energyToday12": {
+        "name": "Energia totale Oggi Dalle 06:00 alle 12:00"
+      },
+      "mygekko_energycost_energyToday18": {
+        "name": "Energia totale Oggi Dalle 12:00 alle 18:00"
+      },
+      "mygekko_energycost_energyToday24": {
+        "name": "Energia totale Oggi Dalle 18:00 alle 24:00"
+      },
+      "mygekko_energycost_energyYesterd6": {
+        "name": "Energia totale Ieri dalle 00:00 alle 06:00"
+      },
+      "mygekko_energycost_energyYesterd12": {
+        "name": "Energia totale Ieri Dalle 06:00 alle 12:00"
+      },
+      "mygekko_energycost_energyYesterd18": {
+        "name": "Energia totale Ieri Dalle 12:00 alle 18:00"
+      },
+      "mygekko_energycost_energyYesterd24": {
+        "name": "Energia totale Ieri Dalle 18:00 alle 24:00"
+      },
+      "mygekko_energycost_energyYear": {
+        "name": "Energia totale quest'anno"
+      },
+      "mygekko_hotwatersystem_bottom_temperature": {
+        "name": "Temperatura dell'acqua Fondo"
+      },
+      "mygekko_hotwatersystem_top_temperature": {
+        "name": "Temperatura dell'acqua Top"
+      },
+      "mygekko_vent_exhaust_air_temperature": {
+        "name": "Temperatura dell'aria di scarico"
+      },
+      "mygekko_vent_exhaust_air_working_level": {
+        "name": "Livello di lavoro dell'aria di scarico"
+      },
+      "mygekko_vent_outgoing_air_temperature": {
+        "name": "Temperatura dell'aria in uscita"
+      },
+      "mygekko_vent_outside_air_temperature": {
+        "name": "Temperatura dell'aria esterna"
+      },
+      "mygekko_vent_supply_air_temperature": {
+        "name": "Temperatura dell'aria di alimentazione"
+      },
+      "mygekko_vent_supply_air_working_level": {
+        "name": "Livello di lavoro dell'aria di alimentazione"
+      }
+    }
+  }
+}
