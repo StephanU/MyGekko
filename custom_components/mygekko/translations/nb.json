@@ -126,6 +126,14 @@
       "mygekko_vent_supply_air_working_level": {
         "name": "Toevoerlucht Werkniveau"
       }
+    },
+    "button": {
+      "mygekko_light_group_on": {
+        "name": "Aanzetten"
+      },
+      "mygekko_light_group_off": {
+        "name": "Uitschakelen"
+      }
     }
   }
 }

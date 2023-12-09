@@ -126,6 +126,14 @@
       "mygekko_vent_supply_air_working_level": {
         "name": "Niveau de travail de l'air d'alimentation"
       }
+    },
+    "button": {
+      "mygekko_light_group_on": {
+        "name": "Allumer"
+      },
+      "mygekko_light_group_off": {
+        "name": "Éteindre"
+      }
     }
   }
 }
