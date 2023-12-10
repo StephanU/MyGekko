@@ -21,9 +21,11 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.helpers.update_coordinator import UpdateFailed
 from PyMyGekko import MyGekkoApiClientBase
+from PyMyGekko import MyGekkoDemoModeClient
 from PyMyGekko import MyGekkoLocalApiClient
 from PyMyGekko import MyGekkoQueryApiClient
 
+from .const import CONF_CONNECTION_DEMO_MODE
 from .const import CONF_CONNECTION_LOCAL
 from .const import CONF_CONNECTION_MY_GEKKO_CLOUD
 from .const import CONF_CONNECTION_TYPE
@@ -67,9 +69,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         password = entry.data.get(CONF_PASSWORD)
         ip_address = entry.data.get(CONF_IP_ADDRESS)
 
-        session = async_get_clientsession(hass)
+        session = async_get_clientsession(hass, verify_ssl=False)
 
         client = MyGekkoLocalApiClient(username, password, session, ip_address)
+
+    if entry.data.get(CONF_CONNECTION_TYPE) == CONF_CONNECTION_DEMO_MODE:
+        client = MyGekkoDemoModeClient()
 
     if client is None:
         _LOGGER.exception("async_refresh failed: client is None")

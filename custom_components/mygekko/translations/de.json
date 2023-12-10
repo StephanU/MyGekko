@@ -2,63 +2,47 @@
   "config": {
     "step": {
       "connection_selection": {
-        "description": "Die Integration kann sich mit Ihrem MyGekko-Gerät lokal oder über die MyGekko Plus Query API verbinden.",
+        "description": "Die Integration kann sich mit deinem MyGekko-Gerät lokal oder über die MyGekko Plus Query API verbinden.",
         "data": {
           "connection_type": "Verbindungstyp"
+        },
+        "data_description": {
+          "connection_type": "Im Demomodus werden statische Daten für alle unterstüzten Geräte geladen. Es wird keine Verbindung zu einem MyGekko hergestellt."
         }
       },
       "connection_mygekko_cloud": {
-        "description": "Bitte geben Sie die folgenden Anmeldedaten ein, um eine Verbindung über die MyGekko Plus Query API herzustellen.",
+        "description": "Bitte gib die folgenden Anmeldedaten ein, um eine Verbindung über die MyGekko Plus Query API herzustellen.",
         "data": {
           "username": "Benutzername",
           "api_key": "Api Key",
           "gekkoid": "Gekko ID"
         },
         "data_description": {
-          "username": "Ihr myGEKKO Plus Benutzername.",
+          "username": "Dein myGEKKO Plus Benutzername.",
           "api_key": "Der Key wird über 'Erweiterte Einstellungen' im Menü myGEKKO Plus generiert.",
           "gekkoid": "Ihr myGEKKO ID wird im Menü Systeminfo (Zahnrad > Systeminfo > myGEKKO ID) angezeigt."
         }
       },
       "connection_local": {
-        "description": "Bitte geben Sie die folgenden Anmeldedaten ein, um eine lokale Verbindung zu Ihrem MyGekko herzustellen.",
+        "description": "Bitte gib die folgenden Anmeldedaten ein, um eine lokale Verbindung zu Ihrem MyGekko herzustellen.",
         "data": {
           "ip_address": "IP Adresse",
           "username": "Benutzername",
           "password": "Passwort"
         },
         "data_description": {
-          "ip_address": "Die IP Adresse ihres MyGekko.",
+          "ip_address": "Die IP Adresse deines MyGekko.",
           "username": "Der Benutzername eines Benutzers der lokalen Query API.",
           "password": "Das Passwort des Benutzers."
         }
       }
     },
     "error": {
-      "auth_cloud": "Benutzername, Api Key oder Gekko ID sind falsch.",
-      "auth_local": "Benutzername, Password oder IP Adresse sind falsch."
+      "auth_cloud": "Benutzername, Api Key oder Gekko ID sind falsch. Details findest du in den Protokollen.",
+      "auth_local": "Benutzername, Password oder IP Adresse sind falsch. Details findest du in den Protokollen."
     },
     "abort": {
       "single_instance_allowed": "Es ist nur eine einzige Instanz zulässig."
-    }
-  },
-  "options": {
-    "step": {
-      "user": {
-        "data": {
-          "binary_sensor": "Binärsensoren aktiviert",
-          "sensor": "Sensoren aktiviert",
-          "cover": "Abdeckungen aktiviert",
-          "light": "Lichter aktiviert",
-          "climate": "Klimaanlagen aktiviert",
-          "switch": "Schalter aktiviert",
-          "scene": "Szenen aktiviert",
-          "water_heater": "Warmwasserboiler aktiviert",
-          "button": "Schaltflächen aktiviert",
-          "demo_mode": "Demo Mode"
-        },
-        "demo_mode": "Demo Mode"
-      }
     }
   },
   "entity": {

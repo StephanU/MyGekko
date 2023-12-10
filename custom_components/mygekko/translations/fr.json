@@ -5,6 +5,9 @@
         "description": "L'intégration peut se connecter à votre appareil MyGekko localement ou via l'API MyGekko Plus Query.",
         "data": {
           "connection_type": "Type de connexion"
+        },
+        "data_description": {
+          "connection_type": "En mode démo, des données statiques sont chargées pour tous les appareils pris en charge. Aucune connexion avec un MyGekko n'est établie."
         }
       },
       "connection_mygekko_cloud": {
@@ -35,27 +38,55 @@
       }
     },
     "error": {
-      "auth_cloud": "Nom d'utilisateur ou Clé Api ou ID Gekko erroné.",
-      "auth_local": "Nom d'utilisateur ou le mot de passe ou l'adresse IP erroné."
+      "auth_cloud": "Nom d'utilisateur ou Clé Api ou ID Gekko erroné. Veuillez consulter les journaux pour plus de détails.",
+      "auth_local": "Nom d'utilisateur ou le mot de passe ou l'adresse IP erroné. Veuillez consulter les journaux pour plus de détails."
     },
     "abort": {
       "single_instance_allowed": "Une seule instance est autorisée."
     }
   },
-  "options": {
-    "step": {
-      "user": {
-        "data": {
-          "binary_sensor": "Capteur binaire activé",
-          "sensor": "Capteur activé",
-          "cover": "Couverture activé",
-          "light": "Lumière activée",
-          "climate": "Climat activé",
-          "switch": "Interrupteur activé",
-          "scene": "Scène activée",
-          "water_heater": "Chauffe-eau activé",
-          "button": "Bouton activé",
-          "demo_mode": "Mode démo"
+  "entity": {
+    "climate": {
+      "mygekko_roomtemp": {
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "1": "Arrêt",
+              "8": "Confort",
+              "16": "Réduit",
+              "64": "Manuel",
+              "256": "Veille"
+            }
+          }
+        }
+      }
+    },
+    "select": {
+      "mygekko_vent_bypass": {
+        "name": "By-pass",
+        "state": {
+          "0": "Auto",
+          "1": "Manuel",
+          "2": "L'été"
+        }
+      },
+      "mygekko_vent_working_level": {
+        "name": "Niveau",
+        "state": {
+          "1": "Niveau 1",
+          "2": "Niveau 2",
+          "3": "Niveau 3",
+          "4": "Niveau 4",
+          "0": "Arrêt"
+        }
+      },
+      "mygekko_vent_working_mode": {
+        "name": "Mode de fonctionnement",
+        "state": {
+          "0": "Auto",
+          "1": "Manuel",
+          "2": "Pluggit Auto",
+          "3": "Pluggit semaine"
         }
       }
     },
@@ -70,7 +101,7 @@
         "name": "Énergie totale"
       },
       "mygekko_energycost_energyToday": {
-        "name": "Total Energy Today"
+        "name": "Énergie totale aujourd'hui"
       },
       "mygekko_energycost_energyMonth": {
         "name": "Énergie totale ce mois-ci"

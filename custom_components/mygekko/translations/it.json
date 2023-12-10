@@ -5,6 +5,9 @@
         "description": "L'integrazione può connettersi al dispositivo MyGekko localmente o tramite l'API MyGekko Plus Query.",
         "data": {
           "connection_type": "Tipo di connessione"
+        },
+        "data_description": {
+          "connection_type": "In modalità demo, vengono caricati dati statici per tutti i dispositivi supportati. Non viene stabilita alcuna connessione con un MyGekko."
         }
       },
       "connection_mygekko_cloud": {
@@ -35,29 +38,11 @@
       }
     },
     "error": {
-      "auth_cloud": "Il nome utente/chiave API/ID Gekko è sbagliato.",
-      "auth_local": "Nome utente/Password/Indirizzo IP errati."
+      "auth_cloud": "Il nome utente/chiave API/ID Gekko è sbagliato. Per i dettagli, consultare i registri.",
+      "auth_local": "Nome utente/Password/Indirizzo IP errati. Per i dettagli, consultare i registri."
     },
     "abort": {
       "single_instance_allowed": "È consentita una sola istanza."
-    }
-  },
-  "options": {
-    "step": {
-      "user": {
-        "data": {
-          "binary_sensor": "Sensore binario abilitato",
-          "sensor": "Sensore abilitato",
-          "cover": "Cala abilitato",
-          "light": "Luce abilitata",
-          "climate": "Clima abilitato",
-          "switch": "Interruttore abilitato",
-          "scene": "Scena abilitata",
-          "water_heater": "Scaldabagno abilitato",
-          "button": "Pulsante abilitato",
-          "demo_mode": "Modalità demo"
-        }
-      }
     }
   },
   "entity": {

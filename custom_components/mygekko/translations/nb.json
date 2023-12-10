@@ -5,6 +5,9 @@
         "description": "De integratie kan lokaal of via de MyGekko Plus Query API verbinding maken met je MyGekko-apparaat.",
         "data": {
           "connection_type": "Type aansluiting"
+        },
+        "data_description": {
+          "connection_type": "In modalità demo, vengono caricati dati statici per tutti i dispositivi supportati. Non viene stabilita alcuna connessione con un MyGekko."
         }
       },
       "connection_mygekko_cloud": {
@@ -35,27 +38,55 @@
       }
     },
     "error": {
-      "auth": "Brukernavn/Api sleutel/Gekko ID er feil.",
-      "auth_local": "Brukernavn/Wachtwoord/IP-adres er feil."
+      "auth": "Brukernavn/Api sleutel/Gekko ID er feil. Raadpleeg de logboeken voor meer informatie.",
+      "auth_local": "Brukernavn/Wachtwoord/IP-adres er feil. Raadpleeg de logboeken voor meer informatie."
     },
     "abort": {
       "single_instance_allowed": "Denne integrasjonen kan kun konfigureres en gang."
     }
   },
-  "options": {
-    "step": {
-      "user": {
-        "data": {
-          "binary_sensor": "Binær sensor aktivert",
-          "sensor": "Sensor aktivert",
-          "cover": "Cover aktivert",
-          "light": "Licht aktivert",
-          "climate": "Klimaat aktivert",
-          "switch": "Bryter aktivert",
-          "scene": "Scène aktivert",
-          "water_heater": "Waterverwarming aktivert",
-          "button": "Bouton activé",
-          "demo_mode": "Demomodus"
+  "entity": {
+    "climate": {
+      "mygekko_roomtemp": {
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "1": "Uit",
+              "8": "Comfort",
+              "16": "Verminderd",
+              "64": "Handmatig",
+              "256": "Stand-by"
+            }
+          }
+        }
+      }
+    },
+    "select": {
+      "mygekko_vent_bypass": {
+        "name": "Omleiding",
+        "state": {
+          "0": "Auto",
+          "1": "Handmatig",
+          "2": "Zomer"
+        }
+      },
+      "mygekko_vent_working_level": {
+        "name": "Niveau",
+        "state": {
+          "1": "Niveau 1",
+          "2": "Niveau 2",
+          "3": "Niveau 3",
+          "4": "Niveau 4",
+          "0": "Uit"
+        }
+      },
+      "mygekko_vent_working_mode": {
+        "name": "Bedrijfsmodus",
+        "state": {
+          "0": "Auto",
+          "1": "Handmatig",
+          "2": "Pluggit Auto",
+          "3": "Pluggit week"
         }
       }
     },

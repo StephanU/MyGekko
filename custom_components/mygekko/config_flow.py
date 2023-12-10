@@ -3,26 +3,26 @@ import logging
 
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
+from aiohttp import ClientConnectorError
 from homeassistant import config_entries
 from homeassistant.const import CONF_API_KEY
 from homeassistant.const import CONF_IP_ADDRESS
 from homeassistant.const import CONF_PASSWORD
 from homeassistant.const import CONF_USERNAME
-from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from PyMyGekko import MyGekkoLocalApiClient
 from PyMyGekko import MyGekkoQueryApiClient
 from PyMyGekko.data_provider import MyGekkoError
 
+from .const import CONF_CONNECTION_DEMO_MODE
+from .const import CONF_CONNECTION_DEMO_MODE_LABEL
 from .const import CONF_CONNECTION_LOCAL
 from .const import CONF_CONNECTION_LOCAL_LABEL
 from .const import CONF_CONNECTION_MY_GEKKO_CLOUD
 from .const import CONF_CONNECTION_MY_GEKKO_CLOUD_LABEL
 from .const import CONF_CONNECTION_TYPE
-from .const import CONF_DEMO_MODE
 from .const import CONF_GEKKOID
 from .const import DOMAIN
-from .const import PLATFORMS
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -34,6 +34,7 @@ CONNECTION_SCHEMA = vol.Schema(
             {
                 CONF_CONNECTION_MY_GEKKO_CLOUD: CONF_CONNECTION_MY_GEKKO_CLOUD_LABEL,
                 CONF_CONNECTION_LOCAL: CONF_CONNECTION_LOCAL_LABEL,
+                CONF_CONNECTION_DEMO_MODE: CONF_CONNECTION_DEMO_MODE_LABEL,
             }
         )
     }
@@ -77,11 +78,6 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         return await self.async_step_connection_selection(user_input)
 
-    @staticmethod
-    @callback
-    def async_get_options_flow(config_entry):
-        return MyGekkoOptionsFlowHandler(config_entry)
-
     async def async_step_connection_selection(self, user_input):
         """Show the configuration form to edit location data."""
         _LOGGER.debug("Config flow async_step_connection_selection %s", user_input)
@@ -94,6 +90,11 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
             if connection_type == CONF_CONNECTION_LOCAL:
                 return await self.async_step_connection_local(user_input)
+
+            if connection_type == CONF_CONNECTION_DEMO_MODE:
+                return self.async_create_entry(
+                    title=CONF_CONNECTION_DEMO_MODE_LABEL, data=user_input
+                )
 
         return self.async_show_form(
             step_id="connection_selection",
@@ -167,8 +168,10 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             client = MyGekkoQueryApiClient(username, apikey, gekkoid, session)
             await client.try_connect()
             return True
+        except ClientConnectorError:
+            _LOGGER.error("ClientConnectorError")
         except MyGekkoError:
-            pass
+            _LOGGER.error("MyGekkoError")
         return False
 
     async def _test_credentials_local_mygekko(self, ip_address, username, password):
@@ -178,46 +181,9 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             client = MyGekkoLocalApiClient(username, password, session, ip_address)
             await client.try_connect()
             return True
+        except ClientConnectorError:
+            _LOGGER.error("ClientConnectorError")
         except MyGekkoError:
-            pass
+            _LOGGER.error("MyGekkoError")
+
         return False
-
-
-class MyGekkoOptionsFlowHandler(config_entries.OptionsFlow):
-    """Config flow options handler for mygekko."""
-
-    def __init__(self, config_entry):
-        """Initialize HACS options flow."""
-        self.config_entry = config_entry
-        self.options = dict(config_entry.options)
-
-    async def async_step_init(self, user_input=None):  # pylint: disable=unused-argument
-        """Manage the options."""
-        return await self.async_step_user()
-
-    async def async_step_user(self, user_input=None):
-        """Handle a flow initialized by the user."""
-        if user_input is not None:
-            self.options.update(user_input)
-            return await self._update_options()
-
-        return self.async_show_form(
-            step_id="user",
-            data_schema=vol.Schema(
-                {
-                    vol.Required(x, default=self.options.get(x, True)): bool
-                    for x in sorted(PLATFORMS)
-                },
-                {
-                    vol.Required(
-                        CONF_DEMO_MODE, default=self.options.get(CONF_DEMO_MODE, False)
-                    ): bool
-                },
-            ),
-        )
-
-    async def _update_options(self):
-        """Update config entry options."""
-        return self.async_create_entry(
-            title=self.config_entry.data.get(CONF_USERNAME), data=self.options
-        )
