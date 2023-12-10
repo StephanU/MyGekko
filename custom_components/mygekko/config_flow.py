@@ -169,9 +169,9 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             await client.try_connect()
             return True
         except ClientConnectorError:
-            _LOGGER.error("ClientConnectorError")
+            _LOGGER.exception("ClientConnectorError")
         except MyGekkoError:
-            _LOGGER.error("MyGekkoError")
+            _LOGGER.exception("MyGekkoError")
         return False
 
     async def _test_credentials_local_mygekko(self, ip_address, username, password):
@@ -182,8 +182,8 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             await client.try_connect()
             return True
         except ClientConnectorError:
-            _LOGGER.error("ClientConnectorError")
+            _LOGGER.exception("ClientConnectorError")
         except MyGekkoError:
-            _LOGGER.error("MyGekkoError")
+            _LOGGER.exception("MyGekkoError")
 
         return False
