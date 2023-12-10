@@ -81,7 +81,7 @@
         }
       },
       "mygekko_vent_working_mode": {
-        "name": "Operating Mode",
+        "name": "Mode",
         "state": {
           "0": "Auto",
           "1": "Manual",
