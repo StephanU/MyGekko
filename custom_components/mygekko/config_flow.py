@@ -177,7 +177,7 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def _test_credentials_local_mygekko(self, ip_address, username, password):
         """Return true if credentials is valid."""
         try:
-            session = async_create_clientsession(self.hass)
+            session = async_create_clientsession(self.hass, verify_ssl=False)
             client = MyGekkoLocalApiClient(username, password, session, ip_address)
             await client.try_connect()
             return True
