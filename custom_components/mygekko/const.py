@@ -4,7 +4,7 @@ NAME = "MyGekko"
 MANUFACTURER = "myGEKKO | Ekon GmbH"
 DOMAIN = "mygekko"
 DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "1.1.0"
+VERSION = "1.2.3"
 
 ATTRIBUTION = "Data provided by http://jsonplaceholder.typicode.com/"
 ISSUE_URL = "https://github.com/stephanu/mygekko/issues"

@@ -9,5 +9,5 @@
   "issue_tracker": "https://github.com/stephanu/mygekko/issues",
   "loggers": ["PyMyGekko"],
   "requirements": ["PyMyGekko==1.1.0rc6"],
-  "version": "1.1.0"
+  "version": "1.2.3"
 }
