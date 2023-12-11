@@ -47,7 +47,11 @@ class MyGekkoVentBypassSelect(MyGekkoEntity, SelectEntity):
     @property
     def current_option(self) -> str | None:
         """Return the selected entity option to represent the entity state."""
-        return str(self._vent.bypass_state)
+        return (
+            str(self._vent.bypass_state)
+            if self._vent.bypass_state is not None
+            else None
+        )
 
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""
@@ -74,7 +78,11 @@ class MyGekkoVentWorkingModeSelect(MyGekkoEntity, SelectEntity):
     @property
     def current_option(self) -> str | None:
         """Return the selected entity option to represent the entity state."""
-        return str(self._vent.working_mode)
+        return (
+            str(self._vent.working_mode)
+            if self._vent.working_mode is not None
+            else None
+        )
 
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""
@@ -102,7 +110,11 @@ class MyGekkoVentWorkingLevelSelect(MyGekkoEntity, SelectEntity):
     @property
     def current_option(self) -> str | None:
         """Return the selected entity option to represent the entity state."""
-        return str(self._vent.working_level)
+        return (
+            str(self._vent.working_level)
+            if self._vent.working_level is not None
+            else None
+        )
 
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""

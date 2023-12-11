@@ -80,10 +80,11 @@ class MyGekkoLight(MyGekkoEntity, LightEntity):
     @property
     def brightness(self) -> int | None:
         """Return the brightness of this light between 0..255."""
-        if self._light.brightness is None:
-            return None
-
-        return round(255 * self._light.brightness / 100)
+        return (
+            round(255 * self._light.brightness / 100)
+            if self._light.brightness is not None
+            else None
+        )
 
     @property
     def rgb_color(self) -> tuple[int, int, int] | None:

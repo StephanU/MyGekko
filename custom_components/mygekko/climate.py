@@ -79,7 +79,11 @@ class MyGekkoRoomTempClimate(MyGekkoEntity, ClimateEntity):
             "The mode of %s is %s", self._room_temp.name, self._room_temp.working_mode
         )
 
-        return str(self._room_temp.working_mode)
+        return (
+            str(self._room_temp.working_mode)
+            if self._room_temp.working_mode is not None
+            else None
+        )
 
     async def async_set_preset_mode(self, preset_mode) -> None:
         """Set new preset mode."""
@@ -89,4 +93,8 @@ class MyGekkoRoomTempClimate(MyGekkoEntity, ClimateEntity):
     @property
     def current_humidity(self) -> int | None:
         """Return the current humidity."""
-        return ceil(self._room_temp.humidity)
+        return (
+            ceil(self._room_temp.humidity)
+            if self._room_temp.humidity is not None
+            else None
+        )
