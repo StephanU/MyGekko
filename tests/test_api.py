@@ -1,7 +1,7 @@
 """Tests for MyGekko api."""
 import pytest
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from PyMyGekko import MyGekkoApiClient
+from PyMyGekko import MyGekkoQueryApiClient
 
 
 @pytest.mark.asyncio
@@ -9,7 +9,7 @@ async def test_api(hass, aioclient_mock, caplog):
     """Test API calls."""
 
     # To test the api submodule, we first create an instance of our API client
-    api = MyGekkoApiClient("test", "test", "test", async_get_clientsession(hass))
+    api = MyGekkoQueryApiClient("test", "test", "test", async_get_clientsession(hass))
 
     # Use aioclient_mock which is provided by `pytest_homeassistant_custom_components`
     # to mock responses to aiohttp requests. In this case we are telling the mock to
