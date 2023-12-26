@@ -24,98 +24,98 @@ from .const import DOMAIN
 SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
     SensorEntityDescription(
         key="actPower",
-        translation_key="mygekko_energycost_actPower",
+        translation_key="mygekko_energycost_act_power",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.POWER,
     ),
     SensorEntityDescription(
         key="powerMax",
         name="Power Max",
-        translation_key="mygekko_energycost_powerMax",
+        translation_key="mygekko_energycost_power_max",
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.POWER,
     ),
     SensorEntityDescription(
         key="energySum",
         name="Energy Sum",
-        translation_key="mygekko_energycost_energySum",
+        translation_key="mygekko_energycost_energy_sum",
         state_class=SensorStateClass.TOTAL_INCREASING,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
         key="energyToday",
         name="Energy Today",
-        translation_key="mygekko_energycost_energyToday",
+        translation_key="mygekko_energycost_energy_today",
         state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
         key="energyMonth",
         name="Energy Month",
-        translation_key="mygekko_energycost_energyMonth",
+        translation_key="mygekko_energycost_energy_month",
         state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
         key="energyToday6",
         name="Energy Today 6",
-        translation_key="mygekko_energycost_energyToday6",
+        translation_key="mygekko_energycost_energy_today6",
         state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
         key="energyToday12",
         name="Energy Today 12",
-        translation_key="mygekko_energycost_energyToday12",
+        translation_key="mygekko_energycost_energy_today12",
         state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
         key="energyToday18",
         name="Energy Today 18",
-        translation_key="mygekko_energycost_energyToday18",
+        translation_key="mygekko_energycost_energy_today18",
         state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
         key="energyToday24",
         name="Energy Today 24",
-        translation_key="mygekko_energycost_energyToday24",
+        translation_key="mygekko_energycost_energy_today24",
         state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
         key="energyYesterd6",
         name="Energy Yesterday 6",
-        translation_key="mygekko_energycost_energyYesterd6",
+        translation_key="mygekko_energycost_energy_yesterd6",
         state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
         key="energyYesterd12",
         name="Energy Yesterday 12",
-        translation_key="mygekko_energycost_energyYesterd12",
+        translation_key="mygekko_energycost_energy_yesterd12",
         state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
         key="energyYesterd18",
         name="Energy Yesterday 18",
-        translation_key="mygekko_energycost_energyYesterd18",
+        translation_key="mygekko_energycost_energy_yesterd18",
         state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
         key="energyYesterd24",
         name="Energy Yesterday 24",
-        translation_key="mygekko_energycost_energyYesterd24",
+        translation_key="mygekko_energycost_energy_yesterd24",
         state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.ENERGY,
     ),
     SensorEntityDescription(
         key="energyYear",
         name="Energy Year",
-        translation_key="mygekko_energycost_energyYear",
+        translation_key="mygekko_energycost_energy_year",
         state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.ENERGY,
     ),
@@ -157,7 +157,7 @@ SENSOR_UNIT_MAPPING = {
 
 
 async def async_setup_entry(hass, entry, async_add_devices):
-    """Setup sensor platform."""
+    """Set up sensor platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
     energy_costs: list[EnergyCost] = coordinator.api.get_energy_costs()
     for energy_cost in energy_costs:
@@ -238,6 +238,7 @@ class MyGekkoAlarmsLogicsSensor(MyGekkoControllerEntity, SensorEntity):
     """mygekko AlarmsLogics Sensor class."""
 
     def __init__(self, coordinator, alarms_logic: AlarmsLogic, globals_network):
+        """Initialize a MyGekko AlarmsLogics sensor."""
         super().__init__(coordinator, alarms_logic, globals_network, "alarms_logic")
         self._alarms_logic = alarms_logic
 
@@ -257,7 +258,8 @@ class MyGekkoEnergySensor(MyGekkoEntity, SensorEntity):
         index,
         sensorEntityDescription: SensorEntityDescription,
     ):
-        super(MyGekkoEnergySensor, self).__init__(
+        """Initialize a MyGekko EnergyCost sensor."""
+        super().__init__(
             coordinator,
             energy_cost,
             "energy_cost",
@@ -290,6 +292,7 @@ class MyGekkoRoomTempsHumiditySensor(MyGekkoEntity, SensorEntity):
     _attr_native_unit_of_measurement = PERCENTAGE
 
     def __init__(self, coordinator, room_temp: RoomTemp):
+        """Initialize a MyGekko RoomTemp humidity sensor."""
         super().__init__(coordinator, room_temp, "room_temps", "Humidity")
         self._room_temp = room_temp
         self.entity_description = SENSORS["humidity"]
@@ -306,6 +309,7 @@ class MyGekkoRoomTempsAirQualitySensor(MyGekkoEntity, SensorEntity):
     _attr_native_unit_of_measurement = CONCENTRATION_PARTS_PER_MILLION
 
     def __init__(self, coordinator, room_temp: RoomTemp):
+        """Initialize a MyGekko RoomTemp air quality sensor."""
         super().__init__(coordinator, room_temp, "room_temps", "Air Quality")
         self._room_temp = room_temp
         self.entity_description = SENSORS["voc"]
@@ -322,6 +326,7 @@ class MyGekkoHotwaterSystemsBottomTemperatureSensor(MyGekkoEntity, SensorEntity)
     _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
 
     def __init__(self, coordinator, hotwater_system: HotWaterSystem):
+        """Initialize a MyGekko bottom Temperature sensor."""
         super().__init__(
             coordinator, hotwater_system, "hotwater_systems", "Bottom Temperature"
         )
@@ -341,6 +346,7 @@ class MyGekkoHotwaterSystemsTopTemperatureSensor(MyGekkoEntity, SensorEntity):
     _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
 
     def __init__(self, coordinator, hotwater_system: HotWaterSystem):
+        """Initialize a MyGekko top Temperature sensor."""
         super().__init__(
             coordinator, hotwater_system, "hotwater_systems", "Top Temperature"
         )
@@ -360,6 +366,7 @@ class MyGekkoVentHumiditySensor(MyGekkoEntity, SensorEntity):
     _attr_native_unit_of_measurement = PERCENTAGE
 
     def __init__(self, coordinator, vent: Vent):
+        """Initialize a MyGekko vent humidity sensor."""
         super().__init__(coordinator, vent, "vents", "Humidity")
         self._vent = vent
         self.entity_description = SENSORS["humidity"]
@@ -376,6 +383,7 @@ class MyGekkoVentAirQualitySensor(MyGekkoEntity, SensorEntity):
     _attr_native_unit_of_measurement = PERCENTAGE
 
     def __init__(self, coordinator, vent: Vent):
+        """Initialize a MyGekko vent air quality sensor."""
         super().__init__(coordinator, vent, "vents", "Air Quality")
         self._vent = vent
         self.entity_description = SENSORS["air_quality"]
@@ -392,6 +400,7 @@ class MyGekkoVentCo2Sensor(MyGekkoEntity, SensorEntity):
     _attr_native_unit_of_measurement = CONCENTRATION_PARTS_PER_MILLION
 
     def __init__(self, coordinator, vent: Vent):
+        """Initialize a MyGekko vent co2 sensor."""
         super().__init__(coordinator, vent, "vents", "CO2")
         self._vent = vent
         self.entity_description = SENSORS["co2"]
@@ -408,6 +417,7 @@ class MyGekkoVentExhaustAirTemperatureSensor(MyGekkoEntity, SensorEntity):
     _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
 
     def __init__(self, coordinator, vent: Vent):
+        """Initialize a MyGekko vent exhaust air temperature sensor."""
         super().__init__(coordinator, vent, "vents", "Exhaust Air Temperature")
         self._vent = vent
         self.entity_description = SENSORS["temperature"]
@@ -426,6 +436,7 @@ class MyGekkoVentExhaustAirWorkingLevelSensor(MyGekkoEntity, SensorEntity):
     _attr_icon = "mdi:gauge"
 
     def __init__(self, coordinator, vent: Vent):
+        """Initialize a MyGekko vent exhaust air working level sensor."""
         super().__init__(coordinator, vent, "vents", "Exhaust Air Working Level")
         self._vent = vent
         self._attr_translation_key = "mygekko_vent_exhaust_air_working_level"
@@ -442,6 +453,7 @@ class MyGekkoVentOutgoingAirTemperatureSensor(MyGekkoEntity, SensorEntity):
     _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
 
     def __init__(self, coordinator, vent: Vent):
+        """Initialize a MyGekko vent outgoing air temperature sensor."""
         super().__init__(coordinator, vent, "vents", "Outgoing Air Temperature")
         self._vent = vent
         self.entity_description = SENSORS["temperature"]
@@ -459,6 +471,7 @@ class MyGekkoVentOutsideAirTemperatureSensor(MyGekkoEntity, SensorEntity):
     _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
 
     def __init__(self, coordinator, vent: Vent):
+        """Initialize a MyGekko vent outside air temperature sensor."""
         super().__init__(coordinator, vent, "vents", "Outside Air Temperature")
         self._vent = vent
         self.entity_description = SENSORS["temperature"]
@@ -476,6 +489,7 @@ class MyGekkoVentSupplyAirTemperatureSensor(MyGekkoEntity, SensorEntity):
     _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
 
     def __init__(self, coordinator, vent: Vent):
+        """Initialize a MyGekko vent supply air temperature sensor."""
         super().__init__(coordinator, vent, "vents", "Supply Air Temperature")
         self._vent = vent
         self.entity_description = SENSORS["temperature"]
@@ -494,6 +508,7 @@ class MyGekkoVentSupplyAirWorkingLevelSensor(MyGekkoEntity, SensorEntity):
     _attr_icon = "mdi:gauge"
 
     def __init__(self, coordinator, vent: Vent):
+        """Initialize a MyGekko vent supply air working level sensor."""
         super().__init__(coordinator, vent, "vents", "Supply Air Working Level")
         self._vent = vent
         self._attr_translation_key = "mygekko_vent_supply_air_working_level"

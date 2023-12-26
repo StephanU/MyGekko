@@ -11,7 +11,7 @@ from .entity import MyGekkoEntity
 
 
 async def async_setup_entry(hass, entry, async_add_devices):
-    """Setup select platform."""
+    """Set up select platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
 
     async_add_devices(
@@ -32,6 +32,7 @@ class MyGekkoVentBypassSelect(MyGekkoEntity, SelectEntity):
     """mygekko vent bypass select class."""
 
     def __init__(self, coordinator, vent: Vent):
+        """Initialize a MyGekko vent bypass selection."""
         super().__init__(coordinator, vent, "vents", "Bypass")
         self._vent = vent
         self.entity_description = SelectEntityDescription(
@@ -62,6 +63,7 @@ class MyGekkoVentWorkingModeSelect(MyGekkoEntity, SelectEntity):
     """mygekko vent working mode select class."""
 
     def __init__(self, coordinator, vent: Vent):
+        """Initialize a MyGekko vent working mode selection."""
         super().__init__(coordinator, vent, "vents", "Working Mode")
         self._vent = vent
         self.entity_description = SelectEntityDescription(
@@ -93,6 +95,7 @@ class MyGekkoVentWorkingLevelSelect(MyGekkoEntity, SelectEntity):
     """mygekko vent level select class."""
 
     def __init__(self, coordinator, vent: Vent):
+        """Initialize a MyGekko vent working level selection."""
         super().__init__(coordinator, vent, "vents", "Level")
         self._vent = vent
         self.entity_description = SelectEntityDescription(

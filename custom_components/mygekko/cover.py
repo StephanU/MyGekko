@@ -17,7 +17,7 @@ from .entity import MyGekkoEntity
 
 
 async def async_setup_entry(hass, entry, async_add_devices):
-    """Setup cover platform."""
+    """Set up cover platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
     blinds = coordinator.api.get_blinds()
     if blinds is not None:
@@ -31,6 +31,7 @@ class MyGekkoCover(MyGekkoEntity, CoverEntity):
     _attr_device_class = CoverDeviceClass.SHUTTER
 
     def __init__(self, coordinator, blind: Blind):
+        """Initialize the MyGekko cover."""
         super().__init__(coordinator, blind, "blinds")
         self._blind = blind
         supported_features = self._blind.supported_features
@@ -66,6 +67,7 @@ class MyGekkoCover(MyGekkoEntity, CoverEntity):
 
     @property
     def is_closed(self) -> bool | None:
+        """Check whether the cover is closed."""
         # myGekko blinds are closed on 100 and open on 0
         return (
             ceil(self._blind.position) == 100
@@ -95,6 +97,7 @@ class MyGekkoCover(MyGekkoEntity, CoverEntity):
 
     @property
     def is_closing(self) -> bool:
+        """Check whether the cover is closing."""
         return (
             self._blind.state == BlindState.DOWN
             or self._blind.state == BlindState.HOLD_DOWN
@@ -102,6 +105,7 @@ class MyGekkoCover(MyGekkoEntity, CoverEntity):
 
     @property
     def is_opening(self) -> bool:
+        """Check whether the cover is opening."""
         return (
             self._blind.state == BlindState.UP
             or self._blind.state == BlindState.HOLD_UP
@@ -120,6 +124,7 @@ class MyGekkoCover(MyGekkoEntity, CoverEntity):
         await self._blind.set_state(BlindState.STOP)
 
     async def async_set_cover_position(self, **kwargs: Any) -> None:
+        """Set the cover position."""
         # myGekko blinds are closed on 100 and open on 0
         await self._blind.set_position(100.0 - float(kwargs[ATTR_POSITION]))
 

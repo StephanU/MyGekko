@@ -6,14 +6,10 @@ MyGekko integration for HomeAssistant using the [PyMyGekko](https://github.com/S
 [![GitHub Activity][commits-shield]][commits]
 [![License][license-shield]](LICENSE)
 
-[![pre-commit][pre-commit-shield]][pre-commit]
-[![Black][black-shield]][black]
-
-[![hacs][hacsbadge]][hacs]
-[![Project Maintenance][maintenance-shield]][user_profile]
-
+![Project Maintenance][maintenance-shield]
 [![BuyMeCoffee][buymecoffeebadge]][buymecoffee]
 
+[![hacs][hacsbadge]][hacs]
 [![Discord][discord-shield]][discord]
 [![Community Forum][forum-shield]][forum]
 
@@ -36,7 +32,7 @@ MyGekko integration for HomeAssistant using the [PyMyGekko](https://github.com/S
 
 ### Via HACS
 
-1. Install [HACS](https://hacs.xyz/docs/setup/prerequisites)
+1. Install [HACS](https://hacs.xyz/docs/setup/:requisites)
 2. Add 'https://github.com/StephanU/MyGekko' as a [Custom Repository](https://hacs.xyz/docs/faq/custom_repositories)
 3. Restart Home Assistant
 4. In the HA UI go to "Configuration" -> "Integrations" click "+" and search for "MyGekko"
@@ -103,8 +99,6 @@ Code template was mainly taken from [@Ludeeus](https://github.com/ludeeus)'s [in
 [forum]: https://community.home-assistant.io/
 [license-shield]: https://img.shields.io/github/license/stephanu/mygekko.svg?style=for-the-badge
 [maintenance-shield]: https://img.shields.io/badge/maintainer-%40stephanu-blue.svg?style=for-the-badge
-[pre-commit]: https://github.com/pre-commit/pre-commit
-[pre-commit-shield]: https://img.shields.io/badge/pre--commit-enabled-brightgreen?style=for-the-badge
 [releases-shield]: https://img.shields.io/github/release/stephanu/mygekko.svg?style=for-the-badge
 [releases]: https://github.com/stephanu/mygekko/releases
 [user_profile]: https://github.com/stephanu
