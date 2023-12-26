@@ -1,4 +1,4 @@
-"""MyGekkoEntity class"""
+"""MyGekkoEntity class."""
 import logging
 
 from homeassistant.helpers.entity import DeviceInfo
@@ -13,13 +13,14 @@ _LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 class MyGekkoEntity(CoordinatorEntity):
-    """Base Class for MyGekko entities"""
+    """Base Class for MyGekko entities."""
 
     _attr_has_entity_name = True
 
     def __init__(
         self, coordinator, entity: Entity, entity_prefix: str, entity_suffix: str = ""
     ):
+        """Initialize a MyGekko entity."""
         super().__init__(coordinator)
 
         device_id = f"{entity_prefix}{entity.entity_id}"
@@ -37,13 +38,14 @@ class MyGekkoEntity(CoordinatorEntity):
 
 
 class MyGekkoControllerEntity(CoordinatorEntity):
-    """Base Class for MyGekko controller entities"""
+    """Base Class for MyGekko controller entities."""
 
     _attr_has_entity_name = True
 
     def __init__(
         self, coordinator, entity: Entity, globals_network, entity_prefix: str
     ):
+        """Initialize a MyGekko controller entity."""
         super().__init__(coordinator)
 
         device_id = f"mygekko_controller_{globals_network['gekkoname']}"

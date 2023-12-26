@@ -1,3 +1,4 @@
+"""Data Update Coordinator for the MyGekko integration."""
 import logging
 from datetime import timedelta
 
