@@ -91,46 +91,46 @@
       }
     },
     "sensor": {
-      "mygekko_energycost_actPower": {
+      "mygekko_energycost_act_power": {
         "name": "Huidig vermogen"
       },
-      "mygekko_energycost_powerMax": {
+      "mygekko_energycost_power_max": {
         "name": "Nominaal vermogen"
       },
-      "mygekko_energycost_energySum": {
+      "mygekko_energycost_energy_sum": {
         "name": "Totaal Energie"
       },
-      "mygekko_energycost_energyToday": {
+      "mygekko_energycost_energy_today": {
         "name": "Totale energie vandaag"
       },
-      "mygekko_energycost_energyMonth": {
+      "mygekko_energycost_energy_month": {
         "name": "Totaal energie deze maand"
       },
-      "mygekko_energycost_energyToday6": {
+      "mygekko_energycost_energy_today6": {
         "name": "Totale Energie Vandaag Van 00:00 tot 06:00"
       },
-      "mygekko_energycost_energyToday12": {
+      "mygekko_energycost_energy_today12": {
         "name": "Totale Energie Vandaag Van 06:00 tot 12:00"
       },
-      "mygekko_energycost_energyToday18": {
+      "mygekko_energycost_energy_today18": {
         "name": "Totale Energie Vandaag Van 12:00 tot 18:00"
       },
-      "mygekko_energycost_energyToday24": {
+      "mygekko_energycost_energy_today24": {
         "name": "Totale Energie Vandaag Van 18:00 tot 24:00"
       },
-      "mygekko_energycost_energyYesterd6": {
+      "mygekko_energycost_energy_yesterd6": {
         "name": "Totale energie gisteren van 00:00 tot 06:00"
       },
-      "mygekko_energycost_energyYesterd12": {
+      "mygekko_energycost_energy_yesterd12": {
         "name": "Totaal Energie Gisteren Van 06:00 tot 12:00"
       },
-      "mygekko_energycost_energyYesterd18": {
+      "mygekko_energycost_energy_yesterd18": {
         "name": "Totaal Energie Gisteren Van 12:00 tot 18:00"
       },
-      "mygekko_energycost_energyYesterd24": {
+      "mygekko_energycost_energy_yesterd24": {
         "name": "Totaal Energie Gisteren Van 18:00 tot 24:00"
       },
-      "mygekko_energycost_energyYear": {
+      "mygekko_energycost_energy_year": {
         "name": "Totale energie dit jaar"
       },
       "mygekko_hotwatersystem_bottom_temperature": {
