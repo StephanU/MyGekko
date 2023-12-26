@@ -11,7 +11,7 @@ from .const import DOMAIN
 
 
 async def async_setup_entry(hass, entry, async_add_devices):
-    """Setup scene platform."""
+    """Set up scene platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
     actions = coordinator.api.get_actions()
     globals_network = coordinator.api.get_globals_network()
@@ -25,6 +25,7 @@ class MyGekkoScene(MyGekkoControllerEntity, Scene):
     """mygekko Scene class."""
 
     def __init__(self, coordinator, action: Action, globals_network):
+        """Initialize a MyGekko scene."""
         super().__init__(coordinator, action, globals_network, "actions")
         self._action = action
 
@@ -34,4 +35,5 @@ class MyGekkoScene(MyGekkoControllerEntity, Scene):
         self.async_write_ha_state()
 
     async def async_activate(self, **kwargs: Any) -> None:
+        """Activate the scene."""
         await self._action.set_state(ActionState.ON)

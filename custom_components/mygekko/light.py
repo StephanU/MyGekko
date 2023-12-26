@@ -18,7 +18,7 @@ _LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 async def async_setup_entry(hass, entry, async_add_devices):
-    """Setup light platform."""
+    """Set up light platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
     lights: list[Light] = coordinator.api.get_lights()
     if lights is not None:
@@ -36,6 +36,7 @@ class MyGekkoLight(MyGekkoEntity, LightEntity):
     _attr_name = None
 
     def __init__(self, coordinator, light: Light):
+        """Initialize a MyGekko light."""
         super().__init__(coordinator, light, "lights")
         self._light = light
 
@@ -59,16 +60,19 @@ class MyGekkoLight(MyGekkoEntity, LightEntity):
 
     @property
     def is_on(self) -> bool | None:
+        """Check whether the light is on."""
         _LOGGER.debug(
             "The light state of %s is %d", self._light.name, self._light.state
         )
         return self._light.state == LightState.ON
 
     async def async_turn_off(self, **kwargs):
+        """Turn off the light."""
         _LOGGER.debug("Switch off light %s", self._light.name)
         await self._light.set_state(LightState.OFF)
 
     async def async_turn_on(self, **kwargs):
+        """Turn on the light."""
         _LOGGER.debug("Switch on light %s", self._light.name)
         if ATTR_RGB_COLOR in kwargs and kwargs[ATTR_RGB_COLOR]:
             await self._light.set_rgb_color(kwargs[ATTR_RGB_COLOR])

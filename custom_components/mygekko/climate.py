@@ -20,7 +20,7 @@ _LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 async def async_setup_entry(hass, entry, async_add_devices):
-    """Setup cover platform."""
+    """Set up cover platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
 
     async_add_devices(
@@ -35,6 +35,7 @@ class MyGekkoRoomTempClimate(MyGekkoEntity, ClimateEntity):
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
 
     def __init__(self, coordinator, room_temp: RoomTemp):
+        """Initialize the MyGekko climate entity."""
         super().__init__(coordinator, room_temp, "room_temps")
         self._room_temp = room_temp
         self._attr_translation_key = "mygekko_roomtemp"

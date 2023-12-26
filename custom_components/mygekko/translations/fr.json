@@ -91,46 +91,46 @@
       }
     },
     "sensor": {
-      "mygekko_energycost_actPower": {
+      "mygekko_energycost_act_power": {
         "name": "Puissance actuelle"
       },
-      "mygekko_energycost_powerMax": {
+      "mygekko_energycost_power_max": {
         "name": "Puissance nominale"
       },
-      "mygekko_energycost_energySum": {
+      "mygekko_energycost_energy_sum": {
         "name": "Énergie totale"
       },
-      "mygekko_energycost_energyToday": {
+      "mygekko_energycost_energy_today": {
         "name": "Énergie totale aujourd'hui"
       },
-      "mygekko_energycost_energyMonth": {
+      "mygekko_energycost_energy_month": {
         "name": "Énergie totale ce mois-ci"
       },
-      "mygekko_energycost_energyToday6": {
+      "mygekko_energycost_energy_today6": {
         "name": "Energie totale aujourd'hui de 00:00 à 06:00"
       },
-      "mygekko_energycost_energyToday12": {
+      "mygekko_energycost_energy_today12": {
         "name": "Total Energy Aujourd'hui De 06:00 à 12:00"
       },
-      "mygekko_energycost_energyToday18": {
+      "mygekko_energycost_energy_today18": {
         "name": "Total Energy Aujourd'hui De 12h00 à 18h00"
       },
-      "mygekko_energycost_energyToday24": {
+      "mygekko_energycost_energy_today24": {
         "name": "Total Energy Aujourd'hui De 18:00 à 24:00"
       },
-      "mygekko_energycost_energyYesterd6": {
+      "mygekko_energycost_energy_yesterd6": {
         "name": "Énergie totale hier de 00:00 à 06:00"
       },
-      "mygekko_energycost_energyYesterd12": {
+      "mygekko_energycost_energy_yesterd12": {
         "name": "Énergie totale hier de 06:00 à 12:00"
       },
-      "mygekko_energycost_energyYesterd18": {
+      "mygekko_energycost_energy_yesterd18": {
         "name": "Énergie totale hier De 12:00 à 18:00"
       },
-      "mygekko_energycost_energyYesterd24": {
+      "mygekko_energycost_energy_yesterd24": {
         "name": "Énergie totale hier De 18:00 à 24:00"
       },
-      "mygekko_energycost_energyYear": {
+      "mygekko_energycost_energy_year": {
         "name": "Énergie totale cette année"
       },
       "mygekko_hotwatersystem_bottom_temperature": {

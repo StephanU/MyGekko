@@ -21,7 +21,7 @@ _LOGGER: logging.Logger = logging.getLogger(__name__)
 
 
 async def async_setup_entry(hass, entry, async_add_devices):
-    """Setup light platform."""
+    """Set up light platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
     hotwater_systems = coordinator.api.get_hot_water_systems()
     if hotwater_systems is not None:
@@ -38,6 +38,7 @@ class MyGekkoWaterHeater(MyGekkoEntity, WaterHeaterEntity):
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
 
     def __init__(self, coordinator, hotwater_system: HotWaterSystem):
+        """Initialize a MyGekko water heater."""
         super().__init__(coordinator, hotwater_system, "hotwater_systems")
         self._hotwater_system = hotwater_system
 
@@ -56,10 +57,12 @@ class MyGekkoWaterHeater(MyGekkoEntity, WaterHeaterEntity):
         self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs):
+        """Turn off the water heater."""
         _LOGGER.debug("Switch off water heater %s", self._hotwater_system.name)
         await self._hotwater_system.set_state(HotWaterSystemState.OFF)
 
     async def async_turn_on(self, **kwargs):
+        """Turn on the water heater."""
         _LOGGER.debug("Switch on water heater %s", self._hotwater_system.name)
         await self._hotwater_system.set_state(HotWaterSystemState.ON)
 

@@ -92,46 +92,46 @@
       }
     },
     "sensor": {
-      "mygekko_energycost_actPower": {
+      "mygekko_energycost_act_power": {
         "name": "Aktuelle Leistung"
       },
-      "mygekko_energycost_powerMax": {
+      "mygekko_energycost_power_max": {
         "name": "Nennleistung"
       },
-      "mygekko_energycost_energySum": {
+      "mygekko_energycost_energy_sum": {
         "name": "Energie insgesamt"
       },
-      "mygekko_energycost_energyToday": {
+      "mygekko_energycost_energy_today": {
         "name": "Energie insgesamt (heute)"
       },
-      "mygekko_energycost_energyMonth": {
+      "mygekko_energycost_energy_month": {
         "name": "Energie insgesamt (dieser Monat)"
       },
-      "mygekko_energycost_energyToday6": {
+      "mygekko_energycost_energy_today6": {
         "name": "Energie insgesamt (heute von 00:00 bis 06:00)"
       },
-      "mygekko_energycost_energyToday12": {
+      "mygekko_energycost_energy_today12": {
         "name": "Energie insgesamt (heute von 06:00 bis 12:00)"
       },
-      "mygekko_energycost_energyToday18": {
+      "mygekko_energycost_energy_today18": {
         "name": "Energie insgesamt (heute von 12:00 bis 18:00)"
       },
-      "mygekko_energycost_energyToday24": {
+      "mygekko_energycost_energy_today24": {
         "name": "Energie insgesamt (heute von 18:00 bis 24:00)"
       },
-      "mygekko_energycost_energyYesterd6": {
+      "mygekko_energycost_energy_yesterd6": {
         "name": "Energie insgesamt (gestern von 00:00 bis 06:00)"
       },
-      "mygekko_energycost_energyYesterd12": {
+      "mygekko_energycost_energy_yesterd12": {
         "name": "Energie insgesamt (gestern von 06:00 bis 12:00)"
       },
-      "mygekko_energycost_energyYesterd18": {
+      "mygekko_energycost_energy_yesterd18": {
         "name": "Energie insgesamt (gestern von 12:00 bis 18:00)"
       },
-      "mygekko_energycost_energyYesterd24": {
+      "mygekko_energycost_energy_yesterd24": {
         "name": "Energie insgesamt (gestern von 18:00 bis 24:00)"
       },
-      "mygekko_energycost_energyYear": {
+      "mygekko_energycost_energy_year": {
         "name": "Energie insgesamt (dieses Jahr)"
       },
       "mygekko_hotwatersystem_bottom_temperature": {
