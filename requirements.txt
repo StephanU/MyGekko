@@ -3,5 +3,5 @@ homeassistant==2024.2.0
 pip>=21.0,<24.1
 ruff==0.2.1
 pytest-asyncio
-pytest-homeassistant-custom-component==0.13.99
+pytest-homeassistant-custom-component==0.13.101
 PyMyGekko==1.1.0rc7
