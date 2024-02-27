@@ -1,13 +1,19 @@
 {
   "domain": "mygekko",
   "name": "MyGekko",
-  "codeowners": ["@stephanu"],
+  "codeowners": [
+    "@stephanu"
+  ],
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/stephanu/mygekko",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/stephanu/mygekko/issues",
-  "loggers": ["PyMyGekko"],
-  "requirements": ["PyMyGekko==1.1.0rc7"],
+  "loggers": [
+    "PyMyGekko"
+  ],
+  "requirements": [
+    "PyMyGekko==1.2.0rc1"
+  ],
   "version": "1.2.4"
 }
