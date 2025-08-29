@@ -6,10 +6,13 @@ from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
 from homeassistant.components.sensor import SensorStateClass
 from homeassistant.const import CONCENTRATION_PARTS_PER_MILLION
+from homeassistant.const import LIGHT_LUX
 from homeassistant.const import PERCENTAGE
 from homeassistant.const import UnitOfEnergy
 from homeassistant.const import UnitOfPower
+from homeassistant.const import UnitOfSpeed
 from homeassistant.const import UnitOfTemperature
+from homeassistant.const import UnitOfVolumeFlowRate
 from PyMyGekko.resources.AlarmsLogics import AlarmsLogic
 from PyMyGekko.resources.EnergyCosts import EnergyCost
 from PyMyGekko.resources.HotWaterSystems import HotWaterSystem
@@ -18,6 +21,7 @@ from PyMyGekko.resources.RoomTemps import RoomTemp
 from PyMyGekko.resources.RoomTemps import RoomTempsFeature
 from PyMyGekko.resources.vents import Vent
 from PyMyGekko.resources.vents import VentFeature
+from PyMyGekko.resources.Meteo import Meteo
 
 from .const import DOMAIN
 
@@ -144,6 +148,21 @@ SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TEMPERATURE,
     ),
+    SensorEntityDescription(
+        key="rain",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.VOLUME_FLOW_RATE,
+    ),
+    SensorEntityDescription(
+        key="light",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.ILLUMINANCE,
+    ),
+    SensorEntityDescription(
+        key="wind",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.WIND_SPEED,
+    ),
 )
 
 SENSORS = {desc.key: desc for desc in SENSOR_TYPES}
@@ -232,6 +251,20 @@ async def async_setup_entry(hass, entry, async_add_devices):
                 MyGekkoVentExhaustAirWorkingLevelSensor(coordinator, vent),
             ]
         )
+
+    meteo: Meteo = coordinator.api.get_meteo()
+    async_add_devices(
+        [
+            MyGekkoMeteoRainSensor(coordinator, meteo),
+            MyGekkoMeteoTwilightSensor(coordinator, meteo),
+            MyGekkoMeteoBrightnessSensor(coordinator, meteo),
+            MyGekkoMeteoBrightnessWestSensor(coordinator, meteo),
+            MyGekkoMeteoBrightnessEastSensor(coordinator, meteo),
+            MyGekkoMeteoHumiditySensor(coordinator, meteo),
+            MyGekkoMeteoWindSensor(coordinator, meteo),
+            MyGekkoMeteoTemperatureSensor(coordinator, meteo),
+        ]
+    )
 
 
 class MyGekkoAlarmsLogicsSensor(MyGekkoControllerEntity, SensorEntity):
@@ -517,3 +550,163 @@ class MyGekkoVentSupplyAirWorkingLevelSensor(MyGekkoEntity, SensorEntity):
     def native_value(self):
         """Return the state of the sensor."""
         return self._vent.supply_air_working_level
+
+
+class MyGekkoMeteoRainSensor(MyGekkoEntity, SensorEntity):
+    """mygekko Meteo Rain class."""
+
+    _attr_native_unit_of_measurement = UnitOfVolumeFlowRate.LITERS_PER_MINUTE
+    _attr_icon = "mdi:weather-rainy"
+
+    def __init__(self, coordinator, meteo: Meteo):
+        """Initialize a MyGekko meteo rain sensor."""
+        super().__init__(coordinator, meteo, "meteo", "Rain")
+        self._meteo = meteo
+        self.entity_description = SENSORS["rain"]
+        self._attr_translation_key = "mygekko_meteo_rain"
+
+    @property
+    def native_value(self):
+        """Return the state of the sensor."""
+        data = self._meteo.sensor_data.get("rain", None)
+        return float(data) / 60 if data else None  # rain im MyGekko is in l/h
+
+
+class MyGekkoMeteoTwilightSensor(MyGekkoEntity, SensorEntity):
+    """mygekko Meteo Twilight class."""
+
+    _attr_native_unit_of_measurement = LIGHT_LUX
+    _attr_icon = "mdi:weather-sunset"
+
+    def __init__(self, coordinator, meteo: Meteo):
+        """Initialize a MyGekko meteo rain sensor."""
+        super().__init__(coordinator, meteo, "meteo", "Twilight")
+        self._meteo = meteo
+        self.entity_description = SENSORS["light"]
+        self._attr_translation_key = "mygekko_meteo_twilight"
+
+    @property
+    def native_value(self):
+        """Return the state of the sensor."""
+        data = self._meteo.sensor_data.get("twilight", None)
+        return float(data) if data else None
+
+
+class MyGekkoMeteoBrightnessSensor(MyGekkoEntity, SensorEntity):
+    """mygekko Meteo Brightness class."""
+
+    _attr_native_unit_of_measurement = LIGHT_LUX
+    _attr_icon = "mdi:brightness-5"
+
+    def __init__(self, coordinator, meteo: Meteo):
+        """Initialize a MyGekko meteo rain sensor."""
+        super().__init__(coordinator, meteo, "meteo", "Brightness")
+        self._meteo = meteo
+        self.entity_description = SENSORS["light"]
+        self._attr_translation_key = "mygekko_meteo_brightness"
+
+    @property
+    def native_value(self):
+        """Return the state of the sensor."""
+        data = self._meteo.sensor_data.get("brightness", None)
+        return float(data) * 1000 if data else None  # brightness im MyGekko is in klx
+
+
+class MyGekkoMeteoBrightnessWestSensor(MyGekkoEntity, SensorEntity):
+    """mygekko Meteo Brightness class."""
+
+    _attr_native_unit_of_measurement = LIGHT_LUX
+    _attr_icon = "mdi:brightness-5"
+
+    def __init__(self, coordinator, meteo: Meteo):
+        """Initialize a MyGekko meteo brightness sensor."""
+        super().__init__(coordinator, meteo, "meteo", "Brightness West")
+        self._meteo = meteo
+        self.entity_description = SENSORS["light"]
+        self._attr_translation_key = "mygekko_meteo_brightness_west"
+
+    @property
+    def native_value(self):
+        """Return the state of the sensor."""
+        data = self._meteo.sensor_data.get("brightnessw", None)
+        return float(data) * 1000 if data else None  # brightness im MyGekko is in klx
+
+
+class MyGekkoMeteoBrightnessEastSensor(MyGekkoEntity, SensorEntity):
+    """mygekko Meteo Brightness east class."""
+
+    _attr_native_unit_of_measurement = LIGHT_LUX
+    _attr_icon = "mdi:brightness-5"
+
+    def __init__(self, coordinator, meteo: Meteo):
+        """Initialize a MyGekko meteo brightness sensor."""
+        super().__init__(coordinator, meteo, "meteo", "Brightness East")
+        self._meteo = meteo
+        self.entity_description = SENSORS["light"]
+        self._attr_translation_key = "mygekko_meteo_brightness_east"
+
+    @property
+    def native_value(self):
+        """Return the state of the sensor."""
+        data = self._meteo.sensor_data.get("brightnesso", None)
+        return float(data) * 1000 if data else None  # brightness im MyGekko is in klx
+
+
+class MyGekkoMeteoHumiditySensor(MyGekkoEntity, SensorEntity):
+    """mygekko Meteo humidity class."""
+
+    _attr_native_unit_of_measurement = PERCENTAGE
+    _attr_icon = "mdi:cloud-percent"
+
+    def __init__(self, coordinator, meteo: Meteo):
+        """Initialize a MyGekko meteo humidity sensor."""
+        super().__init__(coordinator, meteo, "meteo", "Humidity")
+        self._meteo = meteo
+        self.entity_description = SENSORS["humidity"]
+        self._attr_translation_key = "mygekko_meteo_humidity"
+
+    @property
+    def native_value(self):
+        """Return the state of the sensor."""
+        data = self._meteo.sensor_data.get("humidity", None)
+        return float(data) if data else None
+
+
+class MyGekkoMeteoWindSensor(MyGekkoEntity, SensorEntity):
+    """mygekko Meteo wind class."""
+
+    _attr_native_unit_of_measurement = UnitOfSpeed.METERS_PER_SECOND
+    _attr_icon = "mdi:weather-windy"
+
+    def __init__(self, coordinator, meteo: Meteo):
+        """Initialize a MyGekko meteo wind sensor."""
+        super().__init__(coordinator, meteo, "meteo", "Wind")
+        self._meteo = meteo
+        self.entity_description = SENSORS["wind"]
+        self._attr_translation_key = "mygekko_meteo_wind"
+
+    @property
+    def native_value(self):
+        """Return the state of the sensor."""
+        data = self._meteo.sensor_data.get("wind", None)
+        return float(data) if data else None
+
+
+class MyGekkoMeteoTemperatureSensor(MyGekkoEntity, SensorEntity):
+    """mygekko Meteo Temperature class."""
+
+    _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
+    _attr_icon = "mdi:thermometer"
+
+    def __init__(self, coordinator, meteo: Meteo):
+        """Initialize a MyGekko meteo Temperature sensor."""
+        super().__init__(coordinator, meteo, "meteo", "Temperature")
+        self._meteo = meteo
+        self.entity_description = SENSORS["temperature"]
+        self._attr_translation_key = "mygekko_meteo_temperature"
+
+    @property
+    def native_value(self):
+        """Return the state of the sensor."""
+        data = self._meteo.sensor_data.get("temperature", None)
+        return float(data) if data else None
