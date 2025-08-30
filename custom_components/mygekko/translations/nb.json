@@ -156,6 +156,30 @@
       },
       "mygekko_vent_supply_air_working_level": {
         "name": "Toevoerlucht Werkniveau"
+      },
+      "mygekko_meteo_rain": {
+        "name": "Regen"
+      },
+      "mygekko_meteo_twilight": {
+        "name": "Schemering"
+      },
+      "mygekko_meteo_brightness": {
+        "name": "Helderheid"
+      },
+      "mygekko_meteo_brightness_west": {
+        "name": "Helderheid West"
+      },
+      "mygekko_meteo_brightness_east": {
+        "name": "Helderheid Oost"
+      },
+      "mygekko_meteo_humidity": {
+        "name": "Vochtigheid"
+      },
+      "mygekko_meteo_wind": {
+        "name": "Wind"
+      },
+      "mygekko_meteo_temperature": {
+        "name": "Temperatuur"
       }
     },
     "button": {

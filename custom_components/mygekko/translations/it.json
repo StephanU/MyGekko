@@ -156,6 +156,30 @@
       },
       "mygekko_vent_supply_air_working_level": {
         "name": "Livello di lavoro dell'aria di alimentazione"
+      },
+      "mygekko_meteo_rain": {
+        "name": "Pioggia"
+      },
+      "mygekko_meteo_twilight": {
+        "name": "Crepuscolo"
+      },
+      "mygekko_meteo_brightness": {
+        "name": "Luminosità"
+      },
+      "mygekko_meteo_brightness_west": {
+        "name": "Luminosità Ovest"
+      },
+      "mygekko_meteo_brightness_east": {
+        "name": "Luminosità Est"
+      },
+      "mygekko_meteo_humidity": {
+        "name": "Umidità"
+      },
+      "mygekko_meteo_wind": {
+        "name": "Vento"
+      },
+      "mygekko_meteo_temperature": {
+        "name": "Temperatura"
       }
     },
     "button": {

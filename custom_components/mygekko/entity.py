@@ -1,9 +1,9 @@
 """MyGekkoEntity class."""
 import logging
 
-from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from PyMyGekko.resources import Entity
+from PyMyGekko.resources import ReadOnlyEntity
 
 from .const import DOMAIN
 from .const import MANUFACTURER
@@ -18,7 +18,7 @@ class MyGekkoEntity(CoordinatorEntity):
     _attr_has_entity_name = True
 
     def __init__(
-        self, coordinator, entity: Entity, entity_prefix: str, entity_suffix: str = ""
+        self, coordinator, entity: ReadOnlyEntity, entity_prefix: str, entity_suffix: str = ""
     ):
         """Initialize a MyGekko entity."""
         super().__init__(coordinator)
@@ -43,7 +43,7 @@ class MyGekkoControllerEntity(CoordinatorEntity):
     _attr_has_entity_name = True
 
     def __init__(
-        self, coordinator, entity: Entity, globals_network, entity_prefix: str
+        self, coordinator, entity: ReadOnlyEntity, globals_network, entity_prefix: str
     ):
         """Initialize a MyGekko controller entity."""
         super().__init__(coordinator)
