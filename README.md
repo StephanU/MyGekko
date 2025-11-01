@@ -75,6 +75,22 @@ The integration supports access via the MyGekko Query Api (you need a MyGekko Pl
 
 If you want to contribute to this please read the [Contribution guidelines](CONTRIBUTING.md)
 
+## Development Hints
+
+- Start in VsCode in with the DevContainer extension
+- execute `scripts/setup` to install dependencies
+- execute `scripts/develop` to start HomeAssistant
+- to use PyMyGekko from git instead of PyPi add the following to the .devcontainer
+```
+  "mounts": [
+    "source=<local path to PyMyGekko>/PyMyGekko,target=/workspaces/PyMyGekko,type=bind"
+  ]
+```
+- when the devcontainer is started:
+```
+ pip install -e /workspaces/PyMyGekko
+```
+
 ## Credits
 
 This project was generated from [@oncleben31](https://github.com/oncleben31)'s [Home Assistant Custom Component Cookiecutter](https://github.com/oncleben31/cookiecutter-homeassistant-custom-component) template.
