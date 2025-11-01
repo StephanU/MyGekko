@@ -58,9 +58,9 @@ class MyGekkoControllerEntity(CoordinatorEntity):
             identifiers={(DOMAIN, device_id)},
             name=device_name,
             manufacturer=MANUFACTURER,
-            sw_version=globals_network["version"],
-            hw_version=globals_network["hardware"],
-            model=globals_network["hardware"],
+            sw_version=globals_network["version"] if "version" in globals_network else "unknown",
+            hw_version=globals_network["hardware"] if "hardware" in globals_network else "unknown",
+            model=globals_network["hardware"] if "hardware" in globals_network else "unknown",
         )
 
         _LOGGER.debug(
