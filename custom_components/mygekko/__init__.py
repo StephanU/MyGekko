@@ -3,7 +3,6 @@
 For more details about this integration, please refer to
 https://github.com/stephanu/mygekko
 """
-import asyncio
 import logging
 
 from custom_components.mygekko.coordinator import MyGekkoDataUpdateCoordinator
@@ -71,10 +70,9 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
-    # Unload platforms
+    """Handle removal of an entry."""
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
-    # Clean stored data
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id)
 
