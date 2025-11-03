@@ -8,7 +8,7 @@ import logging
 from custom_components.mygekko.coordinator import MyGekkoDataUpdateCoordinator
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_API_KEY
-from homeassistant.core import Config
+from homeassistant.core_config import Config
 from homeassistant.core import HomeAssistant
 
 from .const import CONF_CONNECTION_MY_GEKKO_CLOUD
