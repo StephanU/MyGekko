@@ -19,8 +19,8 @@ from PyMyGekko.resources.HotWaterSystems import HotWaterSystem
 from PyMyGekko.resources.HotWaterSystems import HotWaterSystemFeature
 from PyMyGekko.resources.RoomTemps import RoomTemp
 from PyMyGekko.resources.RoomTemps import RoomTempsFeature
-from PyMyGekko.resources.vents import Vent
-from PyMyGekko.resources.vents import VentFeature
+from PyMyGekko.resources.Vents import Vent
+from PyMyGekko.resources.Vents import VentFeature
 from PyMyGekko.resources.Meteo import Meteo
 
 from .const import DOMAIN

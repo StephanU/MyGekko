@@ -1,10 +1,10 @@
 """Select platform for MyGekko."""
 from homeassistant.components.select import SelectEntity
 from homeassistant.components.select import SelectEntityDescription
-from PyMyGekko.resources.vents import Vent
-from PyMyGekko.resources.vents import VentBypassMode
-from PyMyGekko.resources.vents import VentWorkingLevel
-from PyMyGekko.resources.vents import VentWorkingMode
+from PyMyGekko.resources.Vents import Vent
+from PyMyGekko.resources.Vents import VentBypassMode
+from PyMyGekko.resources.Vents import VentWorkingLevel
+from PyMyGekko.resources.Vents import VentWorkingMode
 
 from .const import DOMAIN
 from .entity import MyGekkoEntity
