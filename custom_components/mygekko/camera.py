@@ -1,7 +1,5 @@
 """Camera platform for MyGekko."""
 import logging
-from math import ceil
-from typing import Any
 
 import aiohttp
 from homeassistant.components.camera import Camera
@@ -62,12 +60,11 @@ class MyGekkoInterComCam(MyGekkoEntity, Camera):
         """Return bytes of camera image."""
         if self._door_inter_com.image_url:
             try:
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(self._door_inter_com.image_url) as resp:
-                        if resp.status != 200:
-                            _LOGGER.error("Error fetching camera image from camera %s. Error: %s", self._door_inter_com.name, resp.msg)
-                            return None
-                        image_bytes = await resp.read()
+                async with aiohttp.ClientSession() as session, session.get(self._door_inter_com.image_url) as resp:
+                    if resp.status != 200:
+                        _LOGGER.error("Error fetching camera image from camera %s. Error: %s", self._door_inter_com.name, resp.msg)
+                        return None
+                    image_bytes = await resp.read()
 
                 return image_bytes
 
@@ -109,12 +106,11 @@ class MyGekkoCam(MyGekkoEntity, Camera):
         """Return bytes of camera image."""
         if self._cam.image_url:
             try:
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(self._cam.image_url) as resp:
-                        if resp.status != 200:
-                            _LOGGER.error("Error fetching camera image from camera %s. Error: %s", self._cam.name, resp.msg)
-                            return None
-                        image_bytes = await resp.read()
+                async with aiohttp.ClientSession() as session, session.get(self._cam.image_url) as resp:
+                    if resp.status != 200:
+                        _LOGGER.error("Error fetching camera image from camera %s. Error: %s", self._cam.name, resp.msg)
+                        return None
+                    image_bytes = await resp.read()
 
                 return image_bytes
 

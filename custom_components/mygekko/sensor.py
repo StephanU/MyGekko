@@ -750,10 +750,12 @@ class MyGekkoDoorInterComConnectionState(MyGekkoEntity, SensorEntity):
 
     @property
     def native_value(self):
+        """Return the state of the sensor."""
         return self.STATE_MAP.get(self._door_inter_com.connection_state, None)
 
     @property
     def extra_state_attributes(self):
+        """Return the extra state of the sensor."""
         return {"raw_state": self._door_inter_com.connection_state}
 
 
@@ -777,10 +779,12 @@ class MyGekkoDoorInterComSoundMode(MyGekkoEntity, SensorEntity):
 
     @property
     def native_value(self):
+        """Return the state of the sensor."""
         return self.STATE_MAP.get(self._door_inter_com.connection_state, None)
 
     @property
     def extra_state_attributes(self):
+        """Return the extra state of the sensor."""
         return {"raw_state": self._door_inter_com.connection_state}
 
 
@@ -797,4 +801,5 @@ class MyGekkoDoorInterComMissedCalls(MyGekkoEntity, SensorEntity):
 
     @property
     def native_value(self):
+        """Return the state of the sensor."""
         return self._door_inter_com.missed_calls
