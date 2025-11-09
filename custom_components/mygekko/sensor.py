@@ -14,6 +14,7 @@ from homeassistant.const import UnitOfSpeed
 from homeassistant.const import UnitOfTemperature
 from homeassistant.const import UnitOfVolumeFlowRate
 from PyMyGekko.resources.AlarmsLogics import AlarmsLogic
+from PyMyGekko.resources.DoorInterComs import DoorInterCom
 from PyMyGekko.resources.EnergyCosts import EnergyCost
 from PyMyGekko.resources.HotWaterSystems import HotWaterSystem
 from PyMyGekko.resources.HotWaterSystems import HotWaterSystemFeature
@@ -265,6 +266,17 @@ async def async_setup_entry(hass, entry, async_add_devices):
             MyGekkoMeteoTemperatureSensor(coordinator, meteo),
         ]
     )
+
+    door_inter_coms: DoorInterCom = coordinator.api.get_door_inter_coms()
+    for door_inter_com in door_inter_coms:
+        async_add_devices(
+            [
+                MyGekkoDoorInterComConnectionState(coordinator, door_inter_com),
+                MyGekkoDoorInterComSoundMode(coordinator, door_inter_com),
+                MyGekkoDoorInterComMissedCalls(coordinator, door_inter_com),
+
+            ]
+        )
 
 
 class MyGekkoAlarmsLogicsSensor(MyGekkoControllerEntity, SensorEntity):
@@ -710,3 +722,79 @@ class MyGekkoMeteoTemperatureSensor(MyGekkoEntity, SensorEntity):
         """Return the state of the sensor."""
         data = self._meteo.sensor_data.get("temperature", None)
         return float(data) if data else None
+
+
+class MyGekkoDoorInterComConnectionState(MyGekkoEntity, SensorEntity):
+    """mygekko DoorInterCom Connection State class."""
+
+    STATE_MAP = {
+        -6: "error_processing",
+        -5: "error_authorization",
+        -4 : "voip_not_active",
+        -3: "error_fav_check",
+        -2: "error_provisioning",
+        -1: "error_connection",
+        0: "not_set_up",
+        1: "ok"
+    }
+
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_icon = "mdi:connection"
+    _attr_options = list(STATE_MAP.values())
+
+    def __init__(self, coordinator, door_inter_com: DoorInterCom):
+        """Initialize a  DoorInterCom Connection State sensor."""
+        super().__init__(coordinator, door_inter_com, "door_inter_com", "Connection")
+        self._door_inter_com = door_inter_com
+        self._attr_name = "Connection"
+
+    @property
+    def native_value(self):
+        return self.STATE_MAP.get(self._door_inter_com.connection_state, None)
+
+    @property
+    def extra_state_attributes(self):
+        return {"raw_state": self._door_inter_com.connection_state}
+
+
+class MyGekkoDoorInterComSoundMode(MyGekkoEntity, SensorEntity):
+    """mygekko DoorInterCom Sound Mode class."""
+
+    STATE_MAP = {
+        0: "mute",
+        1: "ringing"
+    }
+
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_icon = "mdi:volume-low"
+    _attr_options = list(STATE_MAP.values())
+
+    def __init__(self, coordinator, door_inter_com: DoorInterCom):
+        """Initialize a  DoorInterCom Sound Mode sensor."""
+        super().__init__(coordinator, door_inter_com, "door_inter_com", "Sound Mode")
+        self._door_inter_com = door_inter_com
+        self._attr_name = "Sound Mode"
+
+    @property
+    def native_value(self):
+        return self.STATE_MAP.get(self._door_inter_com.connection_state, None)
+
+    @property
+    def extra_state_attributes(self):
+        return {"raw_state": self._door_inter_com.connection_state}
+
+
+class MyGekkoDoorInterComMissedCalls(MyGekkoEntity, SensorEntity):
+    """mygekko DoorInterCom Missed Calls class."""
+
+    _attr_icon = "mdi:call-missed"
+
+    def __init__(self, coordinator, door_inter_com: DoorInterCom):
+        """Initialize a  DoorInterCom Missed Calls sensor."""
+        super().__init__(coordinator, door_inter_com, "door_inter_com", "Missed Calls")
+        self._door_inter_com = door_inter_com
+        self._attr_name = "Missed Calls"
+
+    @property
+    def native_value(self):
+        return self._door_inter_com.missed_calls
