@@ -1,7 +1,7 @@
 colorlog==6.10.1
 homeassistant==2025.3.3
 pip>=21.0,<25.4
-ruff==0.14.4
+ruff==0.14.6
 pytest-asyncio
 pytest-homeassistant-custom-component==0.13.224
 PyMyGekko==1.5.1
