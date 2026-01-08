@@ -6,7 +6,7 @@ https://github.com/stephanu/mygekko
 import logging
 
 from custom_components.mygekko.coordinator import MyGekkoDataUpdateCoordinator
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.const import CONF_API_KEY
 from homeassistant.core_config import Config
 from homeassistant.core import HomeAssistant
@@ -35,7 +35,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     coordinator = MyGekkoDataUpdateCoordinator(hass, entry=entry)
 
-    await coordinator.async_config_entry_first_refresh()
+    if entry.state == ConfigEntryState.SETUP_IN_PROGRESS:
+        await coordinator.async_config_entry_first_refresh()
+    else:
+        await coordinator.async_refresh()
 
     hass.data[DOMAIN][entry.entry_id] = coordinator
 
@@ -81,5 +84,4 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
 
 async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Reload config entry."""
-    await async_unload_entry(hass, entry)
-    await async_setup_entry(hass, entry)
+    await hass.config_entries.async_reload(entry.entry_id)

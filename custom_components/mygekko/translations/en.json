@@ -45,6 +45,23 @@
       "single_instance_allowed": "Only a single instance is allowed."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "MyGekko Options",
+        "description": "Configure integration-wide settings for MyGekko.",
+        "data": {
+          "scan_interval": "Update interval (seconds)"
+        },
+        "data_description": {
+          "scan_interval": "How often to poll your MyGekko device for updates. Lower values provide more real-time updates but increase network traffic. Range: 5-300 seconds. (Default: 30 seconds)"
+        }
+      }
+    },
+    "abort": {
+      "not_local_connection": "Configuration options are only available for local MyGekko connections."
+    }
+  },
   "entity": {
     "climate": {
       "mygekko_roomtemp": {

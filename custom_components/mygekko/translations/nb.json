@@ -45,6 +45,23 @@
       "single_instance_allowed": "Denne integrasjonen kan kun konfigureres en gang."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "MyGekko Alternativer",
+        "description": "Konfigurer integrasjonsinnstillinger for MyGekko.",
+        "data": {
+          "scan_interval": "Oppdateringsintervall (sekunder)"
+        },
+        "data_description": {
+          "scan_interval": "Hvor ofte MyGekko-enheten skal spørres etter oppdateringer. Lavere verdier gir sanntidsoppdateringer, men øker nettverkstrafikken. Område: 5-300 sekunder. (Standard: 30 sekunder)"
+        }
+      }
+    },
+    "abort": {
+      "not_local_connection": "Konfigurasjonsalternativer er bare tilgjengelige for lokale MyGekko-tilkoblinger."
+    }
+  },
   "entity": {
     "climate": {
       "mygekko_roomtemp": {
