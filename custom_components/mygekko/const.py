@@ -35,8 +35,12 @@ CONF_CONNECTION_LOCAL_LABEL = "Local"
 CONF_CONNECTION_DEMO_MODE = "demo_mode"
 CONF_CONNECTION_DEMO_MODE_LABEL = "Demo Mode"
 
+# Options configuration keys
+CONF_SCAN_INTERVAL = "scan_interval"
+
 # Defaults
 DEFAULT_NAME = DOMAIN
+DEFAULT_SCAN_INTERVAL = 30
 
 
 STARTUP_MESSAGE = f"""

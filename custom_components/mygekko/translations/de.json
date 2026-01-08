@@ -45,6 +45,23 @@
       "single_instance_allowed": "Es ist nur eine einzige Instanz zulässig."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "MyGekko Optionen",
+        "description": "Konfigurieren Sie integrationweite Einstellungen für MyGekko.",
+        "data": {
+          "scan_interval": "Aktualisierungsintervall (Sekunden)"
+        },
+        "data_description": {
+          "scan_interval": "Wie oft Ihr MyGekko-Gerät nach Aktualisierungen abgefragt werden soll. Niedrigere Werte bieten Echtzeit-Updates, erhöhen aber den Netzwerkverkehr. Bereich: 5-300 Sekunden. (Standard: 30 Sekunden)"
+        }
+      }
+    },
+    "abort": {
+      "not_local_connection": "Konfigurationsoptionen sind nur für lokale MyGekko-Verbindungen verfügbar."
+    }
+  },
   "entity": {
     "climate": {
       "mygekko_roomtemp": {

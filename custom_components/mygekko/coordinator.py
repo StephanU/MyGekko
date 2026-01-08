@@ -21,10 +21,9 @@ from .const import CONF_CONNECTION_LOCAL
 from .const import CONF_CONNECTION_MY_GEKKO_CLOUD
 from .const import CONF_CONNECTION_TYPE
 from .const import CONF_GEKKOID
+from .const import CONF_SCAN_INTERVAL
+from .const import DEFAULT_SCAN_INTERVAL
 from .const import DOMAIN
-
-
-SCAN_INTERVAL = timedelta(seconds=30)
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 
@@ -38,7 +37,9 @@ class MyGekkoDataUpdateCoordinator(DataUpdateCoordinator):
         entry: ConfigEntry,
     ) -> None:
         """Initialize."""
-        super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=SCAN_INTERVAL)
+        scan_interval = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+        update_interval = timedelta(seconds=scan_interval)
+        super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=update_interval, config_entry=entry)
 
         client = None
 

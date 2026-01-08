@@ -9,6 +9,7 @@ from homeassistant.const import CONF_API_KEY
 from homeassistant.const import CONF_IP_ADDRESS
 from homeassistant.const import CONF_PASSWORD
 from homeassistant.const import CONF_USERNAME
+from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from PyMyGekko import MyGekkoLocalApiClient
 from PyMyGekko import MyGekkoQueryApiClient
@@ -22,6 +23,8 @@ from .const import CONF_CONNECTION_MY_GEKKO_CLOUD
 from .const import CONF_CONNECTION_MY_GEKKO_CLOUD_LABEL
 from .const import CONF_CONNECTION_TYPE
 from .const import CONF_GEKKOID
+from .const import CONF_SCAN_INTERVAL
+from .const import DEFAULT_SCAN_INTERVAL
 from .const import DOMAIN
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -66,6 +69,14 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     def __init__(self):
         """Initialize."""
         self._errors = {}
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(
+        config_entry: config_entries.ConfigEntry,
+    ) -> config_entries.OptionsFlow:
+        """Get the options flow for this handler."""
+        return MyGekkoOptionsFlowHandler()
 
     async def async_step_user(self, user_input=None):
         """Handle a flow initialized by the user."""
@@ -187,3 +198,30 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             _LOGGER.exception("MyGekkoError")
 
         return False
+
+
+class MyGekkoOptionsFlowHandler(config_entries.OptionsFlow):
+    """Handle options flow for MyGekko."""
+
+    async def async_step_init(self, user_input=None):
+        """Manage the options."""
+        connection_type = self.config_entry.data.get(CONF_CONNECTION_TYPE)
+
+        # Only show options for local connections
+        if connection_type != CONF_CONNECTION_LOCAL:
+            return self.async_abort(reason="not_local_connection")
+
+        if user_input is not None:
+            return self.async_create_entry(title="", data=user_input)
+
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema({
+                vol.Optional(
+                    CONF_SCAN_INTERVAL,
+                    default=self.config_entry.options.get(
+                        CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
+                    )
+                ): vol.All(vol.Coerce(int), vol.Range(min=5, max=300)),
+            }),
+        )
