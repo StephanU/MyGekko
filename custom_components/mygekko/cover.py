@@ -114,33 +114,41 @@ class MyGekkoCover(MyGekkoEntity, CoverEntity):
     async def async_open_cover(self, **kwargs: Any):
         """Open the cover."""
         await self._blind.set_state(BlindState.HOLD_UP)
+        await self.coordinator.async_request_refresh()
 
     async def async_close_cover(self, **kwargs: Any):
         """Close cover."""
         await self._blind.set_state(BlindState.HOLD_DOWN)
+        await self.coordinator.async_request_refresh()
 
     async def async_stop_cover(self, **kwargs: Any):
         """Stop the cover."""
         await self._blind.set_state(BlindState.STOP)
+        await self.coordinator.async_request_refresh()
 
     async def async_set_cover_position(self, **kwargs: Any) -> None:
         """Set the cover position."""
         # myGekko blinds are closed on 100 and open on 0
         await self._blind.set_position(100.0 - float(kwargs[ATTR_POSITION]))
+        await self.coordinator.async_request_refresh()
 
     async def async_open_cover_tilt(self, **kwargs: Any):
         """Open the cover."""
         await self._blind.set_tilt_position(0.0)
+        await self.coordinator.async_request_refresh()
 
     async def async_close_cover_tilt(self, **kwargs: Any):
         """Close cover."""
         await self._blind.set_tilt_position(100.0)
+        await self.coordinator.async_request_refresh()
 
     async def async_stop_cover_tilt(self, **kwargs: Any):
         """Stop the cover."""
         await self._blind.set_state(BlindState.STOP)
+        await self.coordinator.async_request_refresh()
 
     async def async_set_cover_tilt_position(self, **kwargs: Any) -> None:
         """Move the cover tilt to a specific position."""
         # myGekko blinds are closed on 100 and open on 0
         await self._blind.set_tilt_position(100.0 - float(kwargs[ATTR_TILT_POSITION]))
+        await self.coordinator.async_request_refresh()
