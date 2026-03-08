@@ -13,7 +13,7 @@
     "PyMyGekko"
   ],
   "requirements": [
-    "PyMyGekko==1.5.1"
+    "PyMyGekko==1.5.2"
   ],
   "version": "1.2.4"
 }
