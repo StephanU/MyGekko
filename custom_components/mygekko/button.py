@@ -39,6 +39,7 @@ class MyGekkoLightGroupOnButton(MyGekkoEntity, ButtonEntity):
     async def async_press(self) -> None:
         """Press the button."""
         await self._light.set_state(LightState.ON)
+        await self.coordinator.async_request_refresh()
 
 
 class MyGekkoLightGroupOffButton(MyGekkoEntity, ButtonEntity):
@@ -54,3 +55,4 @@ class MyGekkoLightGroupOffButton(MyGekkoEntity, ButtonEntity):
     async def async_press(self) -> None:
         """Press the button."""
         await self._light.set_state(LightState.OFF)
+        await self.coordinator.async_request_refresh()
