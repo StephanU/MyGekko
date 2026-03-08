@@ -42,7 +42,9 @@ class MyGekkoSwitch(MyGekkoEntity, SwitchEntity):
     async def async_turn_off(self, **kwargs):
         """Turn off the switch."""
         await self._load.set_state(LoadState.OFF)
+        await self.coordinator.async_request_refresh()
 
     async def async_turn_on(self, **kwargs):
         """Turn on the switch."""
         await self._load.set_state(LoadState.ON_PERMANENT)
+        await self.coordinator.async_request_refresh()
