@@ -37,3 +37,4 @@ class MyGekkoScene(MyGekkoControllerEntity, Scene):
     async def async_activate(self, **kwargs: Any) -> None:
         """Activate the scene."""
         await self._action.set_state(ActionState.ON)
+        await self.coordinator.async_request_refresh()
