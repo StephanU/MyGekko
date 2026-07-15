@@ -113,15 +113,17 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 and CONF_API_KEY in user_input
                 and CONF_GEKKOID in user_input
             ):
-                valid = await self._test_credentials_cloud_mygekko(
+                client = await self._test_credentials_cloud_mygekko(
                     user_input[CONF_USERNAME],
                     user_input[CONF_API_KEY],
                     user_input[CONF_GEKKOID],
                 )
-                if valid:
+                if client is not None:
                     user_input[CONF_CONNECTION_TYPE] = CONF_CONNECTION_MY_GEKKO_CLOUD
+                    gekko_name = await self._read_gekko_name(client)
                     return self.async_create_entry(
-                        title=user_input[CONF_USERNAME], data=user_input
+                        title=gekko_name or user_input[CONF_GEKKOID],
+                        data=user_input,
                     )
                 else:
                     self._errors["base"] = "auth_cloud"
@@ -142,15 +144,17 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 and CONF_USERNAME in user_input
                 and CONF_PASSWORD in user_input
             ):
-                valid = await self._test_credentials_local_mygekko(
+                client = await self._test_credentials_local_mygekko(
                     user_input[CONF_IP_ADDRESS],
                     user_input[CONF_USERNAME],
                     user_input[CONF_PASSWORD],
                 )
-                if valid:
+                if client is not None:
                     user_input[CONF_CONNECTION_TYPE] = CONF_CONNECTION_LOCAL
+                    gekko_name = await self._read_gekko_name(client)
                     return self.async_create_entry(
-                        title=user_input[CONF_USERNAME], data=user_input
+                        title=gekko_name or user_input[CONF_IP_ADDRESS],
+                        data=user_input,
                     )
                 else:
                     self._errors["base"] = "auth_local"
@@ -162,28 +166,41 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     async def _test_credentials_cloud_mygekko(self, username, apikey, gekkoid):
-        """Return true if credentials is valid."""
+        """Return the client if the credentials are valid, None otherwise."""
         try:
             session = async_create_clientsession(self.hass)
             client = MyGekkoQueryApiClient(username, apikey, gekkoid, session)
             await client.try_connect()
-            return True
+            return client
         except ClientConnectorError:
             _LOGGER.exception("ClientConnectorError")
         except MyGekkoError:
             _LOGGER.exception("MyGekkoError")
-        return False
+        return None
 
     async def _test_credentials_local_mygekko(self, ip_address, username, password):
-        """Return true if credentials is valid."""
+        """Return the client if the credentials are valid, None otherwise."""
         try:
             session = async_create_clientsession(self.hass, verify_ssl=False)
             client = MyGekkoLocalApiClient(username, password, session, ip_address)
             await client.try_connect()
-            return True
+            return client
         except ClientConnectorError:
             _LOGGER.exception("ClientConnectorError")
         except MyGekkoError:
             _LOGGER.exception("MyGekkoError")
 
-        return False
+        return None
+
+    async def _read_gekko_name(self, client):
+        """Read the gekko friendly name, None if it cannot be determined."""
+        try:
+            await client.read_data()
+            globals_network = client.get_globals_network()
+            if globals_network:
+                return globals_network.get("gekkoname")
+        except ClientConnectorError:
+            _LOGGER.exception("ClientConnectorError")
+        except MyGekkoError:
+            _LOGGER.exception("MyGekkoError")
+        return None
