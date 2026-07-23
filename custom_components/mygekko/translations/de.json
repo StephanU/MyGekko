@@ -90,6 +90,13 @@
           "2": "Pluggit Auto",
           "3": "Pluggit Woche"
         }
+      },
+      "mygekko_clock": {
+        "state": {
+          "0": "Aus",
+          "1": "Ein",
+          "2": "Ein (Koinzidenz)"
+        }
       }
     },
     "sensor": {
@@ -182,6 +189,201 @@
       },
       "mygekko_meteo_temperature": {
         "name": "Temperatur"
+      },
+      "mygekko_energymanager_grid_power": {
+        "name": "Netzleistung"
+      },
+      "mygekko_energymanager_power_exported_to_grid": {
+        "name": "Einspeiseleistung"
+      },
+      "mygekko_energymanager_solar_power": {
+        "name": "Solarleistung"
+      },
+      "mygekko_energymanager_battery_power": {
+        "name": "Batterieleistung"
+      },
+      "mygekko_energymanager_battery_charging_power": {
+        "name": "Batterieladeleistung"
+      },
+      "mygekko_energymanager_home_power_consumption": {
+        "name": "Hausverbrauch"
+      },
+      "mygekko_energymanager_alternative_power_consumption": {
+        "name": "Alternativer Verbrauch"
+      },
+      "mygekko_energymanager_daily_energy_imported_from_grid": {
+        "name": "Netzbezug heute"
+      },
+      "mygekko_energymanager_daily_energy_exported_to_grid": {
+        "name": "Einspeisung heute"
+      },
+      "mygekko_energymanager_daily_energy_from_solar_panels": {
+        "name": "Solarertrag heute"
+      },
+      "mygekko_energymanager_daily_energy_from_battery": {
+        "name": "Batterieentladung heute"
+      },
+      "mygekko_energymanager_daily_energy_charging_battery": {
+        "name": "Batterieladung heute"
+      },
+      "mygekko_energymanager_daily_home_energy_consumption": {
+        "name": "Hausverbrauch heute"
+      },
+      "mygekko_energymanager_battery_soc": {
+        "name": "Batterieladestand"
+      },
+      "mygekko_energymanager_max_power_consumption_from_grid": {
+        "name": "Maximale Netzbezugsleistung"
+      },
+      "mygekko_energymanager_max_power_export_to_grid": {
+        "name": "Maximale Einspeiseleistung"
+      },
+      "mygekko_energymanager_max_power_solar_panels": {
+        "name": "Maximale Solarleistung"
+      },
+      "mygekko_energymanager_max_power_battery": {
+        "name": "Maximale Batterieleistung"
+      },
+      "mygekko_energymanager_grid_meter_state": {
+        "name": "Netzzähler-Status",
+        "state": {
+          "not_active": "Inaktiv",
+          "active": "Aktiv"
+        }
+      },
+      "mygekko_energymanager_solar_panel_state": {
+        "name": "Solaranlagen-Status",
+        "state": {
+          "not_active": "Inaktiv",
+          "active": "Aktiv"
+        }
+      },
+      "mygekko_energymanager_battery_state": {
+        "name": "Batterie-Status",
+        "state": {
+          "not_active": "Inaktiv",
+          "active": "Aktiv"
+        }
+      },
+      "mygekko_energymanager_load_shedding_state": {
+        "name": "Lastabwurf",
+        "state": {
+          "off": "Aus",
+          "on": "Ein"
+        }
+      },
+      "mygekko_energymanager_ems_state": {
+        "name": "Energiemanagement-Status",
+        "state": {
+          "off": "Aus",
+          "on": "Ein"
+        }
+      },
+      "mygekko_energymanager_ems_enabled": {
+        "name": "Energiemanagement aktiviert",
+        "state": {
+          "disabled": "Deaktiviert",
+          "enabled": "Aktiviert"
+        }
+      },
+      "mygekko_energymanager_battery_model": {
+        "name": "Batteriemodell",
+        "state": {
+          "unavailable": "Nicht verfügbar",
+          "e3dc_s10": "E3/DC S10",
+          "byd": "BYD",
+          "varta_storage": "VARTA storage",
+          "individual": "Individuell",
+          "by_sun_spec_inverters": "SunSpec-Wechselrichter"
+        }
+      },
+      "mygekko_heatingcircuit_flow_temperature": {
+        "name": "Vorlauftemperatur"
+      },
+      "mygekko_heatingcircuit_return_flow_temperature": {
+        "name": "Rücklauftemperatur"
+      },
+      "mygekko_heatingcircuit_dew_point": {
+        "name": "Taupunkt"
+      },
+      "mygekko_heatingcircuit_flow_temperature_setpoint": {
+        "name": "Vorlauf-Solltemperatur"
+      },
+      "mygekko_heatingcircuit_pump_working_level": {
+        "name": "Pumpenleistung"
+      },
+      "mygekko_heatingcircuit_valve_opening_level": {
+        "name": "Ventilöffnung"
+      },
+      "mygekko_heatingcircuit_cooling_mode_state": {
+        "name": "Kühlmodus",
+        "state": {
+          "off": "Aus",
+          "on": "Ein"
+        }
+      },
+      "mygekko_heatingcircuit_state": {
+        "name": "Status",
+        "state": {
+          "off": "Aus",
+          "on": "Ein",
+          "auto": "Auto"
+        }
+      },
+      "mygekko_heatingcircuit_device_model": {
+        "name": "Gerätemodell",
+        "state": {
+          "individual": "Individuell",
+          "buderus": "Buderus",
+          "stiebel": "Stiebel",
+          "vaillant": "Vaillant"
+        }
+      },
+      "mygekko_emobil_charging_power": {
+        "name": "Ladeleistung"
+      },
+      "mygekko_emobil_charging_energy": {
+        "name": "Lademenge"
+      },
+      "mygekko_emobil_charging_current_setpoint": {
+        "name": "Ladestrom"
+      },
+      "mygekko_emobil_maximum_charging_power": {
+        "name": "Maximale Ladeleistung"
+      },
+      "mygekko_emobil_plugged_state": {
+        "name": "Steckerstatus",
+        "state": {
+          "not_plugged": "Nicht eingesteckt",
+          "plugged": "Eingesteckt"
+        }
+      },
+      "mygekko_emobil_charge_state": {
+        "name": "Ladestatus",
+        "state": {
+          "off": "Aus",
+          "on": "Ein",
+          "paused": "Pausiert"
+        }
+      },
+      "mygekko_emobil_charge_request_state": {
+        "name": "Ladeanforderung",
+        "state": {
+          "off": "Aus",
+          "on": "Ein"
+        }
+      },
+      "mygekko_emobil_charge_duration": {
+        "name": "Ladedauer"
+      },
+      "mygekko_emobil_charge_start_time": {
+        "name": "Ladebeginn"
+      },
+      "mygekko_emobil_charge_user": {
+        "name": "Ladebenutzer"
+      },
+      "mygekko_emobil_charge_user_index": {
+        "name": "Ladebenutzer-Index"
       }
     },
     "button": {
@@ -190,6 +392,16 @@
       },
       "mygekko_light_group_off": {
         "name": "Auschalten"
+      }
+    },
+    "switch": {
+      "mygekko_emobil_charge": {
+        "name": "Laden"
+      }
+    },
+    "number": {
+      "mygekko_emobil_charging_power_setpoint": {
+        "name": "Ladeleistungs-Sollwert"
       }
     }
   }

@@ -1,6 +1,8 @@
 """Select platform for MyGekko."""
 from homeassistant.components.select import SelectEntity
 from homeassistant.components.select import SelectEntityDescription
+from PyMyGekko.resources.Clocks import Clock
+from PyMyGekko.resources.Clocks import ClockState
 from PyMyGekko.resources.Vents import Vent
 from PyMyGekko.resources.Vents import VentBypassMode
 from PyMyGekko.resources.Vents import VentWorkingLevel
@@ -25,6 +27,10 @@ async def async_setup_entry(hass, entry, async_add_devices):
     async_add_devices(
         MyGekkoVentWorkingLevelSelect(coordinator, vent)
         for vent in coordinator.api.get_vents()
+    )
+    async_add_devices(
+        MyGekkoClockSelect(coordinator, clock)
+        for clock in coordinator.api.get_clocks()
     )
 
 
@@ -118,4 +124,36 @@ class MyGekkoVentWorkingLevelSelect(MyGekkoEntity, SelectEntity):
         """Change the selected option."""
         await self._vent.set_working_level(option)
         self._set_optimistic("working_level", option, self._vent.working_level)
+        await self.coordinator.async_request_refresh()
+
+
+class MyGekkoClockSelect(MyGekkoEntity, SelectEntity):
+    """mygekko clock select class."""
+
+    _attr_name = None
+
+    def __init__(self, coordinator, clock: Clock):
+        """Initialize a MyGekko clock selection."""
+        super().__init__(coordinator, clock, "clocks")
+        self._clock = clock
+        self.entity_description = SelectEntityDescription(
+            key="mygekko_clock",
+            translation_key="mygekko_clock",
+            options=[
+                str(ClockState.OFF),
+                str(ClockState.ON),
+                str(ClockState.ON_COINCIDENCE),
+            ],
+        )
+
+    @property
+    def current_option(self) -> str | None:
+        """Return the selected entity option to represent the entity state."""
+        state = self._get_optimistic("state", self._clock.state)
+        return str(state) if state is not None else None
+
+    async def async_select_option(self, option: str) -> None:
+        """Change the selected option."""
+        await self._clock.set_state(option)
+        self._set_optimistic("state", option, self._clock.state)
         await self.coordinator.async_request_refresh()
