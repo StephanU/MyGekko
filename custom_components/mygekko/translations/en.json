@@ -372,9 +372,6 @@
           "on": "On"
         }
       },
-      "mygekko_emobil_charge_duration": {
-        "name": "Charge Duration"
-      },
       "mygekko_emobil_charge_start_time": {
         "name": "Charge Start Time"
       },
