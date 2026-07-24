@@ -1,6 +1,9 @@
 """Sensor platform for MyGekko."""
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import datetime
+from datetime import timedelta
+import re
 from typing import Any
 
 from custom_components.mygekko.entity import MyGekkoControllerEntity
@@ -19,6 +22,7 @@ from homeassistant.const import UnitOfPower
 from homeassistant.const import UnitOfSpeed
 from homeassistant.const import UnitOfTemperature
 from homeassistant.const import UnitOfVolumeFlowRate
+from homeassistant.util import dt as dt_util
 from PyMyGekko.resources.AlarmsLogics import AlarmsLogic
 from PyMyGekko.resources.DoorInterComs import DoorInterCom
 from PyMyGekko.resources.EMobils import EMobil
@@ -490,6 +494,77 @@ HEATING_CIRCUIT_SENSORS: tuple[MyGekkoValueSensorDescription, ...] = (
 )
 
 
+# myGekko pre-formats the charge start into a localized, human-readable
+# timestamp whose date order and separators depend on the controller's
+# configured language (e.g. German "23.07.2026 14:47:23", US English
+# "07/23/2026 14:47:23", ISO-like "2026-07-23 14:47:23"). We try the known
+# variants; genuinely ambiguous ones (dd/mm vs mm/dd) are resolved below.
+_CHARGE_START_FORMATS = (
+    "%d.%m.%Y %H:%M:%S",  # de and most of continental Europe
+    "%d/%m/%Y %H:%M:%S",  # it / fr / es / en-GB
+    "%m/%d/%Y %H:%M:%S",  # en-US
+    "%Y-%m-%d %H:%M:%S",  # ISO-like
+    "%d-%m-%Y %H:%M:%S",  # nl
+)
+
+
+def _emobil_charge_duration_seconds(value: str | None) -> int | None:
+    """Read the elapsed charge seconds from a myGekko duration string.
+
+    Handles both "20h 50m 51s" and "20:50:51" style values by taking the
+    numeric groups (locale independent) and reading the last four as days,
+    hours, minutes and seconds. Returns None for missing or zero durations.
+    """
+    if not value:
+        return None
+    groups = [int(part) for part in re.findall(r"\d+", value)]
+    if not groups:
+        return None
+    days, hours, minutes, seconds = ([0, 0, 0, 0] + groups)[-4:]
+    total = ((days * 24 + hours) * 60 + minutes) * 60 + seconds
+    return total or None
+
+
+def _emobil_charge_start(emobil: EMobil) -> datetime | None:
+    """Parse the myGekko charge start time into a timezone-aware datetime.
+
+    myGekko reports ``chargeStartTime`` as an already-localized timestamp whose
+    layout depends on the controller language. We try the known formats and,
+    when more than one matches (e.g. dd/mm vs mm/dd), disambiguate using the
+    elapsed ``chargeDurationTime`` as a rough anchor. Exposing the result via a
+    SensorDeviceClass.TIMESTAMP sensor lets Home Assistant render the elapsed
+    time natively while the stable value stays out of the logbook. Returns None
+    when nothing parses, so the sensor reads "unknown" instead of raising.
+    """
+    value = emobil.charge_start_time
+    if not value:
+        return None
+    value = value.strip()
+
+    candidates: list[datetime] = []
+    for fmt in _CHARGE_START_FORMATS:
+        try:
+            parsed = datetime.strptime(value, fmt)
+        except (ValueError, TypeError):
+            continue
+        if parsed not in candidates:
+            candidates.append(parsed)
+    if not candidates:
+        return None
+
+    if len(candidates) > 1:
+        duration_seconds = _emobil_charge_duration_seconds(
+            emobil.charge_duration_time
+        )
+        if duration_seconds is not None:
+            anchor = (
+                dt_util.now() - timedelta(seconds=duration_seconds)
+            ).replace(tzinfo=None)
+            candidates.sort(key=lambda candidate: abs(candidate - anchor))
+
+    return candidates[0].replace(tzinfo=dt_util.DEFAULT_TIME_ZONE)
+
+
 EMOBIL_SENSORS: tuple[MyGekkoValueSensorDescription, ...] = (
     MyGekkoValueSensorDescription(
         key="charging_power",
@@ -546,16 +621,11 @@ EMOBIL_SENSORS: tuple[MyGekkoValueSensorDescription, ...] = (
         value_fn=lambda ev: _enum_option(ev.charge_request_state),
     ),
     MyGekkoValueSensorDescription(
-        key="charge_duration",
-        translation_key="mygekko_emobil_charge_duration",
-        icon="mdi:timer-outline",
-        value_fn=lambda ev: ev.charge_duration_time,
-    ),
-    MyGekkoValueSensorDescription(
         key="charge_start_time",
         translation_key="mygekko_emobil_charge_start_time",
+        device_class=SensorDeviceClass.TIMESTAMP,
         icon="mdi:clock-start",
-        value_fn=lambda ev: ev.charge_start_time,
+        value_fn=_emobil_charge_start,
     ),
     MyGekkoValueSensorDescription(
         key="charge_user",
@@ -702,6 +772,11 @@ async def async_setup_entry(hass, entry, async_add_devices):
 
 class MyGekkoAlarmsLogicsSensor(MyGekkoControllerEntity, SensorEntity):
     """mygekko AlarmsLogics Sensor class."""
+
+    # AlarmsLogic values are always numeric (see PyMyGekko AlarmsLogic.value).
+    # Marking them as a measurement makes them proper numeric sensors and keeps
+    # their frequent value changes out of the logbook.
+    _attr_state_class = SensorStateClass.MEASUREMENT
 
     def __init__(self, coordinator, alarms_logic: AlarmsLogic, globals_network):
         """Initialize a MyGekko AlarmsLogics sensor."""
