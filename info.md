@@ -17,10 +17,12 @@
 | `climate`      | Thermostats (called roomtemps in MyGekko)                          |
 | `cover`        | Covers (called blinds in MyGekko)                                  |
 | `light`        | Lights                                                             |
-| `switch`       | Switches (called loads in MyGekko)                                 |
+| `switch`       | Switches (called loads in MyGekko) and charging station start/stop (emobils) |
 | `water_heater` | Water Heater (called hotwater_systems in MyGekko)                  |
-| `sensor`       | MyGekko energy_cost metrics and alarms_logics are added as sensors |
+| `sensor`       | Metrics for energy_cost, alarms_logics, energymanager (PV/grid/battery), heatingcircuits and emobils (charging stations) |
 | `scene`        | MyGekko actions are added as scenes                                |
+| `select`       | Vent modes and clocks (schedule timers: off/on/onCoincidence)      |
+| `number`       | Charging station charge power setpoint (emobils)                   |
 
 ![Dashboard Screenshot][dashboard-screenshot]
 

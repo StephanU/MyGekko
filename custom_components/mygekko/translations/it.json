@@ -42,7 +42,8 @@
       "auth_local": "Nome utente/Password/Indirizzo IP errati. Per i dettagli, consultare i registri."
     },
     "abort": {
-      "single_instance_allowed": "È consentita una sola istanza."
+      "single_instance_allowed": "È consentita una sola istanza.",
+      "reconfigure_successful": "La riconfigurazione è avvenuta con successo"
     }
   },
   "entity": {
