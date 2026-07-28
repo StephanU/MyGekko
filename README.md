@@ -71,6 +71,8 @@ custom_components/mygekko/switch.py
 
 The integration supports access via the MyGekko Query Api (you need a MyGekko Plus subscription) or by connecting to your MyGekko locally.
 
+To change the settings of an existing entry — IP address, credentials or even the connection type itself — open "Settings" -> "Devices & services" -> "MyGekko" and pick "Reconfigure" from the entry's menu.
+
 ## Contributions are welcome!
 
 If you want to contribute to this please read the [Contribution guidelines](CONTRIBUTING.md)
