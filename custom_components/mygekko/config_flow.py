@@ -60,7 +60,7 @@ LOCAL_CONNECTION_SCHEMA = vol.Schema(
 class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Config flow for mygekko."""
 
-    VERSION = 3
+    VERSION = 4
     CONNECTION_CLASS = config_entries.CONN_CLASS_CLOUD_POLL
 
     def __init__(self):
