@@ -3,19 +3,31 @@ from unittest.mock import patch
 
 import pytest
 from custom_components.mygekko.const import (
+    CONF_CONNECTION_DEMO_MODE,
+)
+from custom_components.mygekko.const import (
+    CONF_CONNECTION_DEMO_MODE_LABEL,
+)
+from custom_components.mygekko.const import (
+    CONF_CONNECTION_LOCAL,
+)
+from custom_components.mygekko.const import (
+    CONF_CONNECTION_MY_GEKKO_CLOUD,
+)
+from custom_components.mygekko.const import (
+    CONF_CONNECTION_TYPE,
+)
+from custom_components.mygekko.const import (
     DOMAIN,
-)
-from custom_components.mygekko.const import (
-    PLATFORMS,
-)
-from custom_components.mygekko.const import (
-    SENSOR,
 )
 from homeassistant import config_entries
 from homeassistant import data_entry_flow
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+from .const import MOCK_CLOUD_ENTRY_DATA
 from .const import MOCK_CONFIG
+from .const import MOCK_DEMO_ENTRY_DATA
+from .const import MOCK_LOCAL_CONFIG
+from .const import MOCK_LOCAL_ENTRY_DATA
 
 
 # This fixture bypasses the actual setup of the integration
@@ -34,81 +46,92 @@ def bypass_setup_fixture():
         yield
 
 
-# Here we simiulate a successful config flow from the backend.
-# Note that we use the `bypass_try_connect` fixture here because
-# we want the config flow validation to succeed during the test.
-async def test_successful_config_flow(hass, bypass_get_data_fixture):
-    """Test a successful config flow."""
-    # Initialize a config flow
+async def _start_flow(hass, connection_type):
+    """Start a flow and pick a connection type."""
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
 
-    # Check that the config flow shows the user form as the first step
-    assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
-    assert result["step_id"] == "user"
+    # The first step lets the user choose how to connect.
+    assert result["type"] is data_entry_flow.FlowResultType.FORM
+    assert result["step_id"] == "connection_selection"
 
-    # If a user were to enter `test_username` for username and `test_password`
-    # for password, it would result in this function call
-    result = await hass.config_entries.flow.async_configure(
-        result["flow_id"], user_input=MOCK_CONFIG
+    return await hass.config_entries.flow.async_configure(
+        result["flow_id"], user_input={CONF_CONNECTION_TYPE: connection_type}
     )
 
-    # Check that the config flow is complete and a new entry is created with
-    # the input data
-    assert result["type"] == data_entry_flow.RESULT_TYPE_CREATE_ENTRY
-    assert result["title"] == "test_username"
-    assert result["data"] == MOCK_CONFIG
-    assert result["result"]
 
+async def test_cloud_config_flow(hass, bypass_try_connect):
+    """Test a successful config flow via the MyGekko Plus Query API."""
+    result = await _start_flow(hass, CONF_CONNECTION_MY_GEKKO_CLOUD)
 
-# In this case, we want to simulate a failure during the config flow.
-# We use the `error_on_try_connect` mock instead of `bypass_try_connect`
-# (note the function parameters) to raise an Exception during
-# validation of the input config.
-async def test_failed_config_flow(hass, error_on_try_connect):
-    """Test a failed config flow due to credential validation failure."""
-
-    result = await hass.config_entries.flow.async_init(
-        DOMAIN, context={"source": config_entries.SOURCE_USER}
-    )
-
-    assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
-    assert result["step_id"] == "user"
+    assert result["type"] is data_entry_flow.FlowResultType.FORM
+    assert result["step_id"] == "connection_mygekko_cloud"
 
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"], user_input=MOCK_CONFIG
     )
 
-    assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
-    assert result["errors"] == {"base": "auth"}
+    assert result["type"] is data_entry_flow.FlowResultType.CREATE_ENTRY
+    assert result["title"] == "test_username"
+    # The flow stores the selected connection type alongside the credentials.
+    assert result["data"] == MOCK_CLOUD_ENTRY_DATA
+    assert result["result"].version == 3
 
 
-# Our config flow also has an options flow, so we must test it as well.
-async def test_options_flow(hass):
-    """Test an options flow."""
-    # Create a new MockConfigEntry and add to HASS (we're bypassing config
-    # flow entirely)
-    entry = MockConfigEntry(domain=DOMAIN, data=MOCK_CONFIG, entry_id="test")
-    entry.add_to_hass(hass)
+async def test_local_config_flow(hass, bypass_try_connect):
+    """Test a successful config flow via a local connection."""
+    result = await _start_flow(hass, CONF_CONNECTION_LOCAL)
 
-    # Initialize an options flow
-    await hass.config_entries.async_setup(entry.entry_id)
-    result = await hass.config_entries.options.async_init(entry.entry_id)
+    assert result["type"] is data_entry_flow.FlowResultType.FORM
+    assert result["step_id"] == "connection_local"
 
-    # Verify that the first options step is a user form
-    assert result["type"] == data_entry_flow.RESULT_TYPE_FORM
-    assert result["step_id"] == "user"
-
-    # Enter some fake data into the form
-    result = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        user_input={platform: platform != SENSOR for platform in PLATFORMS},
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], user_input=MOCK_LOCAL_CONFIG
     )
 
-    # Verify that the flow finishes
-    assert result["type"] == data_entry_flow.RESULT_TYPE_CREATE_ENTRY
+    assert result["type"] is data_entry_flow.FlowResultType.CREATE_ENTRY
     assert result["title"] == "test_username"
+    assert result["data"] == MOCK_LOCAL_ENTRY_DATA
 
-    # Verify that the options were updated
-    assert entry.options == {SENSOR: False}
+
+async def test_demo_mode_config_flow(hass):
+    """Test that demo mode needs no further input."""
+    result = await _start_flow(hass, CONF_CONNECTION_DEMO_MODE)
+
+    assert result["type"] is data_entry_flow.FlowResultType.CREATE_ENTRY
+    assert result["title"] == CONF_CONNECTION_DEMO_MODE_LABEL
+    assert result["data"] == MOCK_DEMO_ENTRY_DATA
+
+
+async def test_cloud_config_flow_invalid_credentials(hass, error_on_try_connect):
+    """Test that invalid cloud credentials are reported on the form."""
+    result = await _start_flow(hass, CONF_CONNECTION_MY_GEKKO_CLOUD)
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], user_input=MOCK_CONFIG
+    )
+
+    assert result["type"] is data_entry_flow.FlowResultType.FORM
+    assert result["step_id"] == "connection_mygekko_cloud"
+    assert result["errors"] == {"base": "auth_cloud"}
+
+
+async def test_local_config_flow_invalid_credentials(hass, error_on_try_connect):
+    """Test that invalid local credentials are reported on the form."""
+    result = await _start_flow(hass, CONF_CONNECTION_LOCAL)
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], user_input=MOCK_LOCAL_CONFIG
+    )
+
+    assert result["type"] is data_entry_flow.FlowResultType.FORM
+    assert result["step_id"] == "connection_local"
+    assert result["errors"] == {"base": "auth_local"}
+
+
+async def test_multiple_entries_allowed(hass, bypass_try_connect):
+    """Test that a second controller can be configured."""
+    for _ in range(2):
+        result = await _start_flow(hass, CONF_CONNECTION_DEMO_MODE)
+        assert result["type"] is data_entry_flow.FlowResultType.CREATE_ENTRY
+
+    assert len(hass.config_entries.async_entries(DOMAIN)) == 2

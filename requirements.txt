@@ -5,3 +5,6 @@ ruff==0.15.15
 pytest-asyncio
 pytest-homeassistant-custom-component==0.13.316
 PyMyGekko==1.5.2
+# Requirement of homeassistant.components.camera, which camera.py imports. Home
+# Assistant installs it at runtime, the test environment has to bring it along.
+PyTurboJPEG==2.5.0

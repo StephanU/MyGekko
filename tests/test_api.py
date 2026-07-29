@@ -38,9 +38,21 @@ async def test_api(hass, aioclient_mock, caplog):
             }
         },
     )
+    # PyMyGekko reads globals/network from the status response to detect the
+    # hardware generation, so it has to be part of the mocked payload.
     aioclient_mock.get(
         "https://live.my-gekko.com/api/v1/var/status?username=test&key=test&gekkoid=test",
-        json={"blinds": {"item0": {"sumstate": {"value": "0;100.00;;0;90"}}}},
+        json={
+            "blinds": {"item0": {"sumstate": {"value": "0;100.00;;0;90"}}},
+            "globals": {
+                "network": {
+                    "gekkoname": {"value": "myGEKKO"},
+                    "version": {"value": "4711"},
+                    "hardware": {"value": "Slide2"},
+                }
+            },
+        },
     )
     await api.read_data()
     assert len(api.get_blinds()) == 1
+    assert api.get_globals_network()["gekkoname"] == "myGEKKO"
