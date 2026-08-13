@@ -4,7 +4,7 @@ NAME = "MyGekko"
 MANUFACTURER = "myGEKKO | Ekon GmbH"
 DOMAIN = "mygekko"
 DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "1.2.4"
+VERSION = "1.3.0"
 
 ATTRIBUTION = "Data provided by http://jsonplaceholder.typicode.com/"
 ISSUE_URL = "https://github.com/stephanu/mygekko/issues"
@@ -21,7 +21,20 @@ WATER_HEATER = "water_heater"
 BUTTON = "button"
 SELECT = "select"
 CAMERA = "camera"
-PLATFORMS = [COVER, LIGHT, CLIMATE, SWITCH, SCENE, WATER_HEATER, SENSOR, BUTTON, SELECT, CAMERA]
+NUMBER = "number"
+PLATFORMS = [
+    COVER,
+    LIGHT,
+    CLIMATE,
+    SWITCH,
+    SCENE,
+    WATER_HEATER,
+    SENSOR,
+    BUTTON,
+    SELECT,
+    CAMERA,
+    NUMBER,
+]
 
 
 # Configuration and options
