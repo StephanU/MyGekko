@@ -42,7 +42,8 @@
       "auth_local": "Benutzername, Password oder IP Adresse sind falsch. Details findest du in den Protokollen."
     },
     "abort": {
-      "single_instance_allowed": "Es ist nur eine einzige Instanz zulässig."
+      "single_instance_allowed": "Es ist nur eine einzige Instanz zulässig.",
+      "reconfigure_successful": "Die Neukonfiguration war erfolgreich"
     }
   },
   "entity": {
