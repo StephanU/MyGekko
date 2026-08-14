@@ -38,7 +38,13 @@ class MyGekkoDataUpdateCoordinator(DataUpdateCoordinator):
         entry: ConfigEntry,
     ) -> None:
         """Initialize."""
-        super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=SCAN_INTERVAL)
+        super().__init__(
+            hass,
+            _LOGGER,
+            config_entry=entry,
+            name=DOMAIN,
+            update_interval=SCAN_INTERVAL,
+        )
 
         client = None
 
