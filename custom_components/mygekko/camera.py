@@ -9,12 +9,65 @@ from PyMyGekko.resources.Cams import Cam
 from PyMyGekko.resources.Cams import CamFeature
 from PyMyGekko.resources.DoorInterComs import DoorInterCom
 from PyMyGekko.resources.DoorInterComs import DoorInterComFeature
+from yarl import URL
 
 from .const import DOMAIN
 from .entity import MyGekkoEntity
 
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
+
+IMAGE_TIMEOUT = aiohttp.ClientTimeout(total=10)
+
+
+async def _async_fetch_camera_image(image_url: str, camera_name: str) -> bytes | None:
+    """Fetch a camera image, supporting basic and digest auth credentials in the URL."""
+    url = URL(image_url)
+    auth = None
+    if url.user is not None:
+        # aiohttp rejects requests that combine an auth argument with
+        # credentials embedded in the URL, so strip them from the URL.
+        auth = aiohttp.BasicAuth(url.user, url.password or "")
+        url = url.with_user(None)
+
+    try:
+        async with aiohttp.ClientSession(
+            timeout=IMAGE_TIMEOUT
+        ) as session, session.get(url, auth=auth) as resp:
+            if resp.status == 200:
+                return await resp.read()
+            www_authenticate = resp.headers.get("WWW-Authenticate", "")
+            needs_digest = (
+                resp.status == 401
+                and auth is not None
+                and www_authenticate.lower().startswith("digest")
+            )
+            if not needs_digest:
+                _LOGGER.error(
+                    "Error fetching camera image from camera %s: HTTP %s",
+                    camera_name,
+                    resp.status,
+                )
+                return None
+
+        # The camera only accepts digest auth (e.g. Axis cameras), retry with it.
+        digest_auth = aiohttp.DigestAuthMiddleware(auth.login, auth.password)
+        async with aiohttp.ClientSession(
+            timeout=IMAGE_TIMEOUT, middlewares=(digest_auth,)
+        ) as session, session.get(url) as resp:
+            if resp.status != 200:
+                _LOGGER.error(
+                    "Error fetching camera image from camera %s with digest auth: HTTP %s",
+                    camera_name,
+                    resp.status,
+                )
+                return None
+            return await resp.read()
+    except (aiohttp.ClientError, TimeoutError) as err:
+        _LOGGER.error(
+            "Error fetching camera image from camera %s: %s", camera_name, err
+        )
+        return None
 
 
 async def async_setup_entry(hass, entry, async_add_devices):
@@ -40,10 +93,10 @@ class MyGekkoInterComCam(MyGekkoEntity, Camera):
 
         self._door_inter_com = door_inter_com
         supported_features = self._door_inter_com.supported_features
-        self._attr_supported_features = 0
+        self._attr_supported_features = CameraEntityFeature(0)
 
-        if CamFeature.STREAM in supported_features:
-            self._attr_supported_features |= DoorInterComFeature.STREAM
+        if DoorInterComFeature.STREAM in supported_features:
+            self._attr_supported_features |= CameraEntityFeature.STREAM
 
     @callback
     def _handle_coordinator_update(self) -> None:
@@ -59,19 +112,10 @@ class MyGekkoInterComCam(MyGekkoEntity, Camera):
     ) -> bytes | None:
         """Return bytes of camera image."""
         if self._door_inter_com.image_url:
-            try:
-                async with aiohttp.ClientSession() as session, session.get(self._door_inter_com.image_url) as resp:
-                    if resp.status != 200:
-                        _LOGGER.error("Error fetching camera image from camera %s. Error: %s", self._door_inter_com.name, resp.msg)
-                        return None
-                    image_bytes = await resp.read()
-
-                return image_bytes
-
-            except Exception:
-                return None
-        else:
-            return None
+            return await _async_fetch_camera_image(
+                self._door_inter_com.image_url, self._door_inter_com.name
+            )
+        return None
 
 
 class MyGekkoCam(MyGekkoEntity, Camera):
@@ -86,7 +130,7 @@ class MyGekkoCam(MyGekkoEntity, Camera):
 
         self._cam = cam
         supported_features = self._cam.supported_features
-        self._attr_supported_features = 0
+        self._attr_supported_features = CameraEntityFeature(0)
 
         if CamFeature.STREAM in supported_features:
             self._attr_supported_features |= CameraEntityFeature.STREAM
@@ -105,16 +149,5 @@ class MyGekkoCam(MyGekkoEntity, Camera):
     ) -> bytes | None:
         """Return bytes of camera image."""
         if self._cam.image_url:
-            try:
-                async with aiohttp.ClientSession() as session, session.get(self._cam.image_url) as resp:
-                    if resp.status != 200:
-                        _LOGGER.error("Error fetching camera image from camera %s. Error: %s", self._cam.name, resp.msg)
-                        return None
-                    image_bytes = await resp.read()
-
-                return image_bytes
-
-            except Exception:
-                return None
-        else:
-            return None
+            return await _async_fetch_camera_image(self._cam.image_url, self._cam.name)
+        return None
