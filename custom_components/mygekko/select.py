@@ -48,15 +48,13 @@ class MyGekkoVentBypassSelect(MyGekkoEntity, SelectEntity):
     @property
     def current_option(self) -> str | None:
         """Return the selected entity option to represent the entity state."""
-        return (
-            str(self._vent.bypass_state)
-            if self._vent.bypass_state is not None
-            else None
-        )
+        bypass_state = self._get_optimistic("bypass_state", self._vent.bypass_state)
+        return str(bypass_state) if bypass_state is not None else None
 
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""
         await self._vent.set_bypass_state(option)
+        self._set_optimistic("bypass_state", option, self._vent.bypass_state)
         await self.coordinator.async_request_refresh()
 
 
@@ -81,15 +79,13 @@ class MyGekkoVentWorkingModeSelect(MyGekkoEntity, SelectEntity):
     @property
     def current_option(self) -> str | None:
         """Return the selected entity option to represent the entity state."""
-        return (
-            str(self._vent.working_mode)
-            if self._vent.working_mode is not None
-            else None
-        )
+        working_mode = self._get_optimistic("working_mode", self._vent.working_mode)
+        return str(working_mode) if working_mode is not None else None
 
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""
         await self._vent.set_working_mode(option)
+        self._set_optimistic("working_mode", option, self._vent.working_mode)
         await self.coordinator.async_request_refresh()
 
 
@@ -115,13 +111,11 @@ class MyGekkoVentWorkingLevelSelect(MyGekkoEntity, SelectEntity):
     @property
     def current_option(self) -> str | None:
         """Return the selected entity option to represent the entity state."""
-        return (
-            str(self._vent.working_level)
-            if self._vent.working_level is not None
-            else None
-        )
+        working_level = self._get_optimistic("working_level", self._vent.working_level)
+        return str(working_level) if working_level is not None else None
 
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""
         await self._vent.set_working_level(option)
+        self._set_optimistic("working_level", option, self._vent.working_level)
         await self.coordinator.async_request_refresh()
