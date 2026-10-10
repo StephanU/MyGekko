@@ -178,3 +178,16 @@ async def test_alarm_system_is_one_device(hass, setup_demo):
     assert len(devices) == 1
     entities = er.async_entries_for_device(er.async_get(hass), devices[0].id)
     assert len(entities) == 5
+
+
+async def test_temperature_unit_attribute_on_new_home_assistant(hass, setup_demo):
+    """Home Assistant 2026.11 adds the temperature unit to climate and water heater."""
+    from homeassistant.components.climate import ClimateEntity
+
+    if not hasattr(ClimateEntity, "native_temperature_unit"):
+        pytest.skip("temperature_unit attribute exists from Home Assistant 2026.11")
+    assert hass.states.get("climate.living_room").attributes["temperature_unit"] == "°C"
+    assert (
+        hass.states.get("water_heater.hot_water_boiler").attributes["temperature_unit"]
+        == "°C"
+    )

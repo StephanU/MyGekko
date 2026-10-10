@@ -15,6 +15,9 @@ from .const import CLOUD_CONFIG
 async def test_diagnostics_hide_credentials(hass, hass_client, setup_demo):
     """The diagnostics contain statistics and no secrets."""
     diagnostics = await get_diagnostics_for_config_entry(hass, hass_client, setup_demo)
+    assert diagnostics["home_assistant"]["version"]
+    assert diagnostics["home_assistant"]["integration_version"]
+    assert isinstance(diagnostics["home_assistant"]["native_temperature_api"], bool)
     assert diagnostics["coordinator"]["last_update_success"] is True
     assert diagnostics["coordinator"]["backoff_active"] is False
     assert diagnostics["devices"]["lights"] == 4  # three lights and one group

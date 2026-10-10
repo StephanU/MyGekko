@@ -31,10 +31,28 @@ async def async_setup_entry(hass, entry, async_add_devices):
     )
 
 
+# Home Assistant 2026.11 renames the temperature API to native_*, the old names then log
+# warnings. Both variants are offered, the one matching the installed version is used.
+_NATIVE_TEMPERATURE = hasattr(ClimateEntity, "native_temperature_unit")
+
+# readable preset ids of the working modes of MyGekko
+PRESET_BY_MODE = {
+    RoomTempsMode.OFF: "off",
+    RoomTempsMode.COMFORT: "comfort",
+    RoomTempsMode.REDUCED: "reduced",
+    RoomTempsMode.MANUAL: "manual",
+    RoomTempsMode.STANDBY: "standby",
+}
+MODE_BY_PRESET = {preset: mode for mode, preset in PRESET_BY_MODE.items()}
+
+
 class MyGekkoRoomTempClimate(MyGekkoEntity, ClimateEntity):
     """mygekko Climate class."""
 
-    _attr_temperature_unit = UnitOfTemperature.CELSIUS
+    if _NATIVE_TEMPERATURE:
+        _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
+    else:
+        _attr_temperature_unit = UnitOfTemperature.CELSIUS
 
     def __init__(self, coordinator, room_temp: RoomTemp):
         """Initialize the MyGekko climate entity."""
@@ -45,26 +63,34 @@ class MyGekkoRoomTempClimate(MyGekkoEntity, ClimateEntity):
         self._attr_supported_features = ClimateEntityFeature.PRESET_MODE
         self._attr_hvac_mode = HVACMode.AUTO
         self._attr_hvac_modes = [HVACMode.AUTO]
-        self._attr_preset_modes = [
-            str(RoomTempsMode.OFF),
-            str(RoomTempsMode.COMFORT),
-            str(RoomTempsMode.REDUCED),
-            str(RoomTempsMode.MANUAL),
-            str(RoomTempsMode.STANDBY),
-        ]
+        self._attr_preset_modes = list(MODE_BY_PRESET)
 
         if RoomTempsFeature.TARGET_TEMPERATURE in supported_features:
             self._attr_supported_features |= ClimateEntityFeature.TARGET_TEMPERATURE
 
-    @property
-    def current_temperature(self) -> float | None:
-        """Return the current temperature."""
-        return self._room_temp.current_temperature
+    if _NATIVE_TEMPERATURE:
 
-    @property
-    def target_temperature(self) -> float | None:
-        """Return the temperature we try to reach."""
-        return self._room_temp.target_temperature
+        @property
+        def native_current_temperature(self) -> float | None:
+            """Return the current temperature."""
+            return self._room_temp.current_temperature
+
+        @property
+        def native_target_temperature(self) -> float | None:
+            """Return the temperature we try to reach."""
+            return self._room_temp.target_temperature
+
+    else:
+
+        @property
+        def current_temperature(self) -> float | None:
+            """Return the current temperature."""
+            return self._room_temp.current_temperature
+
+        @property
+        def target_temperature(self) -> float | None:
+            """Return the temperature we try to reach."""
+            return self._room_temp.target_temperature
 
     async def async_set_temperature(self, **kwargs) -> None:
         """Set new target temperature."""
@@ -77,16 +103,13 @@ class MyGekkoRoomTempClimate(MyGekkoEntity, ClimateEntity):
             "The mode of %s is %s", self._room_temp.name, self._room_temp.working_mode
         )
 
-        return (
-            str(self._room_temp.working_mode)
-            if self._room_temp.working_mode is not None
-            else None
-        )
+        return PRESET_BY_MODE.get(self._room_temp.working_mode)
 
     async def async_set_preset_mode(self, preset_mode) -> None:
         """Set new preset mode."""
-
-        await self.coordinator.async_write(self._room_temp.set_working_mode, preset_mode)
+        await self.coordinator.async_write(
+            self._room_temp.set_working_mode, MODE_BY_PRESET[preset_mode]
+        )
 
     @property
     def hvac_action(self) -> HVACAction | None:

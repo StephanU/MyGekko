@@ -86,6 +86,14 @@ The integration supports the MyGekko Plus query API (cloud, needs a MyGekko Plus
 - If MyGekko rejects the credentials Home Assistant asks for them again (re-authentication).
 - **Troubleshooting:** download the diagnostics of the integration (credentials, Gekko ID and IP address are redacted) and attach them to an issue. Rate limit warnings (`skipping this update`) mean that MyGekko limits the requests: increase the update interval and avoid automations that switch devices in a fast loop.
 
+## Breaking changes
+
+**1.4.0: climate presets.** The presets of the room controllers now have readable ids: `off`, `comfort`, `reduced`, `manual`, `standby` (before: `1`, `8`, `16`, `64`, `256`). Update automations, scripts and dashboards that call `climate.set_preset_mode` or compare `preset_mode` with the old numbers. The displayed names are translated as before.
+
+## Home Assistant versions
+
+The integration checks which Home Assistant it runs on and uses the matching API: from Home Assistant 2026.11 the `native_*` temperature properties of climate and water heater entities (no deprecation warnings), before that the previous names. It is tested against Home Assistant 2026.8, the current release and the development version of the next release. The diagnostics show the versions in use.
+
 ## How it works
 
 - **Polling:** the integration polls `GET /api/v1/var/status` every 30 seconds. The document with the device names (`GET /api/v1/var`) is read once and refreshed every 30 minutes or when a new device appears, so only one request per poll is needed.
@@ -106,6 +114,8 @@ pytest tests
 The GitHub workflow `Tests` runs this on every pull request with the Home Assistant version from `requirements.txt`, and weekly against the newest stable and the beta Home Assistant to find upcoming incompatibilities early. `Validate` runs hassfest and the HACS validation daily.
 
 ## Development Hints
+
+- `scripts/test-ha-dev` runs the tests against the development version of Home Assistant (needs a checkout of home-assistant/core, see the header of the script)
 
 - Start in VsCode in with the DevContainer extension
 - execute `scripts/setup` to install dependencies

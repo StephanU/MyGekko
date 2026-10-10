@@ -8,10 +8,13 @@ from homeassistant.const import CONF_API_KEY
 from homeassistant.const import CONF_IP_ADDRESS
 from homeassistant.const import CONF_PASSWORD
 from homeassistant.const import CONF_USERNAME
+from homeassistant.components.climate import ClimateEntity
+from homeassistant.const import __version__ as HA_VERSION
 from homeassistant.core import HomeAssistant
 
 from .api.schema import SPECS
 from .const import CONF_GEKKOID
+from .const import VERSION
 from .coordinator import MyGekkoConfigEntry
 
 TO_REDACT = {CONF_API_KEY, CONF_GEKKOID, CONF_IP_ADDRESS, CONF_PASSWORD, CONF_USERNAME}
@@ -24,6 +27,12 @@ async def async_get_config_entry_diagnostics(
     coordinator = entry.runtime_data
     store = coordinator.api.store
     return {
+        "home_assistant": {
+            "version": HA_VERSION,
+            "integration_version": VERSION,
+            # Home Assistant 2026.11 renamed the temperature API of climate entities
+            "native_temperature_api": hasattr(ClimateEntity, "native_temperature_unit"),
+        },
         "entry": {
             "version": entry.version,
             "data": async_redact_data(dict(entry.data), TO_REDACT),

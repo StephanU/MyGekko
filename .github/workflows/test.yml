@@ -63,3 +63,33 @@ jobs:
 
       - name: "Run tests"
         run: python3 -m pytest tests
+
+  dev:
+    name: "Tests (Home Assistant dev, next release)"
+    # shows what the next Home Assistant release will break, it does not block pull requests
+    continue-on-error: true
+    if: github.event_name != 'pull_request'
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Checkout the repository"
+        uses: "actions/checkout@v7.0.1"
+
+      - name: "Checkout Home Assistant core"
+        uses: "actions/checkout@v7.0.1"
+        with:
+          repository: home-assistant/core
+          path: ha-core
+          fetch-depth: 1
+
+      - name: "Set up Python"
+        uses: actions/setup-python@v7.0.0
+        with:
+          python-version: "3.14"
+
+      - name: "Install Home Assistant core requirements"
+        run: |
+          python3 -m pip install -r ha-core/requirements.txt -r ha-core/requirements_test.txt
+          python3 -m pip install PyTurboJPEG pytest-asyncio
+
+      - name: "Run tests against Home Assistant dev"
+        run: HA_CORE="$PWD/ha-core" PYTHON=python3 scripts/test-ha-dev

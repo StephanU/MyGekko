@@ -31,11 +31,19 @@ async def async_setup_entry(hass, entry, async_add_devices):
         )
 
 
+# Home Assistant 2026.11 renames the temperature API to native_*, the old names then log
+# warnings. Both variants are offered, the one matching the installed version is used.
+_NATIVE_TEMPERATURE = hasattr(WaterHeaterEntity, "native_temperature_unit")
+
+
 class MyGekkoWaterHeater(MyGekkoEntity, WaterHeaterEntity):
     """mygekko water heater class."""
 
     _attr_name = None
-    _attr_temperature_unit = UnitOfTemperature.CELSIUS
+    if _NATIVE_TEMPERATURE:
+        _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
+    else:
+        _attr_temperature_unit = UnitOfTemperature.CELSIUS
 
     def __init__(self, coordinator, hotwater_system: HotWaterSystem):
         """Initialize a MyGekko water heater."""
@@ -61,31 +69,49 @@ class MyGekkoWaterHeater(MyGekkoEntity, WaterHeaterEntity):
         _LOGGER.debug("Switch on water heater %s", self._hotwater_system.name)
         await self.coordinator.async_write(self._hotwater_system.set_state, HotWaterSystemState.ON)
 
-    @property
-    def target_temperature(self) -> float | None:
-        """Return the target temperature of the water heater."""
+    def _target(self) -> float | None:
         _LOGGER.debug(
             "The water heaters %s current target temperature is %s",
             self._hotwater_system.name,
             self._hotwater_system.target_temperature,
         )
-
         return self._hotwater_system.target_temperature
 
-    async def async_set_temperature(self, **kwargs: Any) -> None:
-        """Set new target temperature."""
-        await self.coordinator.async_write(self._hotwater_system.set_target_temperature, float(kwargs[ATTR_TEMPERATURE]))
-
-    @property
-    def current_temperature(self) -> float | None:
-        """Return the top temperature of the water heater."""
+    def _top(self) -> float | None:
         _LOGGER.debug(
             "The water heaters %s current top temperature is %s",
             self._hotwater_system.name,
             self._hotwater_system.current_temperature_top,
         )
-
         return self._hotwater_system.current_temperature_top
+
+    if _NATIVE_TEMPERATURE:
+
+        @property
+        def native_target_temperature(self) -> float | None:
+            """Return the target temperature of the water heater."""
+            return self._target()
+
+        @property
+        def native_current_temperature(self) -> float | None:
+            """Return the top temperature of the water heater."""
+            return self._top()
+
+    else:
+
+        @property
+        def target_temperature(self) -> float | None:
+            """Return the target temperature of the water heater."""
+            return self._target()
+
+        @property
+        def current_temperature(self) -> float | None:
+            """Return the top temperature of the water heater."""
+            return self._top()
+
+    async def async_set_temperature(self, **kwargs: Any) -> None:
+        """Set new target temperature."""
+        await self.coordinator.async_write(self._hotwater_system.set_target_temperature, float(kwargs[ATTR_TEMPERATURE]))
 
     @property
     def current_operation(self) -> str | None:

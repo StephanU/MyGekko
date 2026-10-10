@@ -68,3 +68,8 @@ Analyse in echtem HA zeigte: 24 Geräte ohne Modell/Bereich/Verbindung zum Contr
 - Brand-Assets (`brand/icon.png`, `logo.png`, dark), README/info.md überarbeitet, Demo-Daten um alle neuen Typen erweitert.
 - Tests: 90 gegen HA 2026.8.1 und 2026.10.0.
 - Hinweis: Einige HA-Änderungen kommen erst in 2026.11 (z. B. `native_`-Präfix bei Climate/Water-Heater-Temperatur); der wöchentliche beta-Lauf der CI meldet Brüche.
+
+## Update: lesbare Presets und Kompatibilität mit HA 2026.11
+- Climate-Presets heißen jetzt `off/comfort/reduced/manual/standby` (vorher `1/8/16/64/256`), dokumentiert als Breaking Change (Version 1.4.0).
+- HA 2026.11 (noch nicht veröffentlicht) benennt die Temperatur-API von Climate/Water Heater in `native_*` um. Beide Varianten werden angeboten; zur Laufzeit wird anhand der Basisklasse erkannt, welche die installierte HA-Version hat (keine Warnungen ab 2026.11, 2026.8–2026.10 unverändert).
+- Tests laufen gegen HA 2026.8.1, 2026.10.0 und den dev-Stand von 2026.11 (`scripts/test-ha-dev`); wöchentlicher CI-Lauf gegen stable, beta und dev (nicht blockierend). Diagnostics zeigen HA- und Integrationsversion.

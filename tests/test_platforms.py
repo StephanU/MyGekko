@@ -32,7 +32,7 @@ def _sent(entry):
         ("switch", "turn_off", "switch.wallbox_garage_charging", {}, "-1"),
         ("switch", "turn_on", "switch.wallbox_garage_charging", {}, "1"),
         ("climate", "set_temperature", "climate.bedroom", {"temperature": 21.5}, "S21.5"),
-        ("climate", "set_preset_mode", "climate.bedroom", {"preset_mode": "8"}, "M8"),
+        ("climate", "set_preset_mode", "climate.bedroom", {"preset_mode": "comfort"}, "M8"),
         ("select", "select_option", "select.ventilation_level", {"option": "0"}, "-1"),
         ("select", "select_option", "select.ventilation_level", {"option": "3"}, "3"),
         ("select", "select_option", "select.schiebeturen", {"option": "off"}, "0"),
@@ -96,3 +96,24 @@ async def test_commands_are_sent_one_after_another(hass, setup_demo):
         _call(hass, "switch", "turn_off", "switch.wallbox_garage_charging"),
     )
     assert peak == 1
+
+
+async def test_presets_have_readable_ids(hass, setup_demo):
+    """The working modes are offered as off, comfort, reduced, manual and standby."""
+    state = hass.states.get("climate.living_room")
+    assert state.attributes["preset_modes"] == [
+        "off", "comfort", "reduced", "manual", "standby",
+    ]
+    assert state.attributes["preset_mode"] == "comfort"
+
+
+async def test_no_deprecation_warnings_of_the_integration(hass, setup_demo, caplog):
+    """The integration uses the temperature API that matches the installed version."""
+    await hass.async_block_till_done()
+    deprecations = [
+        record.getMessage()
+        for record in caplog.records
+        if "custom_components.mygekko" in record.getMessage()
+        and "deprecated" in record.getMessage()
+    ]
+    assert not deprecations

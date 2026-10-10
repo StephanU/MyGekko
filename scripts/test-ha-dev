@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Run the tests against the development version of Home Assistant core (the next release).
+#
+#   HA_CORE=/path/to/home-assistant-core scripts/test-ha-dev
+#
+# Needs a checkout of https://github.com/home-assistant/core (any branch/tag) and a virtualenv
+# with its requirements (python -m venv, pip install -r requirements.txt -r requirements_test.txt
+# from the core checkout). The tests use the test fixtures of core instead of
+# pytest-homeassistant-custom-component, which only exists for released versions.
+set -euo pipefail
+
+: "${HA_CORE:?set HA_CORE to the path of a home-assistant/core checkout}"
+PYTHON="${PYTHON:-python}"
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+WORK="$(mktemp -d)"
+trap 'rm -rf "$WORK"' EXIT
+
+# shim: the tests import their helpers from pytest_homeassistant_custom_component
+mkdir -p "$WORK/pytest_homeassistant_custom_component/components/diagnostics"
+touch "$WORK/pytest_homeassistant_custom_component/__init__.py" \
+      "$WORK/pytest_homeassistant_custom_component/components/__init__.py"
+echo "from tests.common import *  # noqa" > "$WORK/pytest_homeassistant_custom_component/common.py"
+echo "from tests.common import MockConfigEntry  # noqa" >> "$WORK/pytest_homeassistant_custom_component/common.py"
+echo "from tests.components.diagnostics import *  # noqa" \
+  > "$WORK/pytest_homeassistant_custom_component/components/diagnostics/__init__.py"
+
+mkdir "$WORK/mg_tests"
+cp "$ROOT"/tests/*.py "$WORK/mg_tests/"
+sed -i '/^pytest_plugins/d' "$WORK/mg_tests/conftest.py"
+# the tests read the demo data relative to the repository root
+sed -i "s#\"custom_components/mygekko/#\"$ROOT/custom_components/mygekko/#" "$WORK/mg_tests/"*.py
+ln -s "$ROOT/custom_components" "$WORK/custom_components"
+
+cd "$WORK"
+PYTHONPATH="$HA_CORE:$WORK" "$PYTHON" -m pytest mg_tests -p tests.conftest -p no:cacheprovider \
+  -o addopts="" -o asyncio_mode=auto -q "$@"

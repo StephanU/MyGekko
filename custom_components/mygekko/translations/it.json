@@ -78,11 +78,11 @@
         "state_attributes": {
           "preset_mode": {
             "state": {
-              "1": "Spento",
-              "8": "Comfort",
-              "16": "Ridotto",
-              "64": "Manuale",
-              "256": "Standby"
+              "off": "Spento",
+              "comfort": "Comfort",
+              "reduced": "Ridotto",
+              "manual": "Manuale",
+              "standby": "Standby"
             }
           }
         }
