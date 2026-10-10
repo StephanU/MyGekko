@@ -57,3 +57,14 @@ Lizenzkopie in `api/LICENSE-PyMyGekko`):
   langsam); AQI-Sensor mit unzulässiger Einheit `%`; Wetter-Sensoren auch ohne Wetterstation; Kamera-Fehlermeldung.
 - HA-Standards: `PARALLEL_UPDATES`, `integration_type`, Diagnostics (ohne Zugangsdaten), Reconfigure-Flow, hassfest 0 Fehler (2026.8.1 und 2026.10.0).
 - CI: neuer Workflow `Tests` (gepinnt bei jedem PR; wöchentlich gegen stable und beta HA), Pins auf HA 2026.10.0.
+
+## Update: Optimierung für HA 2026.10
+Analyse in echtem HA zeigte: 24 Geräte ohne Modell/Bereich/Verbindung zum Controller, keine Entity-Kategorien, 16 Zeitfenster-Sensoren je Zähler aktiv, 46 Entities ohne Übersetzung.
+- Geräte: Controller-Gerät (Modell, Version, URL), `via_device`, optional Bereiche aus MyGekko-Seiten, `element_status`-Attribut (gesperrt/manuell/Alarm).
+- Entities: Diagnose-Kategorie für Grenzwerte, Zeitfenster-Sensoren standardmäßig aus, `icons.json`, Übersetzungen en/de/fr/it/nb komplett (Test hält sie vollständig).
+- Optionen: Abfrage-Intervall, Bereiche; Reauth bei 401/403; Reparaturhinweis bei dauerhaftem Rate-Limit.
+- Neue Gerätetypen (Feldformate aus der API-Beschreibung): Heizsysteme, Alarmanlage (nur lesen), Multiroom-Audio, SMS/E-Mail, Trends, Zutrittstüren; neue Plattform `binary_sensor`.
+- Climate: `hvac_action` aus dem Ventilöffnungsgrad, Bodentemperatur-Sensor.
+- Brand-Assets (`brand/icon.png`, `logo.png`, dark), README/info.md überarbeitet, Demo-Daten um alle neuen Typen erweitert.
+- Tests: 90 gegen HA 2026.8.1 und 2026.10.0.
+- Hinweis: Einige HA-Änderungen kommen erst in 2026.11 (z. B. `native_`-Präfix bei Climate/Water-Heater-Temperatur); der wöchentliche beta-Lauf der CI meldet Brüche.

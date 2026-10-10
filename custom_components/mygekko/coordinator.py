@@ -11,8 +11,10 @@ from homeassistant.const import CONF_IP_ADDRESS
 from homeassistant.const import CONF_PASSWORD
 from homeassistant.const import CONF_USERNAME
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.exceptions import ConfigEntryError
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.debounce import Debouncer
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
@@ -29,10 +31,12 @@ from .const import CONF_CONNECTION_LOCAL
 from .const import CONF_CONNECTION_MY_GEKKO_CLOUD
 from .const import CONF_CONNECTION_TYPE
 from .const import CONF_GEKKOID
+from .const import CONF_SCAN_INTERVAL
+from .const import DEFAULT_SCAN_INTERVAL
 from .const import DOMAIN
 
 
-SCAN_INTERVAL = timedelta(seconds=30)
+SCAN_INTERVAL = timedelta(seconds=DEFAULT_SCAN_INTERVAL)
 MAX_BACKOFF_INTERVAL = timedelta(minutes=5)
 UPDATE_TIMEOUT = 40
 REFRESH_COOLDOWN = 2.0
@@ -40,6 +44,8 @@ WRITE_TIMEOUT = 15
 WRITE_MIN_DELAY = 0.3
 # rate limited polls that are skipped silently before the entities become unavailable
 MAX_SKIPPED_POLLS = 5
+# rejected requests (HTTP 401/403) before the user has to log in again
+MAX_AUTH_FAILURES = 3
 WRITE_RETRIES = 3
 WRITE_RETRY_DELAY = 2
 
@@ -57,12 +63,15 @@ class MyGekkoDataUpdateCoordinator(DataUpdateCoordinator):
         entry: ConfigEntry,
     ) -> None:
         """Initialize."""
+        self._base_interval = timedelta(
+            seconds=entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+        )
         super().__init__(
             hass,
             _LOGGER,
             config_entry=entry,
             name=DOMAIN,
-            update_interval=SCAN_INTERVAL,
+            update_interval=self._base_interval,
             request_refresh_debouncer=Debouncer(
                 hass, _LOGGER, cooldown=REFRESH_COOLDOWN, immediate=False
             ),
@@ -100,6 +109,31 @@ class MyGekkoDataUpdateCoordinator(DataUpdateCoordinator):
         self._skipped_polls = 0
         self._backoff_until = 0.0
         self._has_data = False
+        self._auth_failures = 0
+        self.controller_registry_id: str | None = None
+
+    @property
+    def base_interval(self) -> timedelta:
+        """Return the configured poll interval."""
+        return self._base_interval
+
+    def _issue_id(self) -> str:
+        return f"rate_limited_{self.config_entry.entry_id}"
+
+    def _create_rate_limit_issue(self) -> None:
+        """Tell the user that MyGekko limits the requests."""
+        ir.async_create_issue(
+            self.hass,
+            DOMAIN,
+            self._issue_id(),
+            is_fixable=False,
+            severity=ir.IssueSeverity.WARNING,
+            translation_key="rate_limited",
+            translation_placeholders={"name": self.config_entry.title},
+        )
+
+    def _clear_rate_limit_issue(self) -> None:
+        ir.async_delete_issue(self.hass, DOMAIN, self._issue_id())
 
     @property
     def is_backing_off(self) -> bool:
@@ -123,12 +157,16 @@ class MyGekkoDataUpdateCoordinator(DataUpdateCoordinator):
             async with asyncio.timeout(UPDATE_TIMEOUT):
                 result = await self.api.read_data()
         except MyGekkoTooManyRequests as exception:
-            current = self.update_interval or SCAN_INTERVAL
-            self.update_interval = min(current * 2, MAX_BACKOFF_INTERVAL)
+            current = self.update_interval or self._base_interval
+            self.update_interval = min(
+                current * 2, max(MAX_BACKOFF_INTERVAL, self._base_interval)
+            )
             self._backoff_until = time.monotonic() + self.update_interval.total_seconds()
             self._skipped_polls += 1
             # without data (e.g. at startup) there is nothing to keep: setup must retry
             if not self._has_data or self._skipped_polls > MAX_SKIPPED_POLLS:
+                if self._skipped_polls > MAX_SKIPPED_POLLS:
+                    self._create_rate_limit_issue()
                 raise UpdateFailed(
                     f"MyGekko rate limit persists, retrying in {self.update_interval}"
                 ) from exception
@@ -140,8 +178,14 @@ class MyGekkoDataUpdateCoordinator(DataUpdateCoordinator):
             )
             return self.data
         except MyGekkoForbidden as exception:
+            # a running integration tolerates a few rejections before asking the user
+            self._auth_failures += 1
+            if not self._has_data or self._auth_failures >= MAX_AUTH_FAILURES:
+                raise ConfigEntryAuthFailed(
+                    "MyGekko rejected the credentials or access"
+                ) from exception
             raise UpdateFailed(
-                "MyGekko rejected the credentials or access (403 Forbidden)"
+                f"MyGekko rejected the request ({self._auth_failures}/{MAX_AUTH_FAILURES})"
             ) from exception
         except TimeoutError as exception:
             raise UpdateFailed(
@@ -152,12 +196,14 @@ class MyGekkoDataUpdateCoordinator(DataUpdateCoordinator):
                 f"Error fetching MyGekko data: {type(exception).__name__}: {exception}"
             ) from exception
 
-        if self._skipped_polls or self.update_interval != SCAN_INTERVAL:
+        if self._skipped_polls or self.update_interval != self._base_interval:
             _LOGGER.info("MyGekko API reachable again, restoring update interval")
         self._has_data = True
+        self._auth_failures = 0
         self._skipped_polls = 0
         self._backoff_until = 0.0
-        self.update_interval = SCAN_INTERVAL
+        self.update_interval = self._base_interval
+        self._clear_rate_limit_issue()
         return result
 
     async def async_write(self, method, *args) -> None:

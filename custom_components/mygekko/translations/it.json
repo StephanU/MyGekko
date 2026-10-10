@@ -35,6 +35,28 @@
           "username": "Il nome utente di un utente dell'API di interrogazione locale.",
           "password": "La password dell'utente."
         }
+      },
+      "reconfigure": {
+        "title": "Riconfigura MyGekko",
+        "description": "Modifica le credenziali o l'indirizzo di questo MyGekko.",
+        "data": {
+          "username": "Nome utente",
+          "api_key": "Chiave API",
+          "gekkoid": "ID Gekko",
+          "ip_address": "Indirizzo IP",
+          "password": "Password"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Accedi di nuovo a MyGekko",
+        "description": "MyGekko ha rifiutato le credenziali. Inseriscile di nuovo.",
+        "data": {
+          "username": "Nome utente",
+          "api_key": "Chiave API",
+          "gekkoid": "ID Gekko",
+          "ip_address": "Indirizzo IP",
+          "password": "Password"
+        }
       }
     },
     "error": {
@@ -42,7 +64,12 @@
       "auth_local": "Nome utente/Password/Indirizzo IP errati. Per i dettagli, consultare i registri."
     },
     "abort": {
-      "single_instance_allowed": "È consentita una sola istanza."
+      "single_instance_allowed": "È consentita una sola istanza.",
+      "already_configured": "Questo MyGekko è già configurato.",
+      "reconfigure_successful": "La configurazione è stata aggiornata.",
+      "reconfigure_not_supported": "La modalità demo non può essere riconfigurata.",
+      "reauth_successful": "Le credenziali sono state aggiornate.",
+      "wrong_account": "Le credenziali appartengono a un altro MyGekko."
     }
   },
   "entity": {
@@ -180,6 +207,90 @@
       },
       "mygekko_meteo_temperature": {
         "name": "Temperatura"
+      },
+      "mygekko_energymanager_grid_meter_power": {
+        "name": "Potenza di rete"
+      },
+      "mygekko_energymanager_power_exported_to_grid": {
+        "name": "Potenza immessa in rete"
+      },
+      "mygekko_energymanager_power_from_solar_panels": {
+        "name": "Potenza solare"
+      },
+      "mygekko_energymanager_power_from_battery": {
+        "name": "Potenza della batteria"
+      },
+      "mygekko_energymanager_power_charging_battery": {
+        "name": "Potenza di carica della batteria"
+      },
+      "mygekko_energymanager_home_power_consumption": {
+        "name": "Consumo della casa"
+      },
+      "mygekko_energymanager_daily_energy_imported_from_grid": {
+        "name": "Energia prelevata dalla rete oggi"
+      },
+      "mygekko_energymanager_daily_energy_exported_to_grid": {
+        "name": "Energia immessa in rete oggi"
+      },
+      "mygekko_energymanager_daily_energy_from_solar_panels": {
+        "name": "Energia solare oggi"
+      },
+      "mygekko_energymanager_daily_energy_from_battery": {
+        "name": "Energia dalla batteria oggi"
+      },
+      "mygekko_energymanager_daily_energy_charging_battery": {
+        "name": "Energia di carica batteria oggi"
+      },
+      "mygekko_energymanager_daily_home_energy_consumption": {
+        "name": "Consumo della casa oggi"
+      },
+      "mygekko_energymanager_battery_soc": {
+        "name": "Carica della batteria"
+      },
+      "mygekko_emobil_current_charging_power": {
+        "name": "Potenza di ricarica"
+      },
+      "mygekko_emobil_maximum_charging_power": {
+        "name": "Potenza di ricarica massima"
+      },
+      "mygekko_emobil_charging_power_setpoint": {
+        "name": "Setpoint potenza di ricarica"
+      },
+      "mygekko_emobil_current_charging_energy": {
+        "name": "Energia caricata"
+      },
+      "mygekko_heatingcircuit_flow_temperature": {
+        "name": "Temperatura di mandata"
+      },
+      "mygekko_heatingcircuit_return_flow_temperature": {
+        "name": "Temperatura di ritorno"
+      },
+      "mygekko_heatingcircuit_flow_temperature_setpoint": {
+        "name": "Setpoint temperatura di mandata"
+      },
+      "mygekko_heatingcircuit_dew_point": {
+        "name": "Punto di rugiada"
+      },
+      "mygekko_heatingcircuit_pump_working_level": {
+        "name": "Livello della pompa"
+      },
+      "mygekko_heatingcircuit_valve_opening_level": {
+        "name": "Apertura della valvola"
+      },
+      "mygekko_heatingsystem_flow_temperature": {
+        "name": "Temperatura di mandata"
+      },
+      "mygekko_heatingsystem_flow_temperature_setpoint": {
+        "name": "Setpoint temperatura di mandata"
+      },
+      "mygekko_multiroom_volume": {
+        "name": "Volume"
+      },
+      "mygekko_multiroom_audio_title": {
+        "name": "Titolo"
+      },
+      "mygekko_roomtemp_floor_temperature": {
+        "name": "Temperatura del pavimento"
       }
     },
     "button": {
@@ -189,6 +300,72 @@
       "mygekko_light_group_off": {
         "name": "Spegnere"
       }
+    },
+    "binary_sensor": {
+      "mygekko_accessdoor_open": {
+        "name": "Aperto"
+      },
+      "mygekko_emobil_plugged": {
+        "name": "Collegato"
+      },
+      "mygekko_emobil_charge_request": {
+        "name": "Richiesta di ricarica"
+      },
+      "mygekko_energymanager_load_shedding": {
+        "name": "Distacco carichi"
+      },
+      "mygekko_energymanager_ems": {
+        "name": "Gestione energetica attiva"
+      },
+      "mygekko_heatingcircuit_running": {
+        "name": "In funzione"
+      },
+      "mygekko_heatingcircuit_cooling": {
+        "name": "Raffrescamento"
+      },
+      "mygekko_heatingsystem_running": {
+        "name": "In funzione"
+      },
+      "mygekko_heatingsystem_cooling": {
+        "name": "Raffrescamento"
+      },
+      "mygekko_alarmsystem_alarm": {
+        "name": "Allarme"
+      },
+      "mygekko_alarmsystem_zone_armed": {
+        "name": "Zona {zone} inserita"
+      },
+      "mygekko_alarmsystem_zone_alarm": {
+        "name": "Allarme zona {zone}"
+      },
+      "mygekko_smsemail_active": {
+        "name": "Attivo"
+      },
+      "mygekko_multiroom_playing": {
+        "name": "In riproduzione"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opzioni MyGekko",
+        "description": "L'API di query MyGekko Plus limita il numero di richieste. Aumenta l'intervallo se compaiono avvisi di limite.",
+        "data": {
+          "scan_interval": "Intervallo di aggiornamento (secondi)",
+          "use_pages_as_areas": "Usa le pagine MyGekko come aree"
+        },
+        "data_description": {
+          "scan_interval": "Frequenza di lettura dei valori. Predefinito 30 secondi, minimo 10.",
+          "use_pages_as_areas": "Suggerisce la pagina (ad es. piano o stanza) di un dispositivo nell'app MyGekko come area. Vale solo per i dispositivi aggiunti di recente."
+        }
+      }
+    }
+  },
+  "issues": {
+    "rate_limited": {
+      "title": "MyGekko limita le richieste",
+      "description": "MyGekko ({name}) rifiuta le richieste perché ne sono state inviate troppe (HTTP 429). I valori potrebbero non essere aggiornati. Aumenta l'intervallo di aggiornamento nelle opzioni dell'integrazione ed evita automazioni che commutano dispositivi in un ciclo rapido."
     }
   }
 }

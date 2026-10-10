@@ -414,3 +414,42 @@ class VentBypassState(IntEnum):
     AUTO = 0
     MANUAL = 1
     SUMMER = 2
+
+
+class HeatingSystemDeviceModel(IntEnum):
+    """MyGekko heating system device model."""
+
+    INDIVIDUAL = 0
+    BUDERUS = 1
+    STIEBEL = 2
+    TECALOR = 3
+    VAILLANT = 4
+
+
+class OnOffState(IntEnum):
+    """Generic off/on state."""
+
+    OFF = 0
+    ON = 1
+
+
+class AlarmSystemAlarmState(IntEnum):
+    """MyGekko alarm system state."""
+
+    OK = 0
+    ALARM = 1
+
+
+class AlarmSystemZoneAlarmState(IntEnum):
+    """MyGekko alarm system zone alarm state."""
+
+    OK = 0
+    ALARM_BUT_UNSHARP = 2
+    ALARM = 3
+
+
+class AlarmSystemSharpState(IntEnum):
+    """MyGekko alarm system zone sharp (armed) state."""
+
+    UNSHARP = 0
+    SHARP = 1

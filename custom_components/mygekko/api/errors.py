@@ -10,7 +10,7 @@ class MyGekkoBadRequest(MyGekkoError):
 
 
 class MyGekkoForbidden(MyGekkoError):
-    """The credentials or permissions are not sufficient (HTTP 403)."""
+    """The credentials or permissions are not sufficient (HTTP 401/403)."""
 
 
 class MyGekkoNotFound(MyGekkoError):
@@ -35,6 +35,7 @@ class MyGekkoNoResponse(MyGekkoError):
 
 _STATUS_ERRORS: dict[int, type[MyGekkoError]] = {
     400: MyGekkoBadRequest,
+    401: MyGekkoForbidden,
     403: MyGekkoForbidden,
     404: MyGekkoNotFound,
     405: MyGekkoMethodNotAllowed,

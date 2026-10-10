@@ -5,10 +5,12 @@ from math import ceil
 from homeassistant.components.climate import ATTR_TEMPERATURE
 from homeassistant.components.climate import ClimateEntity
 from homeassistant.components.climate import ClimateEntityFeature
+from homeassistant.components.climate import HVACAction
 from homeassistant.components.climate import HVACMode
 from homeassistant.const import UnitOfTemperature
 from .api import RoomTemp
 from .api import RoomTempsFeature
+from .api import OnOffState
 from .api import RoomTempsMode
 
 from .entity import MyGekkoEntity
@@ -85,6 +87,20 @@ class MyGekkoRoomTempClimate(MyGekkoEntity, ClimateEntity):
         """Set new preset mode."""
 
         await self.coordinator.async_write(self._room_temp.set_working_mode, preset_mode)
+
+    @property
+    def hvac_action(self) -> HVACAction | None:
+        """Return what the room controller does: heating, cooling or idle."""
+        if self._room_temp.working_mode == RoomTempsMode.OFF:
+            return HVACAction.OFF
+        valve = self._room_temp.valve_opening
+        if valve is None:
+            return None
+        if valve <= 0:
+            return HVACAction.IDLE
+        if self._room_temp.cooling_mode_state == OnOffState.ON:
+            return HVACAction.COOLING
+        return HVACAction.HEATING
 
     @property
     def current_humidity(self) -> int | None:

@@ -46,6 +46,17 @@
           "ip_address": "IP address",
           "password": "Password"
         }
+      },
+      "reauth_confirm": {
+        "title": "Authenticate MyGekko again",
+        "description": "MyGekko rejected the credentials. Please enter them again.",
+        "data": {
+          "username": "Username",
+          "api_key": "Api Key",
+          "gekkoid": "Gekko ID",
+          "ip_address": "IP address",
+          "password": "Password"
+        }
       }
     },
     "error": {
@@ -56,7 +67,9 @@
       "single_instance_allowed": "Only a single instance is allowed.",
       "already_configured": "This MyGekko is already configured.",
       "reconfigure_successful": "The configuration was updated.",
-      "reconfigure_not_supported": "The demo mode cannot be reconfigured."
+      "reconfigure_not_supported": "The demo mode cannot be reconfigured.",
+      "reauth_successful": "The credentials were updated.",
+      "wrong_account": "The credentials belong to a different MyGekko."
     }
   },
   "entity": {
@@ -194,6 +207,90 @@
       },
       "mygekko_meteo_temperature": {
         "name": "Temperature"
+      },
+      "mygekko_energymanager_grid_meter_power": {
+        "name": "Grid Power"
+      },
+      "mygekko_energymanager_power_exported_to_grid": {
+        "name": "Power Exported To Grid"
+      },
+      "mygekko_energymanager_power_from_solar_panels": {
+        "name": "Solar Power"
+      },
+      "mygekko_energymanager_power_from_battery": {
+        "name": "Battery Power"
+      },
+      "mygekko_energymanager_power_charging_battery": {
+        "name": "Battery Charging Power"
+      },
+      "mygekko_energymanager_home_power_consumption": {
+        "name": "Home Power Consumption"
+      },
+      "mygekko_energymanager_daily_energy_imported_from_grid": {
+        "name": "Daily Energy Imported From Grid"
+      },
+      "mygekko_energymanager_daily_energy_exported_to_grid": {
+        "name": "Daily Energy Exported To Grid"
+      },
+      "mygekko_energymanager_daily_energy_from_solar_panels": {
+        "name": "Daily Solar Energy"
+      },
+      "mygekko_energymanager_daily_energy_from_battery": {
+        "name": "Daily Energy From Battery"
+      },
+      "mygekko_energymanager_daily_energy_charging_battery": {
+        "name": "Daily Energy Charging Battery"
+      },
+      "mygekko_energymanager_daily_home_energy_consumption": {
+        "name": "Daily Home Energy Consumption"
+      },
+      "mygekko_energymanager_battery_soc": {
+        "name": "Battery Charge"
+      },
+      "mygekko_emobil_current_charging_power": {
+        "name": "Charging Power"
+      },
+      "mygekko_emobil_maximum_charging_power": {
+        "name": "Maximum Charging Power"
+      },
+      "mygekko_emobil_charging_power_setpoint": {
+        "name": "Charging Power Setpoint"
+      },
+      "mygekko_emobil_current_charging_energy": {
+        "name": "Charged Energy"
+      },
+      "mygekko_heatingcircuit_flow_temperature": {
+        "name": "Flow Temperature"
+      },
+      "mygekko_heatingcircuit_return_flow_temperature": {
+        "name": "Return Flow Temperature"
+      },
+      "mygekko_heatingcircuit_flow_temperature_setpoint": {
+        "name": "Flow Temperature Setpoint"
+      },
+      "mygekko_heatingcircuit_dew_point": {
+        "name": "Dew Point"
+      },
+      "mygekko_heatingcircuit_pump_working_level": {
+        "name": "Pump Level"
+      },
+      "mygekko_heatingcircuit_valve_opening_level": {
+        "name": "Valve Opening"
+      },
+      "mygekko_heatingsystem_flow_temperature": {
+        "name": "Flow Temperature"
+      },
+      "mygekko_heatingsystem_flow_temperature_setpoint": {
+        "name": "Flow Temperature Setpoint"
+      },
+      "mygekko_multiroom_volume": {
+        "name": "Volume"
+      },
+      "mygekko_multiroom_audio_title": {
+        "name": "Title"
+      },
+      "mygekko_roomtemp_floor_temperature": {
+        "name": "Floor Temperature"
       }
     },
     "button": {
@@ -203,6 +300,72 @@
       "mygekko_light_group_off": {
         "name": "Switch Off"
       }
+    },
+    "binary_sensor": {
+      "mygekko_accessdoor_open": {
+        "name": "Open"
+      },
+      "mygekko_emobil_plugged": {
+        "name": "Plugged in"
+      },
+      "mygekko_emobil_charge_request": {
+        "name": "Charge request"
+      },
+      "mygekko_energymanager_load_shedding": {
+        "name": "Load shedding"
+      },
+      "mygekko_energymanager_ems": {
+        "name": "Energy management active"
+      },
+      "mygekko_heatingcircuit_running": {
+        "name": "Running"
+      },
+      "mygekko_heatingcircuit_cooling": {
+        "name": "Cooling"
+      },
+      "mygekko_heatingsystem_running": {
+        "name": "Running"
+      },
+      "mygekko_heatingsystem_cooling": {
+        "name": "Cooling"
+      },
+      "mygekko_alarmsystem_alarm": {
+        "name": "Alarm"
+      },
+      "mygekko_alarmsystem_zone_armed": {
+        "name": "Zone {zone} armed"
+      },
+      "mygekko_alarmsystem_zone_alarm": {
+        "name": "Zone {zone} alarm"
+      },
+      "mygekko_smsemail_active": {
+        "name": "Active"
+      },
+      "mygekko_multiroom_playing": {
+        "name": "Playing"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "MyGekko options",
+        "description": "The MyGekko Plus query API limits the number of requests. Increase the interval if rate limit warnings appear.",
+        "data": {
+          "scan_interval": "Update interval (seconds)",
+          "use_pages_as_areas": "Use the MyGekko pages as areas"
+        },
+        "data_description": {
+          "scan_interval": "How often the values are read. Default 30 seconds, minimum 10.",
+          "use_pages_as_areas": "Suggest the page (e.g. floor or room) of a device in the MyGekko app as its area. Only applies to newly added devices."
+        }
+      }
+    }
+  },
+  "issues": {
+    "rate_limited": {
+      "title": "MyGekko limits the requests",
+      "description": "MyGekko ({name}) rejects requests because too many were sent (HTTP 429). The values may be outdated. Increase the update interval in the options of the integration and avoid automations that switch devices in a fast loop."
     }
   }
 }

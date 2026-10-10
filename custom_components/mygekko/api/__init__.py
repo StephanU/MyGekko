@@ -14,6 +14,12 @@ from .errors import MyGekkoNoResponse
 from .errors import MyGekkoNotFound
 from .errors import MyGekkoTooManyRequests
 from .models import AccessDoor
+from .models import AlarmSystem
+from .models import HeatingSystem
+from .models import MultiRoom
+from .models import SmsEmail
+from .models import Trend
+from .models import TrendVariable
 from .models import Action
 from .models import AlarmsLogic
 from .models import Blind
@@ -82,6 +88,7 @@ from .enums import VentSubWorkingModeZimmermann
 from .enums import VentWorkingLevel
 from .enums import VentWorkingMode
 from .enums import VentWorkingModeZimmermann
+from .enums import AlarmSystemAlarmState, AlarmSystemSharpState, AlarmSystemZoneAlarmState, HeatingSystemDeviceModel, OnOffState
 
 __all__ = [
     "AccessDoor",
@@ -94,6 +101,10 @@ __all__ = [
     "Action",
     "ActionFeature",
     "ActionState",
+    "AlarmSystem",
+    "AlarmSystemAlarmState",
+    "AlarmSystemSharpState",
+    "AlarmSystemZoneAlarmState",
     "AlarmsLogic",
     "Blind",
     "BlindElementInfo",
@@ -126,6 +137,8 @@ __all__ = [
     "HeatingCircuitCoolingModeState",
     "HeatingCircuitDeviceModel",
     "HeatingCircuitState",
+    "HeatingSystem",
+    "HeatingSystemDeviceModel",
     "HotWaterSystem",
     "HotWaterSystemFeature",
     "HotWaterSystemState",
@@ -136,6 +149,7 @@ __all__ = [
     "LoadFeature",
     "LoadState",
     "Meteo",
+    "MultiRoom",
     "MyGekkoBadRequest",
     "MyGekkoClient",
     "MyGekkoDemoModeClient",
@@ -149,10 +163,14 @@ __all__ = [
     "MyGekkoNotFound",
     "MyGekkoQueryApiClient",
     "MyGekkoTooManyRequests",
+    "OnOffState",
     "ReadOnlyEntity",
     "RoomTemp",
     "RoomTempsFeature",
     "RoomTempsMode",
+    "SmsEmail",
+    "Trend",
+    "TrendVariable",
     "Vent",
     "VentBypassMode",
     "VentBypassState",

@@ -6,6 +6,7 @@ from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
 from homeassistant.components.sensor import SensorStateClass
 from homeassistant.const import LIGHT_LUX
+from homeassistant.const import EntityCategory
 from homeassistant.const import PERCENTAGE
 from homeassistant.const import UnitOfEnergy
 from homeassistant.const import UnitOfPower
@@ -35,6 +36,7 @@ SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
     ),
     SensorEntityDescription(
         key="powerMax",
+        entity_category=EntityCategory.DIAGNOSTIC,
         name="Power Max",
         translation_key="mygekko_energycost_power_max",
         state_class=SensorStateClass.MEASUREMENT,
@@ -63,6 +65,7 @@ SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
     ),
     SensorEntityDescription(
         key="energyToday6",
+        entity_registry_enabled_default=False,
         name="Energy Today 6",
         translation_key="mygekko_energycost_energy_today6",
         state_class=SensorStateClass.TOTAL,
@@ -70,6 +73,7 @@ SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
     ),
     SensorEntityDescription(
         key="energyToday12",
+        entity_registry_enabled_default=False,
         name="Energy Today 12",
         translation_key="mygekko_energycost_energy_today12",
         state_class=SensorStateClass.TOTAL,
@@ -77,6 +81,7 @@ SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
     ),
     SensorEntityDescription(
         key="energyToday18",
+        entity_registry_enabled_default=False,
         name="Energy Today 18",
         translation_key="mygekko_energycost_energy_today18",
         state_class=SensorStateClass.TOTAL,
@@ -84,6 +89,7 @@ SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
     ),
     SensorEntityDescription(
         key="energyToday24",
+        entity_registry_enabled_default=False,
         name="Energy Today 24",
         translation_key="mygekko_energycost_energy_today24",
         state_class=SensorStateClass.TOTAL,
@@ -91,6 +97,7 @@ SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
     ),
     SensorEntityDescription(
         key="energyYesterd6",
+        entity_registry_enabled_default=False,
         name="Energy Yesterday 6",
         translation_key="mygekko_energycost_energy_yesterd6",
         state_class=SensorStateClass.TOTAL,
@@ -98,6 +105,7 @@ SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
     ),
     SensorEntityDescription(
         key="energyYesterd12",
+        entity_registry_enabled_default=False,
         name="Energy Yesterday 12",
         translation_key="mygekko_energycost_energy_yesterd12",
         state_class=SensorStateClass.TOTAL,
@@ -105,6 +113,7 @@ SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
     ),
     SensorEntityDescription(
         key="energyYesterd18",
+        entity_registry_enabled_default=False,
         name="Energy Yesterday 18",
         translation_key="mygekko_energycost_energy_yesterd18",
         state_class=SensorStateClass.TOTAL,
@@ -112,6 +121,7 @@ SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
     ),
     SensorEntityDescription(
         key="energyYesterd24",
+        entity_registry_enabled_default=False,
         name="Energy Yesterday 24",
         translation_key="mygekko_energycost_energy_yesterd24",
         state_class=SensorStateClass.TOTAL,

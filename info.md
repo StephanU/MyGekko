@@ -9,18 +9,32 @@
 [![Discord][discord-shield]][discord]
 [![Community Forum][forum-shield]][forum]
 
-**This component will set up the following platforms.**
+**This integration sets up the following platforms.**
 
-| Platform       | Description                                                        |
-| -------------- | ------------------------------------------------------------------ |
-| `button`       | For light groups in MyGekko                                        |
-| `climate`      | Thermostats (called roomtemps in MyGekko)                          |
-| `cover`        | Covers (called blinds in MyGekko)                                  |
-| `light`        | Lights                                                             |
-| `switch`       | Switches (called loads in MyGekko)                                 |
-| `water_heater` | Water Heater (called hotwater_systems in MyGekko)                  |
-| `sensor`       | MyGekko energy_cost metrics and alarms_logics are added as sensors |
-| `scene`        | MyGekko actions are added as scenes                                |
+| Platform        | What you get                                                                                                         |
+| --------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `light`         | Lights and light groups (on/off, brightness, RGB)                                                                    |
+| `cover`         | Blinds with position and slat angle, blind groups                                                                    |
+| `climate`       | Room controllers with target temperature, presets, humidity and heating/cooling action                               |
+| `switch`        | Loads, and the charging switch of a wallbox                                                                          |
+| `water_heater`  | Hot water systems                                                                                                    |
+| `select`        | Ventilation settings and clocks (time switches)                                                                      |
+| `scene`         | MyGekko actions as scenes                                                                                            |
+| `button`        | Light group buttons                                                                                                  |
+| `sensor`        | Energy meters, energy manager (grid, solar, battery), wallbox, heating circuits and systems, ventilation, floor temperature, weather station, multiroom audio, trends, alarms and logics |
+| `binary_sensor` | Doors and gates (open), alarm system and zones (read only), wallbox plugged in, load shedding, heating running/cooling, notifications |
+| `camera`        | Cameras and door intercoms (image and stream)                                                                        |
+
+The alarm system and the door/gate openers are deliberately **read only**: they can be monitored but not armed, disarmed or opened from Home Assistant.
+
+**Highlights**
+
+- Every device belongs to the MyGekko controller device (model, software version and link to the web interface).
+- Optional: use the pages of the MyGekko app (floor, room) as Home Assistant areas.
+- Careful with the cloud rate limit: one request per poll, automatic back-off on HTTP 429 (entities keep their values), configurable update interval and a repair hint if the limit persists.
+- Elements that are locked, in manual operation or in alarm show an `element_status` attribute.
+- Re-authentication, reconfiguration, diagnostics download (credentials are redacted) and a demo mode that needs no MyGekko.
+- Translated into English, German, French, Italian and Norwegian.
 
 ![Dashboard Screenshot][dashboard-screenshot]
 

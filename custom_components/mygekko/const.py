@@ -19,9 +19,22 @@ SWITCH = "switch"
 SCENE = "scene"
 WATER_HEATER = "water_heater"
 BUTTON = "button"
+BINARY_SENSOR = "binary_sensor"
 SELECT = "select"
 CAMERA = "camera"
-PLATFORMS = [COVER, LIGHT, CLIMATE, SWITCH, SCENE, WATER_HEATER, SENSOR, BUTTON, SELECT, CAMERA]
+PLATFORMS = [
+    BINARY_SENSOR,
+    BUTTON,
+    CAMERA,
+    CLIMATE,
+    COVER,
+    LIGHT,
+    SCENE,
+    SELECT,
+    SENSOR,
+    SWITCH,
+    WATER_HEATER,
+]
 
 
 # Configuration and options
@@ -37,6 +50,11 @@ CONF_CONNECTION_DEMO_MODE_LABEL = "Demo Mode"
 
 # Defaults
 DEFAULT_NAME = DOMAIN
+CONF_SCAN_INTERVAL = "scan_interval"
+CONF_USE_PAGES_AS_AREAS = "use_pages_as_areas"
+DEFAULT_SCAN_INTERVAL = 30  # seconds
+MIN_SCAN_INTERVAL = 10
+MAX_SCAN_INTERVAL = 600
 
 
 STARTUP_MESSAGE = f"""

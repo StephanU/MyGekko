@@ -9,11 +9,18 @@ from .coordinator import MyGekkoConfigEntry
 from .coordinator import MyGekkoDataUpdateCoordinator
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_API_KEY
+from homeassistant.const import CONF_IP_ADDRESS
+from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.core import HomeAssistant
 
+from .const import CONF_CONNECTION_LOCAL
 from .const import CONF_CONNECTION_MY_GEKKO_CLOUD
 from .const import CONF_CONNECTION_TYPE
+from .const import DOMAIN
 from .const import PLATFORMS
+from .entity import controller_device_id
+from .entity import controller_device_info
 from .const import STARTUP_MESSAGE
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -30,11 +37,30 @@ async def async_setup_entry(hass: HomeAssistant, entry: MyGekkoConfigEntry):
     await coordinator.async_config_entry_first_refresh()
 
     entry.runtime_data = coordinator
+    _register_controller(hass, entry, coordinator)
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
-    entry.async_on_unload(entry.add_update_listener(async_reload_entry))
     return True
+
+
+def _register_controller(
+    hass: HomeAssistant, entry: MyGekkoConfigEntry, coordinator
+) -> None:
+    """Register the MyGekko controller as device, the other devices connect to it."""
+    network = coordinator.api.get_globals_network()
+    if not controller_device_id(network):
+        return
+    if entry.data.get(CONF_CONNECTION_TYPE) == CONF_CONNECTION_LOCAL:
+        url = f"https://{entry.data.get(CONF_IP_ADDRESS)}"
+    elif entry.data.get(CONF_CONNECTION_TYPE) == CONF_CONNECTION_MY_GEKKO_CLOUD:
+        url = "https://live.my-gekko.com"
+    else:
+        url = None
+    device = dr.async_get(hass).async_get_or_create(
+        config_entry_id=entry.entry_id, **controller_device_info(network, url)
+    )
+    coordinator.controller_registry_id = device.id
 
 
 async def async_migrate_entry(hass, config_entry: ConfigEntry):
@@ -62,11 +88,11 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
     return True
 
 
+async def async_remove_entry(hass: HomeAssistant, entry: MyGekkoConfigEntry) -> None:
+    """Remove what the entry created outside of the entity registry."""
+    ir.async_delete_issue(hass, DOMAIN, f"rate_limited_{entry.entry_id}")
+
+
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Handle removal of an entry."""
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
-
-
-async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """Reload config entry."""
-    await hass.config_entries.async_reload(entry.entry_id)

@@ -14,6 +14,11 @@ from typing import Any
 
 from . import schema
 from .enums import (
+    AlarmSystemSharpState,
+    AlarmSystemZoneAlarmState,
+    AlarmSystemAlarmState,
+    OnOffState,
+    HeatingSystemDeviceModel,
     AccessDoorAccessState,
     AccessDoorAccessType,
     AccessDoorCommand,
@@ -68,6 +73,17 @@ if TYPE_CHECKING:
     from .client import MyGekkoClient
 
 _ZIMMERMANN = (VentDeviceModel.ZIMMERMANN_V1, VentDeviceModel.ZIMMERMANN_V2)
+
+
+ELEMENT_STATUS = {0: "ok", 1: "manual_off", 2: "manual_on", 3: "locked", 4: "alarm"}
+
+
+def _zone_alarm_state(raw: str) -> AlarmSystemZoneAlarmState:
+    """Return the zone alarm state, an undocumented value counts as alarm."""
+    value = int(float(raw))
+    if value in (item.value for item in AlarmSystemZoneAlarmState):
+        return AlarmSystemZoneAlarmState(value)
+    return AlarmSystemZoneAlarmState.ALARM
 
 
 def _to_enum(enum: type[Enum]) -> Callable[[str], Any]:
@@ -152,6 +168,24 @@ class Device(ReadOnlyEntity):
 
     async def _write(self, value: str) -> None:
         await self._client.write(self.resource_path, value)
+
+    @property
+    def model(self) -> str:
+        """Return the device type, e.g. "Light"."""
+        return schema.LABELS.get(self.SPEC.kind, self.SPEC.kind)
+
+    @property
+    def page(self) -> str | None:
+        """Return the page (room, floor) of this device in the MyGekko app."""
+        page = self._value("page")
+        return None if page in (None, "...") else page
+
+    @property
+    def element_status(self) -> str | None:
+        """Return the status of the element: ok, manual_off, manual_on, locked or alarm."""
+        return self._read(
+            "elementInfo", lambda raw: ELEMENT_STATUS.get(int(float(raw)))
+        )
 
 
 class AccessDoor(Device):
@@ -466,6 +500,91 @@ class Load(Device):
         await self._write(str(int(state)))
 
 
+class HeatingSystem(Device):
+    """Heating system (heat pump, boiler)."""
+
+    SPEC = schema.HEATING_SYSTEMS
+
+    device_model = _enum("deviceModel", HeatingSystemDeviceModel)
+    cooling_mode_state = _enum("coolingModeState", OnOffState)
+    flow_temperature = _float("flowTemperatureValue")
+    flow_temperature_setpoint = _float("flowTemperatureSetPointValue")
+    state = _enum("currentState", OnOffState)
+
+
+class AlarmSystem(Device):
+    """Alarm system. It is read only, the alarm system cannot be armed from here."""
+
+    SPEC = schema.ALARM_SYSTEMS
+
+    alarm_state = _enum("alarmState", AlarmSystemAlarmState)
+    zone1_name = _field("zone1")
+    zone2_name = _field("zone2")
+    zone1_device_status = _enum("zone1DeviceStatus", OnOffState)
+    zone2_device_status = _enum("zone2DeviceStatus", OnOffState)
+    zone1_sharp_state = _enum("zone1SharpState", AlarmSystemSharpState)
+    zone2_sharp_state = _enum("zone2SharpState", AlarmSystemSharpState)
+    zone1_alarm_state = _field("zone1AlarmState", _zone_alarm_state)
+    zone2_alarm_state = _field("zone2AlarmState", _zone_alarm_state)
+
+
+class MultiRoom(Device):
+    """Multiroom audio player."""
+
+    SPEC = schema.MULTIROOMS
+
+    player_state = _field(
+        "playerCurrentState",
+        lambda raw: OnOffState.ON if int(float(raw)) == 1 else OnOffState.OFF,
+    )
+    volume = _float("currentVolumeLevel")
+    playing_time = _int("currentPlayingTime")
+    audio_title = _field("currentAudioTitle")
+    playlist_index = _int("currentPlaylistIndex")
+    song_index = _int("currentSongIndex")
+
+
+class SmsEmail(Device):
+    """SMS / e-mail notification switch."""
+
+    SPEC = schema.SMS_EMAILS
+
+    state = _enum("currentState", OnOffState)
+
+
+class TrendVariable:
+    """One of the (up to four) variables of a trend."""
+
+    def __init__(self, number: int, name: str, value: float | None, unit: str | None):
+        """Initialize the variable."""
+        self.number = number
+        self.name = name
+        self.value = value
+        self.unit = unit
+
+
+class Trend(Device):
+    """Trend with up to four logged variables."""
+
+    SPEC = schema.TRENDS
+
+    def variable(self, number: int) -> TrendVariable | None:
+        """Return the variable (1-4), None if it is not in use."""
+        if self._read(f"variable{number}State", _to_enum(OnOffState)) != OnOffState.ON:
+            return None
+        return TrendVariable(
+            number,
+            self._value(f"variable{number}Name") or f"Variable {number}",
+            self._read(f"variable{number}Value", float),
+            self._value(f"variable{number}Unit"),
+        )
+
+    @property
+    def variables(self) -> list[TrendVariable]:
+        """Return the variables that are in use."""
+        return [var for number in range(1, 5) if (var := self.variable(number))]
+
+
 class Meteo(ReadOnlyEntity):
     """Weather station."""
 
@@ -490,6 +609,9 @@ class RoomTemp(Device):
     target_temperature = _float("temperatureSetPointValue")
     humidity = _float("relativeHumidityLevel")
     air_quality = _float("airQualityLevel")
+    valve_opening = _float("valveOpeningLevel")
+    floor_temperature = _float("floorTemperatureValue")
+    cooling_mode_state = _enum("coolingModeState", OnOffState)
 
     @property
     def supported_features(self) -> list[RoomTempsFeature]:

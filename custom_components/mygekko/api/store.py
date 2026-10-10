@@ -149,6 +149,7 @@ class ResourceStore:
                     continue
                 data = self._devices[spec.kind].setdefault(key, {})
                 data["name"] = item["name"]
+                data["page"] = item.get("page")
                 for attr in spec.resource_attrs:
                     data[attr] = item.get(attr)
 

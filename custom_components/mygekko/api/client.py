@@ -17,6 +17,11 @@ from .errors import MyGekkoError
 from .errors import MyGekkoTooManyRequests
 from .errors import error_for_status
 from .models import AccessDoor
+from .models import AlarmSystem
+from .models import HeatingSystem
+from .models import MultiRoom
+from .models import SmsEmail
+from .models import Trend
 from .models import Action
 from .models import AlarmsLogic
 from .models import Blind
@@ -184,6 +189,26 @@ class MyGekkoClient:
     def get_room_temps(self) -> list[RoomTemp]:
         """Return the room temperature controllers."""
         return self._devices(RoomTemp)
+
+    def get_heating_systems(self) -> list[HeatingSystem]:
+        """Return the heating systems."""
+        return self._devices(HeatingSystem)
+
+    def get_alarm_systems(self) -> list[AlarmSystem]:
+        """Return the alarm systems."""
+        return self._devices(AlarmSystem)
+
+    def get_multirooms(self) -> list[MultiRoom]:
+        """Return the multiroom audio players."""
+        return self._devices(MultiRoom)
+
+    def get_sms_emails(self) -> list[SmsEmail]:
+        """Return the SMS / e-mail notification switches."""
+        return self._devices(SmsEmail)
+
+    def get_trends(self) -> list[Trend]:
+        """Return the trends."""
+        return self._devices(Trend)
 
     def get_vents(self) -> list[Vent]:
         """Return the ventilations."""

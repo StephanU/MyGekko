@@ -175,3 +175,51 @@ async def test_reconfigure_demo_is_not_supported(hass):
     result = await entry.start_reconfigure_flow(hass)
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "reconfigure_not_supported"
+
+
+async def test_reauth_flow(hass):
+    """New credentials replace the rejected ones."""
+    entry = MockConfigEntry(
+        domain=DOMAIN, version=3, data=CLOUD_CONFIG, unique_id="cloud_A1B2C3"
+    )
+    entry.add_to_hass(hass)
+    result = await entry.start_reauth_flow(hass)
+    assert result["step_id"] == "reauth_confirm"
+    with patch(TRY_CONNECT, new_callable=AsyncMock):
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], {**CLOUD_INPUT, "api_key": "renewed"}
+        )
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "reauth_successful"
+    assert entry.data["api_key"] == "renewed"
+
+
+async def test_reauth_with_wrong_credentials(hass):
+    """Wrong credentials are reported and the entry stays unchanged."""
+    entry = MockConfigEntry(
+        domain=DOMAIN, version=3, data=CLOUD_CONFIG, unique_id="cloud_A1B2C3"
+    )
+    entry.add_to_hass(hass)
+    result = await entry.start_reauth_flow(hass)
+    with patch(TRY_CONNECT, side_effect=MyGekkoError("HTTP 403")):
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], {**CLOUD_INPUT, "api_key": "bad"}
+        )
+    assert result["errors"] == {"base": "auth_cloud"}
+    assert entry.data["api_key"] == "secret"
+
+
+async def test_reauth_cannot_switch_to_another_gekko(hass):
+    """The login of a different MyGekko is not accepted for this entry."""
+    entry = MockConfigEntry(
+        domain=DOMAIN, version=3, data=CLOUD_CONFIG, unique_id="cloud_A1B2C3"
+    )
+    entry.add_to_hass(hass)
+    result = await entry.start_reauth_flow(hass)
+    with patch(TRY_CONNECT, new_callable=AsyncMock):
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], {**CLOUD_INPUT, "gekkoid": "OTHER"}
+        )
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "wrong_account"
+    assert entry.data["gekkoid"] == "A1B2C3"

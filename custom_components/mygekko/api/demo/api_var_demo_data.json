@@ -565,5 +565,47 @@
         "index": 4000000
       }
     }
+  },
+  "accessdoors": {
+    "item0": {
+      "name": "Front door",
+      "page": "Entrance"
+    },
+    "item1": {
+      "name": "Garage gate",
+      "page": "Garage"
+    }
+  },
+  "heatingsystems": {
+    "item0": {
+      "name": "Heat pump",
+      "page": "Technical room"
+    }
+  },
+  "alarmsystem": {
+    "item0": {
+      "name": "Alarm system",
+      "page": "Entrance",
+      "zone1": "Home",
+      "zone2": "Garden"
+    }
+  },
+  "multirooms": {
+    "item0": {
+      "name": "Living room audio",
+      "page": "Living room"
+    }
+  },
+  "smsemail": {
+    "item0": {
+      "name": "Notifications",
+      "page": "Technical room"
+    }
+  },
+  "trends": {
+    "item0": {
+      "name": "Outdoor",
+      "page": "Technical room"
+    }
   }
 }

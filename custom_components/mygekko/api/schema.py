@@ -243,6 +243,83 @@ VENTS = ResourceSpec(
     ),
 )
 
+HEATING_SYSTEMS = ResourceSpec(
+    "heatingsystems",
+    "/heatingsystems/",
+    (
+        "deviceModel",
+        "coolingModeState",
+        "flowTemperatureValue",
+        "flowTemperatureSetPointValue",
+        "currentState",
+        "elementInfo",
+    ),
+)
+ALARM_SYSTEMS = ResourceSpec(
+    "alarmsystem",
+    "/alarmsystem/",
+    (
+        "alarmState",
+        "zone1DeviceStatus",
+        "zone1SharpState",
+        "zone1AlarmState",
+        "zone2DeviceStatus",
+        "zone2SharpState",
+        "zone2AlarmState",
+        "deviceModel",
+    ),
+    resource_attrs=("zone1", "zone2"),
+)
+MULTIROOMS = ResourceSpec(
+    "multirooms",
+    "/multirooms/",
+    (
+        "playerCurrentState",
+        "currentVolumeLevel",
+        "currentPlayingTime",
+        "currentAudioTitle",
+        "currentPlaylistIndex",
+    )
+    + tuple(f"playlist{index}Name" for index in range(16))
+    + ("currentSongIndex",),
+)
+SMS_EMAILS = ResourceSpec("smsemail", "/smsemail/", ("currentState",))
+TRENDS = ResourceSpec(
+    "trends",
+    "/trends/",
+    tuple(
+        f"variable{number}{field}"
+        for number in range(1, 5)
+        for field in ("State", "Type", "Name", "Value", "Unit")
+    )
+    + ("elementInfo",),
+)
+
+# Human readable device type, used as model of the devices in Home Assistant.
+LABELS: dict[str, str] = {
+    "accessdoors": "Access door",
+    "alarmsystem": "Alarm system",
+    "heatingsystems": "Heating system",
+    "multirooms": "Multiroom audio",
+    "smsemail": "SMS / e-mail",
+    "trends": "Trend",
+    "actions": "Action",
+    "alarms_logics": "Alarm / logic",
+    "blinds": "Blind",
+    "cams": "Camera",
+    "clocks": "Clock",
+    "door_intercom": "Door intercom",
+    "emobils": "E-mobility",
+    "energycosts": "Energy meter",
+    "energymanager": "Energy manager",
+    "heatingcircuits": "Heating circuit",
+    "hotwater_systems": "Hot water system",
+    "lights": "Light",
+    "loads": "Load",
+    "roomtemps": "Room temperature",
+    "vents": "Ventilation",
+}
+
 # All device resource types in the order they are exposed.
 SPECS: tuple[ResourceSpec, ...] = (
     ACCESS_DOORS,
@@ -261,4 +338,9 @@ SPECS: tuple[ResourceSpec, ...] = (
     LOADS,
     ROOM_TEMPS,
     VENTS,
+    HEATING_SYSTEMS,
+    ALARM_SYSTEMS,
+    MULTIROOMS,
+    SMS_EMAILS,
+    TRENDS,
 )

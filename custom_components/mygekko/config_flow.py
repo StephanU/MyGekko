@@ -6,6 +6,8 @@ import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from aiohttp import ClientError
 from homeassistant import config_entries
+from homeassistant.core import callback
+from homeassistant.helpers import selector
 from homeassistant.const import CONF_API_KEY
 from homeassistant.const import CONF_IP_ADDRESS
 from homeassistant.const import CONF_PASSWORD
@@ -23,6 +25,11 @@ from .const import CONF_CONNECTION_MY_GEKKO_CLOUD
 from .const import CONF_CONNECTION_MY_GEKKO_CLOUD_LABEL
 from .const import CONF_CONNECTION_TYPE
 from .const import CONF_GEKKOID
+from .const import CONF_SCAN_INTERVAL
+from .const import CONF_USE_PAGES_AS_AREAS
+from .const import DEFAULT_SCAN_INTERVAL
+from .const import MAX_SCAN_INTERVAL
+from .const import MIN_SCAN_INTERVAL
 from .const import DOMAIN
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -56,6 +63,42 @@ LOCAL_CONNECTION_SCHEMA = vol.Schema(
         vol.Required(CONF_PASSWORD): cv.string,
     }
 )
+
+
+OPTIONS_SCHEMA = vol.Schema(
+    {
+        vol.Required(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): (
+            selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    min=MIN_SCAN_INTERVAL,
+                    max=MAX_SCAN_INTERVAL,
+                    step=5,
+                    unit_of_measurement="s",
+                    mode=selector.NumberSelectorMode.BOX,
+                )
+            )
+        ),
+        vol.Required(CONF_USE_PAGES_AS_AREAS, default=False): (
+            selector.BooleanSelector()
+        ),
+    }
+)
+
+
+class MyGekkoOptionsFlow(config_entries.OptionsFlowWithReload):
+    """Options of the MyGekko integration (reloads the entry when changed)."""
+
+    async def async_step_init(self, user_input=None):
+        """Show the options."""
+        if user_input is not None:
+            user_input[CONF_SCAN_INTERVAL] = int(user_input[CONF_SCAN_INTERVAL])
+            return self.async_create_entry(data=user_input)
+        return self.async_show_form(
+            step_id="init",
+            data_schema=self.add_suggested_values_to_schema(
+                OPTIONS_SCHEMA, self.config_entry.options
+            ),
+        )
 
 
 class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
@@ -169,53 +212,80 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             errors=self._errors,
         )
 
-    async def async_step_reconfigure(self, user_input=None):
-        """Change the credentials or the address of an existing entry."""
-        entry = self._get_reconfigure_entry()
-        connection_type = entry.data.get(CONF_CONNECTION_TYPE)
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry):
+        """Return the options flow."""
+        return MyGekkoOptionsFlow()
+
+    def _schema_for(self, connection_type):
+        """Return the credential form of a connection type, None for the demo."""
         if connection_type == CONF_CONNECTION_MY_GEKKO_CLOUD:
-            schema = CLOUD_CONNECTION_SCHEMA
-        elif connection_type == CONF_CONNECTION_LOCAL:
-            schema = LOCAL_CONNECTION_SCHEMA
-        else:
+            return CLOUD_CONNECTION_SCHEMA
+        if connection_type == CONF_CONNECTION_LOCAL:
+            return LOCAL_CONNECTION_SCHEMA
+        return None
+
+    async def _validate(self, connection_type, user_input):
+        """Check the credentials, return (unique_id, error), the error is None if valid."""
+        if connection_type == CONF_CONNECTION_MY_GEKKO_CLOUD:
+            valid = await self._test_credentials_cloud_mygekko(
+                user_input[CONF_USERNAME],
+                user_input[CONF_API_KEY],
+                user_input[CONF_GEKKOID],
+            )
+            return f"cloud_{user_input[CONF_GEKKOID]}", None if valid else "auth_cloud"
+        valid = await self._test_credentials_local_mygekko(
+            user_input[CONF_IP_ADDRESS],
+            user_input[CONF_USERNAME],
+            user_input[CONF_PASSWORD],
+        )
+        return f"local_{user_input[CONF_IP_ADDRESS]}", None if valid else "auth_local"
+
+    async def _update_entry_step(self, step_id, entry, user_input, *, reauth=False):
+        """Show and process the form that changes the credentials of an entry."""
+        connection_type = entry.data.get(CONF_CONNECTION_TYPE)
+        schema = self._schema_for(connection_type)
+        if schema is None:
             return self.async_abort(reason="reconfigure_not_supported")
 
         errors = {}
         if user_input is not None:
-            if connection_type == CONF_CONNECTION_MY_GEKKO_CLOUD:
-                valid = await self._test_credentials_cloud_mygekko(
-                    user_input[CONF_USERNAME],
-                    user_input[CONF_API_KEY],
-                    user_input[CONF_GEKKOID],
-                )
-                unique_id = f"cloud_{user_input[CONF_GEKKOID]}"
-            else:
-                valid = await self._test_credentials_local_mygekko(
-                    user_input[CONF_IP_ADDRESS],
-                    user_input[CONF_USERNAME],
-                    user_input[CONF_PASSWORD],
-                )
-                unique_id = f"local_{user_input[CONF_IP_ADDRESS]}"
-
-            if valid:
+            unique_id, error = await self._validate(connection_type, user_input)
+            if error is None:
+                if reauth and entry.unique_id not in (None, unique_id):
+                    # the login must stay the one of the same MyGekko
+                    return self.async_abort(reason="wrong_account")
                 existing = await self.async_set_unique_id(unique_id)
                 if existing is not None and existing.entry_id != entry.entry_id:
                     return self.async_abort(reason="already_configured")
                 return self.async_update_reload_and_abort(
                     entry, unique_id=unique_id, data_updates=user_input
                 )
-            errors["base"] = (
-                "auth_cloud"
-                if connection_type == CONF_CONNECTION_MY_GEKKO_CLOUD
-                else "auth_local"
-            )
+            errors["base"] = error
 
         return self.async_show_form(
-            step_id="reconfigure",
+            step_id=step_id,
             data_schema=self.add_suggested_values_to_schema(
                 schema, user_input or entry.data
             ),
             errors=errors,
+        )
+
+    async def async_step_reconfigure(self, user_input=None):
+        """Change the credentials or the address of an existing entry."""
+        return await self._update_entry_step(
+            "reconfigure", self._get_reconfigure_entry(), user_input
+        )
+
+    async def async_step_reauth(self, entry_data):
+        """Start the re-authentication when MyGekko rejects the credentials."""
+        return await self.async_step_reauth_confirm()
+
+    async def async_step_reauth_confirm(self, user_input=None):
+        """Ask for new credentials."""
+        return await self._update_entry_step(
+            "reauth_confirm", self._get_reauth_entry(), user_input, reauth=True
         )
 
     async def _test_credentials_cloud_mygekko(self, username, apikey, gekkoid):
