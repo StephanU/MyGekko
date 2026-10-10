@@ -1,9 +1,11 @@
 name: "Release"
 
+# Push a version tag (for example `git tag 1.4.0 && git push origin 1.4.0`): the workflow
+# creates the GitHub release with notes and the integration zip.
 on:
-  release:
-    types:
-      - "published"
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+*"
 
 permissions: {}
 
@@ -20,7 +22,7 @@ jobs:
       - name: "Adjust version number"
         shell: "bash"
         run: |
-          yq -i -o json '.version="${{ github.event.release.tag_name }}"' \
+          yq -i -o json '.version="${{ github.ref_name }}"' \
             "${{ github.workspace }}/custom_components/mygekko/manifest.json"
 
       - name: "ZIP the integration directory"
@@ -29,7 +31,18 @@ jobs:
           cd "${{ github.workspace }}/custom_components/mygekko"
           zip mygekko_integration.zip -r ./
 
-      - name: "Upload the ZIP file to the release"
+      - name: "Pick the release notes"
+        id: notes
+        shell: "bash"
+        run: |
+          file=".github/release-notes/${{ github.ref_name }}.md"
+          if [ -f "$file" ]; then echo "path=$file" >> "$GITHUB_OUTPUT"; fi
+
+      - name: "Create the release"
         uses: softprops/action-gh-release@v3.0.2
         with:
+          name: "${{ github.ref_name }}"
+          body_path: ${{ steps.notes.outputs.path }}
+          generate_release_notes: true
+          prerelease: ${{ contains(github.ref_name, '-') }}
           files: ${{ github.workspace }}/custom_components/mygekko/mygekko_integration.zip
