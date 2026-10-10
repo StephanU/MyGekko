@@ -32,6 +32,7 @@ from .const import CONF_CONNECTION_MY_GEKKO_CLOUD
 from .const import CONF_CONNECTION_TYPE
 from .const import CONF_GEKKOID
 from .const import CONF_SCAN_INTERVAL
+from .const import CONF_SCHEME
 from .const import DEFAULT_SCAN_INTERVAL
 from .const import DOMAIN
 
@@ -93,7 +94,13 @@ class MyGekkoDataUpdateCoordinator(DataUpdateCoordinator):
             ip_address = entry.data.get(CONF_IP_ADDRESS)
 
             session = async_get_clientsession(hass, verify_ssl=False)
-            client = MyGekkoLocalApiClient(username, password, session, ip_address)
+            client = MyGekkoLocalApiClient(
+                username,
+                password,
+                session,
+                ip_address,
+                scheme=entry.data.get(CONF_SCHEME, "https"),
+            )
 
         if entry.data.get(CONF_CONNECTION_TYPE) == CONF_CONNECTION_DEMO_MODE:
             client = MyGekkoDemoModeClient()

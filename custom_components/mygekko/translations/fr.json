@@ -299,6 +299,9 @@
       },
       "mygekko_light_group_off": {
         "name": "Éteindre"
+      },
+      "mygekko_access_door_open": {
+        "name": "Ouvrir"
       }
     },
     "binary_sensor": {
@@ -344,6 +347,11 @@
       "mygekko_multiroom_playing": {
         "name": "Lecture"
       }
+    },
+    "alarm_control_panel": {
+      "mygekko_alarmsystem_zone": {
+        "name": "Zone {zone}"
+      }
     }
   },
   "options": {
@@ -366,6 +374,11 @@
     "rate_limited": {
       "title": "MyGekko limite les requêtes",
       "description": "MyGekko ({name}) refuse les requêtes car trop de requêtes ont été envoyées (HTTP 429). Les valeurs peuvent être obsolètes. Augmentez l'intervalle de mise à jour dans les options de l'intégration et évitez les automatisations qui commutent des appareils en boucle rapide."
+    }
+  },
+  "exceptions": {
+    "alarm_read_only": {
+      "message": "Le système d'alarme est en lecture seule, il ne peut pas être désactivé depuis Home Assistant."
     }
   }
 }

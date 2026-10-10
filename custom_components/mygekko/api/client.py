@@ -282,11 +282,16 @@ class MyGekkoLocalApiClient(MyGekkoHttpClient):
     """Client for the local API of a MyGekko."""
 
     def __init__(
-        self, username: str, password: str, session: ClientSession, host: str
+        self,
+        username: str,
+        password: str,
+        session: ClientSession,
+        host: str,
+        scheme: str = "https",
     ) -> None:
-        """Initialize the client."""
+        """Initialize the client, `scheme` is "https" or "http"."""
         super().__init__(
-            session, host, {"username": username, "password": password}
+            session, host, {"username": username, "password": password}, scheme=scheme
         )
 
 

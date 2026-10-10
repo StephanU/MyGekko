@@ -22,6 +22,7 @@ concurrency:
 jobs:
   release:
     name: "Release"
+    if: github.ref == 'refs/heads/main'
     runs-on: "ubuntu-latest"
     permissions:
       contents: write
@@ -36,6 +37,10 @@ jobs:
         shell: "bash"
         run: |
           manifest=$(jq -r .version custom_components/mygekko/manifest.json)
+          if ! echo "$manifest" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "manifest version '$manifest' is not x.y.z" >&2
+            exit 1
+          fi
           latest=$(git tag --list | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1 || true)
           if [ -z "$latest" ]; then
             next="$manifest"
@@ -55,6 +60,8 @@ jobs:
           jq '.version = "${{ steps.version.outputs.version }}"' \
             custom_components/mygekko/manifest.json > /tmp/manifest.json
           mv /tmp/manifest.json custom_components/mygekko/manifest.json
+          sed -i 's/^VERSION = ".*"/VERSION = "${{ steps.version.outputs.version }}"/' \
+            custom_components/mygekko/const.py
 
       - name: "ZIP the integration directory"
         shell: "bash"

@@ -4,7 +4,7 @@ NAME = "MyGekko"
 MANUFACTURER = "myGEKKO | Ekon GmbH"
 DOMAIN = "mygekko"
 DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "1.4.0"
+VERSION = "1.5.0"
 
 ATTRIBUTION = "Data provided by http://jsonplaceholder.typicode.com/"
 ISSUE_URL = "https://github.com/stephanu/mygekko/issues"
@@ -22,7 +22,9 @@ BUTTON = "button"
 BINARY_SENSOR = "binary_sensor"
 SELECT = "select"
 CAMERA = "camera"
+ALARM_CONTROL_PANEL = "alarm_control_panel"
 PLATFORMS = [
+    ALARM_CONTROL_PANEL,
     BINARY_SENSOR,
     BUTTON,
     CAMERA,
@@ -52,6 +54,7 @@ CONF_CONNECTION_DEMO_MODE_LABEL = "Demo Mode"
 DEFAULT_NAME = DOMAIN
 CONF_SCAN_INTERVAL = "scan_interval"
 CONF_USE_PAGES_AS_AREAS = "use_pages_as_areas"
+CONF_SCHEME = "scheme"  # "https" (default) or "http" of a local MyGekko
 DEFAULT_SCAN_INTERVAL = 30  # seconds
 MIN_SCAN_INTERVAL = 10
 MAX_SCAN_INTERVAL = 600

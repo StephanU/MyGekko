@@ -299,6 +299,9 @@
       },
       "mygekko_light_group_off": {
         "name": "Switch Off"
+      },
+      "mygekko_access_door_open": {
+        "name": "Open"
       }
     },
     "binary_sensor": {
@@ -344,6 +347,11 @@
       "mygekko_multiroom_playing": {
         "name": "Playing"
       }
+    },
+    "alarm_control_panel": {
+      "mygekko_alarmsystem_zone": {
+        "name": "Zone {zone}"
+      }
     }
   },
   "options": {
@@ -366,6 +374,11 @@
     "rate_limited": {
       "title": "MyGekko limits the requests",
       "description": "MyGekko ({name}) rejects requests because too many were sent (HTTP 429). The values may be outdated. Increase the update interval in the options of the integration and avoid automations that switch devices in a fast loop."
+    }
+  },
+  "exceptions": {
+    "alarm_read_only": {
+      "message": "The alarm system is read only, it cannot be disarmed from Home Assistant."
     }
   }
 }

@@ -1,5 +1,8 @@
 """Button platform for MyGekko."""
 from homeassistant.components.button import ButtonEntity
+from .api import AccessDoor
+from .api import AccessDoorCommand
+from .api import AccessDoorFeature
 from .api import Light
 from .api import LightState
 
@@ -12,6 +15,11 @@ PARALLEL_UPDATES = 1
 async def async_setup_entry(hass, entry, async_add_devices):
     """Set up button platform."""
     coordinator = entry.runtime_data
+    async_add_devices(
+        MyGekkoAccessDoorOpenButton(coordinator, door)
+        for door in coordinator.api.get_access_doors()
+        if AccessDoorFeature.OPEN in door.supported_features
+    )
     lights = coordinator.api.get_lights()
     if lights is not None:
         async_add_devices(
@@ -56,3 +64,24 @@ class MyGekkoLightGroupOffButton(MyGekkoEntity, ButtonEntity):
     async def async_press(self) -> None:
         """Press the button."""
         await self.coordinator.async_write(self._light.set_state, LightState.OFF)
+
+
+class MyGekkoAccessDoorOpenButton(MyGekkoEntity, ButtonEntity):
+    """Opens a door, a gate or a barrier.
+
+    Disabled by default as this opens the building: it has to be enabled on purpose and
+    should not be exposed to voice assistants.
+    """
+
+    _attr_entity_registry_enabled_default = False
+    _attr_translation_key = "mygekko_access_door_open"
+    _attr_icon = "mdi:door-open"
+
+    def __init__(self, coordinator, door: AccessDoor):
+        """Initialize the open button."""
+        super().__init__(coordinator, door, "access_door", "_open_command")
+        self._door = door
+
+    async def async_press(self) -> None:
+        """Press the button."""
+        await self.coordinator.async_write(self._door.set_state, AccessDoorCommand.OPEN)

@@ -5,6 +5,9 @@ from unittest.mock import patch
 import pytest
 from homeassistant import config_entries
 from homeassistant.data_entry_flow import FlowResultType
+from aiohttp import ClientConnectorError
+from aiohttp import ClientConnectorSSLError
+from aiohttp.client_reqrep import ConnectionKey
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.mygekko.api import MyGekkoError
@@ -103,7 +106,71 @@ async def test_local_flow(hass):
             result["flow_id"], LOCAL_INPUT
         )
     assert result["type"] is FlowResultType.CREATE_ENTRY
-    assert result["data"] == LOCAL_CONFIG
+    assert result["data"] == {**LOCAL_CONFIG, "scheme": "https"}
+
+
+async def test_local_flow_falls_back_to_http(hass):
+    """A MyGekko that does not answer on https is tried with http (issue StephanU/MyGekko#365)."""
+    result = await _select(hass, CONF_CONNECTION_LOCAL)
+    with patch(
+        TRY_CONNECT,
+        new_callable=AsyncMock,
+        side_effect=[
+            ClientConnectorSSLError(
+                ConnectionKey("192.168.1.50", 443, True, True, None, None, None),
+                OSError("SSLV3_ALERT_HANDSHAKE_FAILURE"),
+            ),
+            None,
+        ],
+    ):
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], LOCAL_INPUT
+        )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["data"]["scheme"] == "http"
+
+
+async def test_local_flow_timeout_does_not_fall_back(hass):
+    """A slow https MyGekko is not switched to unencrypted http."""
+    result = await _select(hass, CONF_CONNECTION_LOCAL)
+    with patch(
+        TRY_CONNECT, new_callable=AsyncMock, side_effect=TimeoutError
+    ) as try_connect:
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], LOCAL_INPUT
+        )
+    assert result["errors"] == {"base": "auth_local"}
+    assert try_connect.await_count == 1
+
+
+async def test_local_flow_nothing_answers(hass):
+    """Neither https nor http works."""
+    result = await _select(hass, CONF_CONNECTION_LOCAL)
+    with patch(
+        TRY_CONNECT,
+        new_callable=AsyncMock,
+        side_effect=ClientConnectorError(
+            ConnectionKey("192.168.1.50", 443, True, True, None, None, None),
+            OSError("refused"),
+        ),
+    ):
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], LOCAL_INPUT
+        )
+    assert result["errors"] == {"base": "auth_local"}
+
+
+async def test_local_flow_wrong_login_does_not_fall_back(hass):
+    """A rejected login is not retried with http."""
+    result = await _select(hass, CONF_CONNECTION_LOCAL)
+    with patch(
+        TRY_CONNECT, new_callable=AsyncMock, side_effect=MyGekkoError("403")
+    ) as try_connect:
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], LOCAL_INPUT
+        )
+    assert result["errors"] == {"base": "auth_local"}
+    assert try_connect.await_count == 1
 
 
 async def test_local_flow_is_unique(hass):
@@ -153,6 +220,29 @@ async def test_reconfigure_local_changes_address(hass):
     assert result["reason"] == "reconfigure_successful"
     assert entry.data["ip_address"] == "10.0.0.5"
     assert entry.unique_id == "local_10.0.0.5"
+    assert entry.data["scheme"] == "https"
+
+
+async def test_reconfigure_local_detects_http(hass):
+    """Reconfiguring detects the scheme again and stores it."""
+    entry = MockConfigEntry(
+        domain=DOMAIN, version=3, data=LOCAL_CONFIG, unique_id="local_192.168.1.50"
+    )
+    entry.add_to_hass(hass)
+    with patch(
+        TRY_CONNECT,
+        new_callable=AsyncMock,
+        side_effect=[
+            ClientConnectorError(
+                ConnectionKey("192.168.1.50", 443, True, True, None, None, None),
+                OSError("refused"),
+            ),
+            None,
+        ],
+    ):
+        result = await _reconfigure(hass, entry, LOCAL_INPUT)
+    assert result["reason"] == "reconfigure_successful"
+    assert entry.data["scheme"] == "http"
 
 
 async def test_reconfigure_wrong_credentials(hass):

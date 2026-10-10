@@ -4,7 +4,10 @@ import logging
 
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
+from aiohttp import ClientConnectorError
 from aiohttp import ClientError
+from aiohttp import ClientSSLError
+from aiohttp import ServerDisconnectedError
 from homeassistant import config_entries
 from homeassistant.core import callback
 from homeassistant.helpers import selector
@@ -25,6 +28,7 @@ from .const import CONF_CONNECTION_MY_GEKKO_CLOUD
 from .const import CONF_CONNECTION_MY_GEKKO_CLOUD_LABEL
 from .const import CONF_CONNECTION_TYPE
 from .const import CONF_GEKKOID
+from .const import CONF_SCHEME
 from .const import CONF_SCAN_INTERVAL
 from .const import CONF_USE_PAGES_AS_AREAS
 from .const import DEFAULT_SCAN_INTERVAL
@@ -200,6 +204,7 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     )
                     self._abort_if_unique_id_configured()
                     user_input[CONF_CONNECTION_TYPE] = CONF_CONNECTION_LOCAL
+                    user_input[CONF_SCHEME] = self._local_scheme
                     return self.async_create_entry(
                         title=user_input[CONF_USERNAME], data=user_input
                     )
@@ -240,6 +245,8 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             user_input[CONF_USERNAME],
             user_input[CONF_PASSWORD],
         )
+        if valid:
+            user_input[CONF_SCHEME] = self._local_scheme
         return f"local_{user_input[CONF_IP_ADDRESS]}", None if valid else "auth_local"
 
     async def _update_entry_step(self, step_id, entry, user_input, *, reauth=False):
@@ -302,17 +309,42 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             _LOGGER.exception("MyGekkoError")
         return False
 
-    async def _test_credentials_local_mygekko(self, ip_address, username, password):
-        """Return true if credentials is valid."""
-        try:
-            session = async_get_clientsession(self.hass, verify_ssl=False)
-            client = MyGekkoLocalApiClient(username, password, session, ip_address)
-            async with asyncio.timeout(15):
-                await client.try_connect()
-            return True
-        except (ClientError, TimeoutError):
-            _LOGGER.exception("Connection to MyGekko failed")
-        except MyGekkoError:
-            _LOGGER.exception("MyGekkoError")
+    _local_scheme = "https"
 
+    async def _test_credentials_local_mygekko(self, ip_address, username, password):
+        """Return true if credentials is valid.
+
+        Newer MyGekko firmware answers on https, older or differently configured ones only on
+        http. When https cannot be connected the connection is tried again with http, the working
+        scheme is kept in `_local_scheme`.
+        """
+        session = async_get_clientsession(self.hass, verify_ssl=False)
+        for scheme in ("https", "http"):
+            try:
+                client = MyGekkoLocalApiClient(
+                    username, password, session, ip_address, scheme=scheme
+                )
+                async with asyncio.timeout(15):
+                    await client.try_connect()
+                if scheme == "http":
+                    _LOGGER.warning(
+                        "MyGekko %s does not answer on https, using http: the login is sent "
+                        "unencrypted over the local network",
+                        ip_address,
+                    )
+                self._local_scheme = scheme
+                return True
+            except (ClientConnectorError, ClientSSLError, ServerDisconnectedError):
+                # https is not offered (handshake failure, port closed): try http
+                _LOGGER.debug(
+                    "Connection to MyGekko with %s failed", scheme, exc_info=True
+                )
+            except (ClientError, TimeoutError):
+                # a slow or unreachable MyGekko is no reason to give up encryption
+                _LOGGER.exception("Connection to MyGekko failed")
+                return False
+            except MyGekkoError:
+                # the MyGekko answered, so the scheme is right but the login is not
+                _LOGGER.exception("MyGekkoError")
+                return False
         return False

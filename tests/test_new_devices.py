@@ -177,7 +177,7 @@ async def test_alarm_system_is_one_device(hass, setup_demo):
     ]
     assert len(devices) == 1
     entities = er.async_entries_for_device(er.async_get(hass), devices[0].id)
-    assert len(entities) == 5
+    assert len(entities) == 7
 
 
 async def test_temperature_unit_attribute_on_new_home_assistant(hass, setup_demo):
@@ -191,3 +191,62 @@ async def test_temperature_unit_attribute_on_new_home_assistant(hass, setup_demo
         hass.states.get("water_heater.hot_water_boiler").attributes["temperature_unit"]
         == "°C"
     )
+
+
+async def test_alarm_panels_show_zone_states(hass, setup_demo):
+    """Every zone in use is a read only alarm panel."""
+    home = hass.states.get("alarm_control_panel.alarm_system_zone_home")
+    garden = hass.states.get("alarm_control_panel.alarm_system_zone_garden")
+    assert home.state == "armed_away"
+    assert garden.state == "disarmed"
+    assert home.attributes["supported_features"] == 0
+
+
+async def test_alarm_panel_triggered(hass):
+    """An alarm of a zone is reported as triggered."""
+
+    def alarm(status):
+        status["alarmsystem"]["item0"]["sumstate"]["value"] = "1;1;1;3;1;0;0;1"
+
+    await _setup_with(hass, alarm)
+    assert hass.states.get("alarm_control_panel.alarm_system_zone_home").state == "triggered"
+
+
+async def test_door_open_button_is_disabled_by_default(hass, setup_demo):
+    """Opening a door must be enabled on purpose, then it sends the open command."""
+    registry = er.async_get(hass)
+    entry = registry.async_get("button.front_door_open")
+    assert entry is not None
+    assert entry.disabled_by is er.RegistryEntryDisabler.INTEGRATION
+    assert hass.states.get("button.front_door_open") is None
+
+    registry.async_update_entity("button.front_door_open", disabled_by=None)
+    await hass.config_entries.async_reload(setup_demo.entry_id)
+    await hass.async_block_till_done()
+    await hass.services.async_call(
+        "button", "press", {"entity_id": "button.front_door_open"}, blocking=True
+    )
+    assert setup_demo.write.call_args.args[1] == "1"
+
+
+async def test_alarm_panel_cannot_be_disarmed(hass, setup_demo):
+    """The read only alarm panel reports a clear error instead of failing."""
+    from homeassistant.exceptions import HomeAssistantError
+
+    with pytest.raises(HomeAssistantError):
+        await hass.services.async_call(
+            "alarm_control_panel",
+            "alarm_disarm",
+            {"entity_id": "alarm_control_panel.alarm_system_zone_home"},
+            blocking=True,
+        )
+
+
+async def test_alarm_panel_unarmed_zone_alarm_is_not_triggered(hass):
+    """An alarm of a zone that is not armed does not trigger the panel."""
+
+    def alarm(status):
+        status["alarmsystem"]["item0"]["sumstate"]["value"] = "0;1;0;2;1;0;0;1"
+
+    await _setup_with(hass, alarm)
+    assert hass.states.get("alarm_control_panel.alarm_system_zone_home").state == "disarmed"

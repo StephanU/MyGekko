@@ -17,6 +17,7 @@ from homeassistant.core import HomeAssistant
 from .const import CONF_CONNECTION_LOCAL
 from .const import CONF_CONNECTION_MY_GEKKO_CLOUD
 from .const import CONF_CONNECTION_TYPE
+from .const import CONF_SCHEME
 from .const import DOMAIN
 from .const import PLATFORMS
 from .entity import controller_device_id
@@ -52,7 +53,7 @@ def _register_controller(
     if not controller_device_id(network):
         return
     if entry.data.get(CONF_CONNECTION_TYPE) == CONF_CONNECTION_LOCAL:
-        url = f"https://{entry.data.get(CONF_IP_ADDRESS)}"
+        url = f"{entry.data.get(CONF_SCHEME, 'https')}://{entry.data.get(CONF_IP_ADDRESS)}"
     elif entry.data.get(CONF_CONNECTION_TYPE) == CONF_CONNECTION_MY_GEKKO_CLOUD:
         url = "https://live.my-gekko.com"
     else:

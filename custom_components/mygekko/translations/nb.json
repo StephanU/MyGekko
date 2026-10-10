@@ -300,6 +300,9 @@
       },
       "mygekko_light_group_off": {
         "name": "Uitschakelen"
+      },
+      "mygekko_access_door_open": {
+        "name": "Åpne"
       }
     },
     "binary_sensor": {
@@ -345,6 +348,11 @@
       "mygekko_multiroom_playing": {
         "name": "Spiller"
       }
+    },
+    "alarm_control_panel": {
+      "mygekko_alarmsystem_zone": {
+        "name": "Sone {zone}"
+      }
     }
   },
   "options": {
@@ -367,6 +375,11 @@
     "rate_limited": {
       "title": "MyGekko begrenser forespørslene",
       "description": "MyGekko ({name}) avviser forespørsler fordi for mange ble sendt (HTTP 429). Verdiene kan være utdaterte. Øk oppdateringsintervallet i innstillingene for integrasjonen og unngå automatiseringer som veksler enheter i en rask løkke."
+    }
+  },
+  "exceptions": {
+    "alarm_read_only": {
+      "message": "Alarmsystemet er skrivebeskyttet og kan ikke deaktiveres fra Home Assistant."
     }
   }
 }

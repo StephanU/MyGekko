@@ -27,9 +27,10 @@ MyGekko integration for Home Assistant. It talks to the MyGekko REST API directl
 | `button`        | Light group buttons                                                                                                  |
 | `sensor`        | Energy meters, energy manager (grid, solar, battery), wallbox, heating circuits and systems, ventilation, floor temperature, weather station, multiroom audio, trends, alarms and logics |
 | `binary_sensor` | Doors and gates (open), alarm system and zones (read only), wallbox plugged in, load shedding, heating running/cooling, notifications |
+| `alarm_control_panel` | One panel per zone of the alarm system (disarmed / armed / triggered), read only |
 | `camera`        | Cameras and door intercoms (image and stream)                                                                        |
 
-The alarm system and the door/gate openers are deliberately **read only**: they can be monitored but not armed, disarmed or opened from Home Assistant.
+The alarm system is deliberately **read only**: it can be monitored but not armed or disarmed from Home Assistant. Doors, gates and barriers get an **Open** button which is **disabled by default**: enable it on purpose in the entity settings and do not expose it to voice assistants.
 
 **Highlights**
 
@@ -82,6 +83,7 @@ If you want to contribute to this please read the [Contribution guidelines](CONT
 The integration supports the MyGekko Plus query API (cloud, needs a MyGekko Plus subscription), the local API of your MyGekko and a demo mode with static data.
 
 - **Options** (integration → Configure): update interval (default 30 s, minimum 10 s) and "use the MyGekko pages as areas".
+- **Local connection:** the integration tries https first and falls back to http (older firmware or a MyGekko without https). Only a refused connection or a failed SSL handshake triggers the fallback (not a timeout). With http the login travels unencrypted over your local network (a warning is logged), so use it only in a trusted network. The scheme is detected again when you reconfigure the entry.
 - **Reconfigure** (integration → three dots): change credentials or the IP address without removing the integration.
 - If MyGekko rejects the credentials Home Assistant asks for them again (re-authentication).
 - **Troubleshooting:** download the diagnostics of the integration (credentials, Gekko ID and IP address are redacted) and attach them to an issue. Rate limit warnings (`skipping this update`) mean that MyGekko limits the requests: increase the update interval and avoid automations that switch devices in a fast loop.
@@ -89,6 +91,8 @@ The integration supports the MyGekko Plus query API (cloud, needs a MyGekko Plus
 ## Breaking changes
 
 **1.4.0: climate presets.** The presets of the room controllers now have readable ids: `off`, `comfort`, `reduced`, `manual`, `standby` (before: `1`, `8`, `16`, `64`, `256`). Update automations, scripts and dashboards that call `climate.set_preset_mode` or compare `preset_mode` with the old numbers. The displayed names are translated as before.
+
+**1.5.0: room controllers** can be switched off and on with the standard heating mode buttons (`off` / `auto`); `auto` switches a controller that is off back to comfort. The presets are unchanged.
 
 ## Home Assistant versions
 

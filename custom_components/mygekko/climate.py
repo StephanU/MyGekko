@@ -60,9 +60,12 @@ class MyGekkoRoomTempClimate(MyGekkoEntity, ClimateEntity):
         self._room_temp = room_temp
         self._attr_translation_key = "mygekko_roomtemp"
         supported_features = self._room_temp.supported_features
-        self._attr_supported_features = ClimateEntityFeature.PRESET_MODE
-        self._attr_hvac_mode = HVACMode.AUTO
-        self._attr_hvac_modes = [HVACMode.AUTO]
+        self._attr_supported_features = (
+            ClimateEntityFeature.PRESET_MODE
+            | ClimateEntityFeature.TURN_ON
+            | ClimateEntityFeature.TURN_OFF
+        )
+        self._attr_hvac_modes = [HVACMode.OFF, HVACMode.AUTO]
         self._attr_preset_modes = list(MODE_BY_PRESET)
 
         if RoomTempsFeature.TARGET_TEMPERATURE in supported_features:
@@ -110,6 +113,25 @@ class MyGekkoRoomTempClimate(MyGekkoEntity, ClimateEntity):
         await self.coordinator.async_write(
             self._room_temp.set_working_mode, MODE_BY_PRESET[preset_mode]
         )
+
+    @property
+    def hvac_mode(self) -> HVACMode | None:
+        """Return off when the room controller is off, else it follows its own program."""
+        mode = self._room_temp.working_mode
+        if mode is None:
+            return None
+        return HVACMode.OFF if mode == RoomTempsMode.OFF else HVACMode.AUTO
+
+    async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
+        """Switch the room controller off, or back on (comfort) if it is off."""
+        if hvac_mode == HVACMode.OFF:
+            await self.coordinator.async_write(
+                self._room_temp.set_working_mode, RoomTempsMode.OFF
+            )
+        elif self._room_temp.working_mode == RoomTempsMode.OFF:
+            await self.coordinator.async_write(
+                self._room_temp.set_working_mode, RoomTempsMode.COMFORT
+            )
 
     @property
     def hvac_action(self) -> HVACAction | None:
