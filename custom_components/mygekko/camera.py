@@ -5,10 +5,10 @@ import aiohttp
 from homeassistant.components.camera import Camera
 from homeassistant.components.camera import CameraEntityFeature
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from .pymygekko.resources.Cams import Cam
-from .pymygekko.resources.Cams import CamFeature
-from .pymygekko.resources.DoorInterComs import DoorInterCom
-from .pymygekko.resources.DoorInterComs import DoorInterComFeature
+from .api import Cam
+from .api import CamFeature
+from .api import DoorInterCom
+from .api import DoorInterComFeature
 
 from .entity import MyGekkoEntity
 

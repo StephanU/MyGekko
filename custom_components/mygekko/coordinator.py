@@ -16,12 +16,12 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.debounce import Debouncer
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.helpers.update_coordinator import UpdateFailed
-from .pymygekko import MyGekkoDemoModeClient
-from .pymygekko import MyGekkoLocalApiClient
-from .pymygekko import MyGekkoQueryApiClient
-from .pymygekko.data_provider import MyGekkoError
-from .pymygekko.data_provider import MyGekkoForbidden
-from .pymygekko.data_provider import MyGekkoTooManyRequests
+from .api import MyGekkoDemoModeClient
+from .api import MyGekkoLocalApiClient
+from .api import MyGekkoQueryApiClient
+from .api import MyGekkoError
+from .api import MyGekkoForbidden
+from .api import MyGekkoTooManyRequests
 
 from .const import CONF_CONNECTION_DEMO_MODE
 from .const import CONF_CONNECTION_LOCAL
@@ -33,7 +33,7 @@ from .const import DOMAIN
 
 SCAN_INTERVAL = timedelta(seconds=30)
 MAX_BACKOFF_INTERVAL = timedelta(minutes=5)
-UPDATE_TIMEOUT = 25
+UPDATE_TIMEOUT = 40
 REFRESH_COOLDOWN = 2.0
 WRITE_TIMEOUT = 15
 WRITE_MIN_DELAY = 0.3

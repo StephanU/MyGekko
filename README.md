@@ -1,6 +1,6 @@
 # MyGekko
 
-MyGekko integration for HomeAssistant using the [PyMyGekko](https://github.com/StephanU/PyMyGekko) library.
+MyGekko integration for Home Assistant. It talks to the MyGekko REST API directly with its own, dependency-free API layer (`custom_components/mygekko/api`), which is derived from [PyMyGekko](https://github.com/StephanU/PyMyGekko) (see [Credits](#credits)).
 
 [![GitHub Release][releases-shield]][releases]
 [![GitHub Activity][commits-shield]][commits]
@@ -54,21 +54,13 @@ Sensors are also provided for energy managers, e-mobility (wallbox, plus a charg
 Using your HA configuration directory (folder) as a starting point you should now also have something like this:
 
 ```text
-custom_components/mygekko/translations/en.json
-custom_components/mygekko/translations/fr.json
-custom_components/mygekko/translations/nb.json
-custom_components/mygekko/translations/sensor.en.json
-custom_components/mygekko/translations/sensor.fr.json
-custom_components/mygekko/translations/sensor.nb.json
-custom_components/mygekko/translations/sensor.nb.json
 custom_components/mygekko/__init__.py
-custom_components/mygekko/api.py
-custom_components/mygekko/binary_sensor.py
+custom_components/mygekko/api/
 custom_components/mygekko/config_flow.py
-custom_components/mygekko/const.py
+custom_components/mygekko/coordinator.py
 custom_components/mygekko/manifest.json
-custom_components/mygekko/sensor.py
-custom_components/mygekko/switch.py
+custom_components/mygekko/translations/
+... (one file per platform: sensor.py, light.py, cover.py, ...)
 ```
 
 ## Configuration is done in the UI
@@ -79,25 +71,25 @@ The integration supports access via the MyGekko Query Api (you need a MyGekko Pl
 
 If you want to contribute to this please read the [Contribution guidelines](CONTRIBUTING.md)
 
+## How it works
+
+- **Polling:** the integration polls `GET /api/v1/var/status` every 30 seconds. The document with the device names (`GET /api/v1/var`) is read once and refreshed every 30 minutes or when a new device appears, so only one request per poll is needed.
+- **Rate limit:** the MyGekko Plus query API limits the number of requests. On HTTP 429 the poll interval is doubled (up to 5 minutes) and restored automatically once the API answers again. Commands are sent one after another and retried on 429.
+- **Timeouts:** every request is bound by a timeout (15 s), a hanging device never blocks Home Assistant.
+- **API layer (`custom_components/mygekko/api`):** `schema.py` describes the `sumstate` values of every resource type, `store.py` parses the API documents generically, `models.py` contains the device classes (`Light`, `Blind`, ...) and `client.py` the cloud, local and demo clients. There is no external dependency. To support a new resource type add a `ResourceSpec` in `schema.py` and a model class in `models.py`, then expose it in `client.py`.
+
 ## Development Hints
 
 - Start in VsCode in with the DevContainer extension
 - execute `scripts/setup` to install dependencies
 - execute `scripts/develop` to start HomeAssistant
-- to use PyMyGekko from git instead of PyPi add the following to the .devcontainer
-```
-  "mounts": [
-    "source=<local path to PyMyGekko>/PyMyGekko,target=/workspaces/PyMyGekko,type=bind"
-  ]
-```
-- when the devcontainer is started:
-```
- pip install -e /workspaces/PyMyGekko
-```
+- `tests/test_api.py` tests the API layer against a fake MyGekko server; the layer itself has no Home Assistant dependency
 
 ## Credits
 
 This project was generated from [@oncleben31](https://github.com/oncleben31)'s [Home Assistant Custom Component Cookiecutter](https://github.com/oncleben31/cookiecutter-homeassistant-custom-component) template.
+
+The API layer in `custom_components/mygekko/api` is derived from [PyMyGekko](https://github.com/StephanU/PyMyGekko) by Stephan Uhle (MIT License, copy in [`custom_components/mygekko/api/LICENSE-PyMyGekko`](custom_components/mygekko/api/LICENSE-PyMyGekko)). The device models, the field layout of the MyGekko `sumstate` values and the command formats originate from that library; the parser, the client and the polling strategy were rewritten.
 
 Code template was mainly taken from [@Ludeeus](https://github.com/ludeeus)'s [integration_blueprint][integration_blueprint] template
 

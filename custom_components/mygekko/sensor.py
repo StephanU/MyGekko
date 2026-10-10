@@ -13,16 +13,16 @@ from homeassistant.const import UnitOfRatio
 from homeassistant.const import UnitOfSpeed
 from homeassistant.const import UnitOfTemperature
 from homeassistant.const import UnitOfVolumeFlowRate
-from .pymygekko.resources.AlarmsLogics import AlarmsLogic
-from .pymygekko.resources.DoorInterComs import DoorInterCom
-from .pymygekko.resources.EnergyCosts import EnergyCost
-from .pymygekko.resources.HotWaterSystems import HotWaterSystem
-from .pymygekko.resources.HotWaterSystems import HotWaterSystemFeature
-from .pymygekko.resources.RoomTemps import RoomTemp
-from .pymygekko.resources.RoomTemps import RoomTempsFeature
-from .pymygekko.resources.Vents import Vent
-from .pymygekko.resources.Vents import VentFeature
-from .pymygekko.resources.Meteo import Meteo
+from .api import AlarmsLogic
+from .api import DoorInterCom
+from .api import EnergyCost
+from .api import HotWaterSystem
+from .api import HotWaterSystemFeature
+from .api import RoomTemp
+from .api import RoomTempsFeature
+from .api import Vent
+from .api import VentFeature
+from .api import Meteo
 
 from .sensor_extra import build_extra_sensors
 

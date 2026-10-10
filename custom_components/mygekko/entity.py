@@ -4,7 +4,7 @@ import logging
 from homeassistant.core import callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from .pymygekko.resources import ReadOnlyEntity
+from .api import ReadOnlyEntity
 
 from .const import DOMAIN
 from .const import MANUFACTURER

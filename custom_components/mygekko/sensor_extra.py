@@ -17,7 +17,7 @@ from .entity import MyGekkoEntity
 
 @dataclass(frozen=True, kw_only=True)
 class MyGekkoPropertySensorDescription(SensorEntityDescription):
-    """Sensor description reading a python property of the PyMyGekko entity."""
+    """Sensor description reading a python property of the MyGekko device."""
 
     attr: str
 
@@ -100,7 +100,7 @@ HEATING_CIRCUIT_SENSORS = (
 
 
 class MyGekkoPropertySensor(MyGekkoEntity, SensorEntity):
-    """Generic sensor reading one property of a PyMyGekko entity."""
+    """Generic sensor reading one property of a MyGekko device."""
 
     entity_description: MyGekkoPropertySensorDescription
 

@@ -11,9 +11,9 @@ from homeassistant.const import CONF_IP_ADDRESS
 from homeassistant.const import CONF_PASSWORD
 from homeassistant.const import CONF_USERNAME
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from .pymygekko import MyGekkoLocalApiClient
-from .pymygekko import MyGekkoQueryApiClient
-from .pymygekko.data_provider import MyGekkoError
+from .api import MyGekkoLocalApiClient
+from .api import MyGekkoQueryApiClient
+from .api import MyGekkoError
 
 from .const import CONF_CONNECTION_DEMO_MODE
 from .const import CONF_CONNECTION_DEMO_MODE_LABEL

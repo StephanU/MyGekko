@@ -34,8 +34,17 @@ verschluckte Fehler, Refresh-Sturm nach Schaltbefehlen, Reload-Listener-Leak, Ka
 - Zutrittstüren (Türöffner): bewusst nicht als Entity, sicherheitsrelevant.
 - Tests: Template-Tests sind veraltet und lokal nicht lauffähig (HA 2026.8 braucht Python 3.14).
 
-## Update: Lib vendored
+## Update: Lib vendored (superseded)
 PyMyGekko 1.6.0 (MIT, Stephan Uhle) liegt jetzt in `custom_components/mygekko/pymygekko/` und wird nicht mehr
 per pip installiert. Dadurch sind die Lib-Fixes in diesem Repo möglich:
 HTTP-Timeouts (15 s), JSON-Fehler als `MyGekkoError`, atomares Lesen von Resources+Status,
 defensive Zugriffe bei fehlenden Feldern, Subscriber-Fehler isoliert, Demo-Daten nicht im Event-Loop.
+
+## Update: eigene API-Schicht (`custom_components/mygekko/api`)
+PyMyGekko ist nicht mehr Teil des Repos. Die Integration nutzt eine eigene, abhängigkeitsfreie Schicht (MIT-Attribution im README,
+Lizenzkopie in `api/LICENSE-PyMyGekko`):
+- `schema.py`: deklarative Beschreibung aller Ressourcentypen (sumstate-Felder, Legacy-Varianten, Gruppen).
+- `store.py`: generischer, fehlertoleranter Parser statt 17 Accessor-Klassen.
+- `models.py`: Geräteklassen mit identischer öffentlicher API wie die Lib (Platforms unverändert bis auf Imports).
+- `client.py`: Cloud-, Lokal- und Demo-Client, Timeouts, **nur `/var/status` pro Poll** (Namen werden gecacht), Fehler als Exceptions.
+- Absicherung: Differenztest alte Lib vs. neue Schicht über alle Entities/Properties (192 Vergleiche, 0 Abweichungen) + `tests/test_api.py`.

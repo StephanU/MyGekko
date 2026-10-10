@@ -5,9 +5,9 @@ from homeassistant.components.light import ATTR_BRIGHTNESS
 from homeassistant.components.light import ATTR_RGB_COLOR
 from homeassistant.components.light import ColorMode
 from homeassistant.components.light import LightEntity
-from .pymygekko.resources.Lights import Light
-from .pymygekko.resources.Lights import LightFeature
-from .pymygekko.resources.Lights import LightState
+from .api import Light
+from .api import LightFeature
+from .api import LightState
 
 from .entity import MyGekkoEntity
 
