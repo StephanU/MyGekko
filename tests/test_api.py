@@ -14,6 +14,11 @@ from custom_components.mygekko.api.store import ResourceStore
 DEMO_DIR = "custom_components/mygekko/api/demo/"
 
 
+@pytest.fixture(autouse=True)
+def allow_sockets(socket_enabled):
+    """Allow sockets, the tests talk to a local fake MyGekko."""
+
+
 def _load(name):
     with open(DEMO_DIR + name, encoding="utf-8") as file:
         return json.load(file)

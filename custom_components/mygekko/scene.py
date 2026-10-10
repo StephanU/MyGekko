@@ -8,6 +8,9 @@ from .api import ActionState
 
 
 
+PARALLEL_UPDATES = 1
+
+
 async def async_setup_entry(hass, entry, async_add_devices):
     """Set up scene platform."""
     coordinator = entry.runtime_data

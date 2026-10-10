@@ -1,48 +1,51 @@
 """Global fixtures for MyGekko integration."""
+from unittest.mock import AsyncMock
 from unittest.mock import patch
 
 import pytest
+from homeassistant.config_entries import ConfigEntryState
+from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+from custom_components.mygekko import coordinator as coordinator_module
+from custom_components.mygekko.const import DOMAIN
+
+from .const import DEMO_CONFIG
 
 pytest_plugins = "pytest_homeassistant_custom_component"
 
 
-# This fixture is used to prevent HomeAssistant from attempting to create and dismiss persistent
-# notifications. These calls would fail without this fixture since the persistent_notification
-# integration is never loaded during a test.
-@pytest.fixture(name="skip_notifications", autouse=True)
-def skip_notifications_fixture():
-    """Skip notification calls."""
-    with patch("homeassistant.components.persistent_notification.async_create"), patch(
-        "homeassistant.components.persistent_notification.async_dismiss"
-    ):
-        yield
+@pytest.fixture(autouse=True)
+def auto_enable_custom_integrations(enable_custom_integrations):
+    """Enable loading of the custom integration in every test."""
+    return enable_custom_integrations
 
 
-# This fixture, when used, will result in calls to get_data to return None. To have the call
-# return a value, we would add the `return_value=<VALUE_TO_RETURN>` parameter to the patch call.
-@pytest.fixture(name="bypass_get_data")
-def bypass_get_data_fixture():
-    """Skip calls to get data from API."""
-    with patch("custom_components.mygekko.MyGekkoApiClient.get_data"):
-        yield
+@pytest.fixture(autouse=True)
+def fast_writes(monkeypatch):
+    """Do not wait between commands in tests."""
+    monkeypatch.setattr(coordinator_module, "WRITE_MIN_DELAY", 0)
+    monkeypatch.setattr(coordinator_module, "WRITE_RETRY_DELAY", 0)
 
 
-# This fixture, when used, will result in calls to try_connect to return None. To have the call
-# return a value, we would add the `return_value=<VALUE_TO_RETURN>` parameter to the patch call.
-@pytest.fixture(name="bypass_try_connect")
-def bypass_try_connect_fixture():
-    """Skip calls to get data from API."""
-    with patch("custom_components.mygekko.MyGekkoApiClient.try_connect"):
-        yield
+@pytest.fixture
+def demo_entry(hass):
+    """Return a demo mode config entry that was added to hass."""
+    entry = MockConfigEntry(
+        domain=DOMAIN, version=3, data=DEMO_CONFIG, unique_id="demo"
+    )
+    entry.add_to_hass(hass)
+    return entry
 
 
-# In this fixture, we are forcing calls to try_connect to raise an Exception. This is useful
-# for exception handling.
-@pytest.fixture(name="error_on_try_connect")
-def error_try_connect_fixture():
-    """Simulate error when retrieving data from API."""
+@pytest.fixture
+async def setup_demo(hass, demo_entry):
+    """Set up the demo mode config entry and capture all commands."""
     with patch(
-        "custom_components.mygekko.MyGekkoApiClient.try_connect",
-        side_effect=Exception,
-    ):
-        yield
+        "custom_components.mygekko.api.MyGekkoDemoModeClient.write",
+        new_callable=AsyncMock,
+    ) as write:
+        await hass.config_entries.async_setup(demo_entry.entry_id)
+        await hass.async_block_till_done()
+        assert demo_entry.state is ConfigEntryState.LOADED
+        demo_entry.write = write
+        yield demo_entry

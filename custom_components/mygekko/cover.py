@@ -14,6 +14,9 @@ from .api import BlindState
 from .entity import MyGekkoEntity
 
 
+PARALLEL_UPDATES = 1
+
+
 async def async_setup_entry(hass, entry, async_add_devices):
     """Set up cover platform."""
     coordinator = entry.runtime_data

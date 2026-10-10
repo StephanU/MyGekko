@@ -1,0 +1,65 @@
+name: "Tests"
+
+on:
+  workflow_dispatch:
+  schedule:
+    # weekly check against the newest Home Assistant, to find breaking changes early
+    - cron: "0 4 * * 1"
+  push:
+    branches:
+      - "main"
+  pull_request:
+    branches:
+      - "main"
+
+jobs:
+  pinned:
+    name: "Tests (Home Assistant from requirements.txt)"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Checkout the repository"
+        uses: "actions/checkout@v7.0.1"
+
+      - name: "Set up Python"
+        uses: actions/setup-python@v7.0.0
+        with:
+          python-version: "3.14"
+          cache: "pip"
+
+      - name: "Install requirements"
+        run: python3 -m pip install -r requirements.txt
+
+      - name: "Run tests"
+        run: python3 -m pytest tests
+
+  latest:
+    name: "Tests (${{ matrix.channel }} Home Assistant)"
+    # a failure here shows an upcoming incompatibility, it does not block pull requests
+    continue-on-error: true
+    if: github.event_name != 'pull_request'
+    runs-on: "ubuntu-latest"
+    strategy:
+      fail-fast: false
+      matrix:
+        channel: ["stable", "beta"]
+    steps:
+      - name: "Checkout the repository"
+        uses: "actions/checkout@v7.0.1"
+
+      - name: "Set up Python"
+        uses: actions/setup-python@v7.0.0
+        with:
+          python-version: "3.14"
+
+      - name: "Install the newest Home Assistant test plugin"
+        # pytest-homeassistant-custom-component pins the matching Home Assistant version
+        run: |
+          pip_args=""
+          if [ "${{ matrix.channel }}" = "beta" ]; then pip_args="--pre"; fi
+          python3 -m pip install $pip_args pytest-homeassistant-custom-component pytest-asyncio PyTurboJPEG
+
+      - name: "Show the Home Assistant version"
+        run: python3 -c "import homeassistant.const as c; print(c.__version__)"
+
+      - name: "Run tests"
+        run: python3 -m pytest tests

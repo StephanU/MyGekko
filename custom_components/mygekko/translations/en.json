@@ -35,6 +35,17 @@
           "username": "The user name of a user of the local query API.",
           "password": "The user's password."
         }
+      },
+      "reconfigure": {
+        "title": "Reconfigure MyGekko",
+        "description": "Change the credentials or the address of this MyGekko.",
+        "data": {
+          "username": "Username",
+          "api_key": "Api Key",
+          "gekkoid": "Gekko ID",
+          "ip_address": "IP address",
+          "password": "Password"
+        }
       }
     },
     "error": {
@@ -43,7 +54,9 @@
     },
     "abort": {
       "single_instance_allowed": "Only a single instance is allowed.",
-      "already_configured": "This MyGekko is already configured."
+      "already_configured": "This MyGekko is already configured.",
+      "reconfigure_successful": "The configuration was updated.",
+      "reconfigure_not_supported": "The demo mode cannot be reconfigured."
     }
   },
   "entity": {

@@ -15,6 +15,8 @@ from .entity import MyGekkoEntity
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 
+PARALLEL_UPDATES = 0
+
 
 async def async_setup_entry(hass, entry, async_add_devices):
     """Set up Camera platform."""
@@ -59,7 +61,7 @@ class MyGekkoInterComCam(MyGekkoEntity, Camera):
                     self._door_inter_com.image_url, timeout=aiohttp.ClientTimeout(total=10)
                 ) as resp:
                     if resp.status != 200:
-                        _LOGGER.error("Error fetching camera image from camera %s. Error: %s", self._door_inter_com.name, resp.reason)
+                        _LOGGER.error("Error fetching camera image from camera %s. HTTP status: %s", self._door_inter_com.name, resp.status)
                         return None
                     image_bytes = await resp.read()
 
@@ -104,7 +106,7 @@ class MyGekkoCam(MyGekkoEntity, Camera):
                     self._cam.image_url, timeout=aiohttp.ClientTimeout(total=10)
                 ) as resp:
                     if resp.status != 200:
-                        _LOGGER.error("Error fetching camera image from camera %s. Error: %s", self._cam.name, resp.reason)
+                        _LOGGER.error("Error fetching camera image from camera %s. HTTP status: %s", self._cam.name, resp.status)
                         return None
                     image_bytes = await resp.read()
 

@@ -35,6 +35,17 @@
           "username": "Der Benutzername eines Benutzers der lokalen Query API.",
           "password": "Das Passwort des Benutzers."
         }
+      },
+      "reconfigure": {
+        "title": "MyGekko neu konfigurieren",
+        "description": "Zugangsdaten oder Adresse dieses MyGekko ändern.",
+        "data": {
+          "username": "Benutzername",
+          "api_key": "Api-Schlüssel",
+          "gekkoid": "Gekko-ID",
+          "ip_address": "IP-Adresse",
+          "password": "Passwort"
+        }
       }
     },
     "error": {
@@ -43,7 +54,9 @@
     },
     "abort": {
       "single_instance_allowed": "Es ist nur eine einzige Instanz zulässig.",
-      "already_configured": "Dieses MyGekko ist bereits eingerichtet."
+      "already_configured": "Dieses MyGekko ist bereits eingerichtet.",
+      "reconfigure_successful": "Die Konfiguration wurde aktualisiert.",
+      "reconfigure_not_supported": "Der Demo-Modus kann nicht neu konfiguriert werden."
     }
   },
   "entity": {

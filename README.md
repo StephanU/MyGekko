@@ -78,6 +78,18 @@ If you want to contribute to this please read the [Contribution guidelines](CONT
 - **Timeouts:** every request is bound by a timeout (15 s), a hanging device never blocks Home Assistant.
 - **API layer (`custom_components/mygekko/api`):** `schema.py` describes the `sumstate` values of every resource type, `store.py` parses the API documents generically, `models.py` contains the device classes (`Light`, `Blind`, ...) and `client.py` the cloud, local and demo clients. There is no external dependency. To support a new resource type add a `ResourceSpec` in `schema.py` and a model class in `models.py`, then expose it in `client.py`.
 
+## Testing
+
+The tests run against a real Home Assistant (`pytest-homeassistant-custom-component`), they set up the integration in demo mode, send commands through the Home Assistant services and cover the config flow, the polling/rate-limit behavior and the API layer.
+
+```bash
+python3.14 -m venv .venv && . .venv/bin/activate
+pip install -r requirements.txt
+pytest tests
+```
+
+The GitHub workflow `Tests` runs this on every pull request with the Home Assistant version from `requirements.txt`, and weekly against the newest stable and the beta Home Assistant to find upcoming incompatibilities early. `Validate` runs hassfest and the HACS validation daily.
+
 ## Development Hints
 
 - Start in VsCode in with the DevContainer extension

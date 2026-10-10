@@ -48,3 +48,12 @@ Lizenzkopie in `api/LICENSE-PyMyGekko`):
 - `models.py`: Geräteklassen mit identischer öffentlicher API wie die Lib (Platforms unverändert bis auf Imports).
 - `client.py`: Cloud-, Lokal- und Demo-Client, Timeouts, **nur `/var/status` pro Poll** (Namen werden gecacht), Fehler als Exceptions.
 - Absicherung: Differenztest alte Lib vs. neue Schicht über alle Entities/Properties (192 Vergleiche, 0 Abweichungen) + `tests/test_api.py`.
+
+## Update: Test gegen echtes Home Assistant
+- Sandbox: Python 3.14 + HA 2026.8.1 und 2026.10.0 (aktuelle stabile Version) installiert; vorher war nichts gegen echtes HA gelaufen.
+- Neue Testsuite (56 Tests, 94 % Coverage): Config-Flow (Cloud/Lokal/Demo, Duplikate, Reconfigure), Setup/Unload/Reload/Retry, Migration,
+  Coordinator (429-Skips, Backoff, Recovery), alle Plattform-Dienste (Befehl/Wert), Befehlsserialisierung, Kameras/Intercom/Wetter, Diagnostics, API-Client.
+- Gefundene und behobene Fehler: Beim ersten Abruf mit 429 wäre der Eintrag ohne Entities `LOADED` gewesen; Sensor-Setup (viele einzelne `add_entities`-Aufrufe,
+  langsam); AQI-Sensor mit unzulässiger Einheit `%`; Wetter-Sensoren auch ohne Wetterstation; Kamera-Fehlermeldung.
+- HA-Standards: `PARALLEL_UPDATES`, `integration_type`, Diagnostics (ohne Zugangsdaten), Reconfigure-Flow, hassfest 0 Fehler (2026.8.1 und 2026.10.0).
+- CI: neuer Workflow `Tests` (gepinnt bei jedem PR; wöchentlich gegen stable und beta HA), Pins auf HA 2026.10.0.

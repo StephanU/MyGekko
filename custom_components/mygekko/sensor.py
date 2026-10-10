@@ -176,109 +176,99 @@ SENSOR_UNIT_MAPPING = {
 }
 
 
-async def async_setup_entry(hass, entry, async_add_devices):
+PARALLEL_UPDATES = 0
+
+
+async def async_setup_entry(hass, entry, async_add_entities):
     """Set up sensor platform."""
     coordinator = entry.runtime_data
-    energy_costs: list[EnergyCost] = coordinator.api.get_energy_costs()
-    for energy_cost in energy_costs:
-        if energy_cost.sensor_data and "values" in energy_cost.sensor_data:
-            for index, sensor in enumerate(energy_cost.sensor_data["values"]):
-                if sensor and "name" in sensor and sensor["name"] in SENSORS:
-                    async_add_devices(
-                        [
-                            MyGekkoEnergySensor(
-                                coordinator,
-                                energy_cost,
-                                index,
-                                SENSORS[sensor["name"]],
-                            )
-                        ]
+    api = coordinator.api
+    entities: list[SensorEntity] = []
+
+    for energy_cost in api.get_energy_costs():
+        values = (energy_cost.sensor_data or {}).get("values") or []
+        for index, sensor in enumerate(values):
+            if sensor and sensor.get("name") in SENSORS:
+                entities.append(
+                    MyGekkoEnergySensor(
+                        coordinator, energy_cost, index, SENSORS[sensor["name"]]
                     )
+                )
 
-    async_add_devices(build_extra_sensors(coordinator))
+    entities.extend(build_extra_sensors(coordinator))
 
-    globals_network = coordinator.api.get_globals_network()
-    alarms_logics: list[AlarmsLogic] = coordinator.api.get_alarms_logics()
-    for alarms_logic in alarms_logics if globals_network else []:
-        async_add_devices(
-            [MyGekkoAlarmsLogicsSensor(coordinator, alarms_logic, globals_network)]
+    globals_network = api.get_globals_network()
+    if globals_network:
+        entities.extend(
+            MyGekkoAlarmsLogicsSensor(coordinator, alarms_logic, globals_network)
+            for alarms_logic in api.get_alarms_logics()
         )
 
-    room_temps: list[RoomTemp] = coordinator.api.get_room_temps()
-    for room_temp in room_temps:
+    for room_temp in api.get_room_temps():
         if RoomTempsFeature.AIR_QUALITY in room_temp.supported_features:
-            async_add_devices(
-                [MyGekkoRoomTempsAirQualitySensor(coordinator, room_temp)]
+            entities.append(MyGekkoRoomTempsAirQualitySensor(coordinator, room_temp))
+
+    for hotwater_system in api.get_hot_water_systems():
+        features = hotwater_system.supported_features
+        if HotWaterSystemFeature.BOTTOM_TEMPERATURE in features:
+            entities.append(
+                MyGekkoHotwaterSystemsBottomTemperatureSensor(
+                    coordinator, hotwater_system
+                )
+            )
+        if HotWaterSystemFeature.TOP_TEMPERATURE in features:
+            entities.append(
+                MyGekkoHotwaterSystemsTopTemperatureSensor(coordinator, hotwater_system)
             )
 
-    hotwater_systems: list[HotWaterSystem] = coordinator.api.get_hot_water_systems()
-    for hotwater_system in hotwater_systems:
-        if (
-            HotWaterSystemFeature.BOTTOM_TEMPERATURE
-            in hotwater_system.supported_features
-        ):
-            async_add_devices(
-                [
-                    MyGekkoHotwaterSystemsBottomTemperatureSensor(
-                        coordinator, hotwater_system
-                    )
-                ]
+    for vent in api.get_vents():
+        features = vent.supported_features
+        if VentFeature.HUMIDITY in features:
+            entities.append(MyGekkoVentHumiditySensor(coordinator, vent))
+        if VentFeature.AIR_QUALITY in features:
+            entities.append(MyGekkoVentAirQualitySensor(coordinator, vent))
+        if VentFeature.CO2 in features:
+            entities.append(MyGekkoVentCo2Sensor(coordinator, vent))
+        entities.extend(
+            sensor_class(coordinator, vent)
+            for sensor_class in (
+                MyGekkoVentExhaustAirTemperatureSensor,
+                MyGekkoVentOutgoingAirTemperatureSensor,
+                MyGekkoVentOutsideAirTemperatureSensor,
+                MyGekkoVentSupplyAirTemperatureSensor,
+                MyGekkoVentSupplyAirWorkingLevelSensor,
+                MyGekkoVentExhaustAirWorkingLevelSensor,
             )
-        if (
-            HotWaterSystemFeature.TOP_TEMPERATURE
-            in hotwater_system.supported_features
-        ):
-            async_add_devices(
-                [
-                    MyGekkoHotwaterSystemsTopTemperatureSensor(
-                        coordinator, hotwater_system
-                    )
-                ]
-            )
-    vents: list[Vent] = coordinator.api.get_vents()
-    for vent in vents:
-        if VentFeature.HUMIDITY in vent.supported_features:
-            async_add_devices([MyGekkoVentHumiditySensor(coordinator, vent)])
-        if VentFeature.AIR_QUALITY in vent.supported_features:
-            async_add_devices([MyGekkoVentAirQualitySensor(coordinator, vent)])
-        if VentFeature.CO2 in vent.supported_features:
-            async_add_devices([MyGekkoVentCo2Sensor(coordinator, vent)])
-
-        async_add_devices(
-            [
-                MyGekkoVentExhaustAirTemperatureSensor(coordinator, vent),
-                MyGekkoVentOutgoingAirTemperatureSensor(coordinator, vent),
-                MyGekkoVentOutsideAirTemperatureSensor(coordinator, vent),
-                MyGekkoVentSupplyAirTemperatureSensor(coordinator, vent),
-                MyGekkoVentSupplyAirWorkingLevelSensor(coordinator, vent),
-                MyGekkoVentExhaustAirWorkingLevelSensor(coordinator, vent),
-            ]
         )
 
-    meteo: Meteo = coordinator.api.get_meteo()
-    async_add_devices(
-        [
-            MyGekkoMeteoRainSensor(coordinator, meteo),
-            MyGekkoMeteoTwilightSensor(coordinator, meteo),
-            MyGekkoMeteoBrightnessSensor(coordinator, meteo),
-            MyGekkoMeteoBrightnessWestSensor(coordinator, meteo),
-            MyGekkoMeteoBrightnessEastSensor(coordinator, meteo),
-            MyGekkoMeteoHumiditySensor(coordinator, meteo),
-            MyGekkoMeteoWindSensor(coordinator, meteo),
-            MyGekkoMeteoTemperatureSensor(coordinator, meteo),
-        ]
+    # only the weather values that the weather station really reports
+    meteo = api.get_meteo()
+    meteo_sensors = {
+        "rain": MyGekkoMeteoRainSensor,
+        "twilight": MyGekkoMeteoTwilightSensor,
+        "brightness": MyGekkoMeteoBrightnessSensor,
+        "brightnessw": MyGekkoMeteoBrightnessWestSensor,
+        "brightnesso": MyGekkoMeteoBrightnessEastSensor,
+        "humidity": MyGekkoMeteoHumiditySensor,
+        "wind": MyGekkoMeteoWindSensor,
+        "temperature": MyGekkoMeteoTemperatureSensor,
+    }
+    entities.extend(
+        sensor_class(coordinator, meteo)
+        for key, sensor_class in meteo_sensors.items()
+        if key in meteo.sensor_data
     )
 
-    door_inter_coms: DoorInterCom = coordinator.api.get_door_inter_coms()
-    for door_inter_com in door_inter_coms:
-        async_add_devices(
+    for door_inter_com in api.get_door_inter_coms():
+        entities.extend(
             [
                 MyGekkoDoorInterComConnectionState(coordinator, door_inter_com),
                 MyGekkoDoorInterComSoundMode(coordinator, door_inter_com),
                 MyGekkoDoorInterComMissedCalls(coordinator, door_inter_com),
-
             ]
         )
+
+    async_add_entities(entities)
 
 
 class MyGekkoAlarmsLogicsSensor(MyGekkoControllerEntity, SensorEntity):
@@ -431,7 +421,8 @@ class MyGekkoVentHumiditySensor(MyGekkoEntity, SensorEntity):
 class MyGekkoVentAirQualitySensor(MyGekkoEntity, SensorEntity):
     """mygekko Vent Air Quality Sensor class."""
 
-    _attr_native_unit_of_measurement = PERCENTAGE
+    # the air quality index has no unit
+    _attr_native_unit_of_measurement = None
 
     def __init__(self, coordinator, vent: Vent):
         """Initialize a MyGekko vent air quality sensor."""
