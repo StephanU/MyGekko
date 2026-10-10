@@ -1,13 +1,23 @@
 name: "Release"
 
-# Push a version tag (for example `git tag 1.4.0 && git push origin 1.4.0`): the workflow
-# creates the GitHub release with notes and the integration zip.
+# Every change of the integration on main creates a GitHub release with an automatic version:
+#   - the manifest version, if it is newer than the latest release tag (e.g. a manual 1.5.0 bump),
+#   - otherwise the latest release tag with the patch number increased (1.4.0 -> 1.4.1).
+# Release notes: `.github/release-notes/<version>.md` if present, else generated from the commits.
 on:
   push:
-    tags:
-      - "[0-9]+.[0-9]+.[0-9]+*"
+    branches:
+      - main
+    paths:
+      - "custom_components/**"
+      - "hacs.json"
+  workflow_dispatch:
 
 permissions: {}
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
   release:
@@ -18,31 +28,54 @@ jobs:
     steps:
       - name: "Checkout the repository"
         uses: "actions/checkout@v7.0.1"
+        with:
+          fetch-depth: 0
+
+      - name: "Determine the version"
+        id: version
+        shell: "bash"
+        run: |
+          manifest=$(jq -r .version custom_components/mygekko/manifest.json)
+          latest=$(git tag --list | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1 || true)
+          if [ -z "$latest" ]; then
+            next="$manifest"
+          elif [ "$(printf '%s\n%s\n' "$latest" "$manifest" | sort -V | tail -n 1)" = "$manifest" ] \
+               && [ "$manifest" != "$latest" ]; then
+            next="$manifest"
+          else
+            IFS=. read -r major minor patch <<< "$latest"
+            next="$major.$minor.$((patch + 1))"
+          fi
+          echo "Latest tag: ${latest:-none}, manifest: $manifest, new version: $next"
+          echo "version=$next" >> "$GITHUB_OUTPUT"
 
       - name: "Adjust version number"
         shell: "bash"
         run: |
-          yq -i -o json '.version="${{ github.ref_name }}"' \
-            "${{ github.workspace }}/custom_components/mygekko/manifest.json"
+          jq '.version = "${{ steps.version.outputs.version }}"' \
+            custom_components/mygekko/manifest.json > /tmp/manifest.json
+          mv /tmp/manifest.json custom_components/mygekko/manifest.json
 
       - name: "ZIP the integration directory"
         shell: "bash"
         run: |
-          cd "${{ github.workspace }}/custom_components/mygekko"
+          cd custom_components/mygekko
           zip mygekko_integration.zip -r ./
 
       - name: "Pick the release notes"
         id: notes
         shell: "bash"
         run: |
-          file=".github/release-notes/${{ github.ref_name }}.md"
+          file=".github/release-notes/${{ steps.version.outputs.version }}.md"
           if [ -f "$file" ]; then echo "path=$file" >> "$GITHUB_OUTPUT"; fi
 
       - name: "Create the release"
         uses: softprops/action-gh-release@v3.0.2
         with:
-          name: "${{ github.ref_name }}"
+          tag_name: "${{ steps.version.outputs.version }}"
+          target_commitish: "${{ github.sha }}"
+          name: "${{ steps.version.outputs.version }}"
           body_path: ${{ steps.notes.outputs.path }}
           generate_release_notes: true
-          prerelease: ${{ contains(github.ref_name, '-') }}
-          files: ${{ github.workspace }}/custom_components/mygekko/mygekko_integration.zip
+          make_latest: true
+          files: custom_components/mygekko/mygekko_integration.zip

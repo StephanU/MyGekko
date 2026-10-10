@@ -89,7 +89,7 @@ jobs:
       - name: "Install Home Assistant core requirements"
         run: |
           python3 -m pip install -r ha-core/requirements.txt -r ha-core/requirements_test.txt
-          python3 -m pip install PyTurboJPEG pytest-asyncio
+          python3 -m pip install PyTurboJPEG pytest-asyncio paho-mqtt
 
       - name: "Run tests against Home Assistant dev"
         run: HA_CORE="$PWD/ha-core" PYTHON=python3 scripts/test-ha-dev
