@@ -1,18 +1,19 @@
 """Adds config flow for MyGekko."""
+import asyncio
 import logging
 
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
-from aiohttp import ClientConnectorError
+from aiohttp import ClientError
 from homeassistant import config_entries
 from homeassistant.const import CONF_API_KEY
 from homeassistant.const import CONF_IP_ADDRESS
 from homeassistant.const import CONF_PASSWORD
 from homeassistant.const import CONF_USERNAME
-from homeassistant.helpers.aiohttp_client import async_create_clientsession
-from PyMyGekko import MyGekkoLocalApiClient
-from PyMyGekko import MyGekkoQueryApiClient
-from PyMyGekko.data_provider import MyGekkoError
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from .pymygekko import MyGekkoLocalApiClient
+from .pymygekko import MyGekkoQueryApiClient
+from .pymygekko.data_provider import MyGekkoError
 
 from .const import CONF_CONNECTION_DEMO_MODE
 from .const import CONF_CONNECTION_DEMO_MODE_LABEL
@@ -61,7 +62,6 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Config flow for mygekko."""
 
     VERSION = 3
-    CONNECTION_CLASS = config_entries.CONN_CLASS_CLOUD_POLL
 
     def __init__(self):
         """Initialize."""
@@ -119,6 +119,10 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     user_input[CONF_GEKKOID],
                 )
                 if valid:
+                    await self.async_set_unique_id(
+                        f"cloud_{user_input[CONF_GEKKOID]}"
+                    )
+                    self._abort_if_unique_id_configured()
                     user_input[CONF_CONNECTION_TYPE] = CONF_CONNECTION_MY_GEKKO_CLOUD
                     return self.async_create_entry(
                         title=user_input[CONF_USERNAME], data=user_input
@@ -148,6 +152,10 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     user_input[CONF_PASSWORD],
                 )
                 if valid:
+                    await self.async_set_unique_id(
+                        f"local_{user_input[CONF_IP_ADDRESS]}"
+                    )
+                    self._abort_if_unique_id_configured()
                     user_input[CONF_CONNECTION_TYPE] = CONF_CONNECTION_LOCAL
                     return self.async_create_entry(
                         title=user_input[CONF_USERNAME], data=user_input
@@ -164,12 +172,13 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def _test_credentials_cloud_mygekko(self, username, apikey, gekkoid):
         """Return true if credentials is valid."""
         try:
-            session = async_create_clientsession(self.hass)
+            session = async_get_clientsession(self.hass)
             client = MyGekkoQueryApiClient(username, apikey, gekkoid, session)
-            await client.try_connect()
+            async with asyncio.timeout(15):
+                await client.try_connect()
             return True
-        except ClientConnectorError:
-            _LOGGER.exception("ClientConnectorError")
+        except (ClientError, TimeoutError):
+            _LOGGER.exception("Connection to MyGekko failed")
         except MyGekkoError:
             _LOGGER.exception("MyGekkoError")
         return False
@@ -177,12 +186,13 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     async def _test_credentials_local_mygekko(self, ip_address, username, password):
         """Return true if credentials is valid."""
         try:
-            session = async_create_clientsession(self.hass, verify_ssl=False)
+            session = async_get_clientsession(self.hass, verify_ssl=False)
             client = MyGekkoLocalApiClient(username, password, session, ip_address)
-            await client.try_connect()
+            async with asyncio.timeout(15):
+                await client.try_connect()
             return True
-        except ClientConnectorError:
-            _LOGGER.exception("ClientConnectorError")
+        except (ClientError, TimeoutError):
+            _LOGGER.exception("Connection to MyGekko failed")
         except MyGekkoError:
             _LOGGER.exception("MyGekkoError")
 

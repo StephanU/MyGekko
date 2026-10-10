@@ -25,6 +25,10 @@ MyGekko integration for HomeAssistant using the [PyMyGekko](https://github.com/S
 | `water_heater` | Water Heater (called hotwater_systems in MyGekko)                  |
 | `sensor`       | MyGekko energy_cost metrics and alarms_logics are added as sensors |
 | `scene`        | MyGekko actions are added as scenes                                |
+| `select`       | Vents settings and clocks (time switches)                          |
+| `camera`       | Cams and door intercoms                                            |
+
+Sensors are also provided for energy managers, e-mobility (wallbox, plus a charging switch) and heating circuits.
 
 ![Dashboard Screenshot][dashboard-screenshot]
 

@@ -7,12 +7,10 @@ from homeassistant.components.climate import ClimateEntity
 from homeassistant.components.climate import ClimateEntityFeature
 from homeassistant.components.climate import HVACMode
 from homeassistant.const import UnitOfTemperature
-from homeassistant.core import callback
-from PyMyGekko.resources.RoomTemps import RoomTemp
-from PyMyGekko.resources.RoomTemps import RoomTempsFeature
-from PyMyGekko.resources.RoomTemps import RoomTempsMode
+from .pymygekko.resources.RoomTemps import RoomTemp
+from .pymygekko.resources.RoomTemps import RoomTempsFeature
+from .pymygekko.resources.RoomTemps import RoomTempsMode
 
-from .const import DOMAIN
 from .entity import MyGekkoEntity
 
 
@@ -21,7 +19,7 @@ _LOGGER: logging.Logger = logging.getLogger(__name__)
 
 async def async_setup_entry(hass, entry, async_add_devices):
     """Set up cover platform."""
-    coordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator = entry.runtime_data
 
     async_add_devices(
         MyGekkoRoomTempClimate(coordinator, room_temp)
@@ -54,11 +52,6 @@ class MyGekkoRoomTempClimate(MyGekkoEntity, ClimateEntity):
         if RoomTempsFeature.TARGET_TEMPERATURE in supported_features:
             self._attr_supported_features |= ClimateEntityFeature.TARGET_TEMPERATURE
 
-    @callback
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
-        self.async_write_ha_state()
-
     @property
     def current_temperature(self) -> float | None:
         """Return the current temperature."""
@@ -71,8 +64,7 @@ class MyGekkoRoomTempClimate(MyGekkoEntity, ClimateEntity):
 
     async def async_set_temperature(self, **kwargs) -> None:
         """Set new target temperature."""
-        await self._room_temp.set_target_temperature(float(kwargs[ATTR_TEMPERATURE]))
-        await self.coordinator.async_request_refresh()
+        await self.coordinator.async_write(self._room_temp.set_target_temperature, float(kwargs[ATTR_TEMPERATURE]))
 
     @property
     def preset_mode(self) -> str | None:
@@ -90,8 +82,7 @@ class MyGekkoRoomTempClimate(MyGekkoEntity, ClimateEntity):
     async def async_set_preset_mode(self, preset_mode) -> None:
         """Set new preset mode."""
 
-        await self._room_temp.set_working_mode(preset_mode)
-        await self.coordinator.async_request_refresh()
+        await self.coordinator.async_write(self._room_temp.set_working_mode, preset_mode)
 
     @property
     def current_humidity(self) -> int | None:

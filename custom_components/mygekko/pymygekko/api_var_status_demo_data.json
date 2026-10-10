@@ -1,0 +1,217 @@
+{
+  "globals": {
+    "network": {
+      "gekkoname": {
+        "value": "myGEKKO Demo"
+      },
+      "language": {
+        "value": "0"
+      },
+      "version": {
+        "value": "596610"
+      },
+      "hardware": {
+        "value": "Slide 2 (AC0DFE300913)"
+      }
+    }
+  },
+  "blinds": {
+    "item0": {
+      "sumstate": {
+        "value": "0;100.00;0.00;0;90"
+      }
+    },
+    "item1": {
+      "sumstate": {
+        "value": "0;100.00;45.00;0;90"
+      }
+    },
+    "item2": {
+      "sumstate": {
+        "value": "0;100.00;90.00;0;90"
+      }
+    },
+    "item3": {
+      "sumstate": {
+        "value": "0;100.00;0.00;0;90"
+      }
+    },
+    "group0": {
+      "sumstate": {
+        "value": "0"
+      }
+    },
+    "group1": {
+      "sumstate": {
+        "value": "0"
+      }
+    }
+  },
+  "vents": {
+    "item0": {
+      "sumstate": {
+        "value": "1;1;0;0;4;38.60;80.00;1184;19.64;22.83;6.99;9.4;25.00;25.00;0;0;0;0;0;"
+      }
+    },
+    "group0": {
+      "sumstate": {
+        "value": "1"
+      }
+    }
+  },
+  "lights": {
+    "item0": {
+      "sumstate": {
+        "value": "1;100.00;;;0"
+      }
+    },
+    "item1": {
+      "sumstate": {
+        "value": "1;50.00;;;0"
+      }
+    },
+    "item2": {
+      "sumstate": {
+        "value": "0;44.00;16711719;;0"
+      }
+    },
+    "group0": {
+      "sumstate": {
+        "value": "1"
+      }
+    }
+  },
+  "roomtemps": {
+    "item0": {
+      "sumstate": {
+        "value": "22.10;22.00;1.37;8;;0.00;0;0;33.10;787.00;"
+      }
+    },
+    "item1": {
+      "sumstate": {
+        "value": "22.00;18.00;0.00;16;;0.00;0;0;33.30;;"
+      }
+    },
+    "item2": {
+      "sumstate": {
+        "value": "21.40;21.00;0.00;8;;0.00;0;0;35.20;;"
+      }
+    },
+    "item3": {
+      "sumstate": {
+        "value": "21.70;19.00;0.00;16;;0.00;0;0;35.30;;"
+      }
+    },
+    "group0": {
+      "sumstate": {
+        "value": "1"
+      }
+    }
+  },
+  "energycosts": {
+    "item0": {
+      "sumstate": {
+        "value": "0.11;12.30;113.60;13089.70;10.00;kWh;kW;0;0;0;0;0;0;0;0;0;707.70;5233.90;;"
+      }
+    },
+    "item1": {
+      "sumstate": {
+        "value": "0.70;19.00;338.00;21824.00;10.00;kWh;kW;1;13;3;2;4;26;3;0;0;2064.00;9326.00;;"
+      }
+    },
+    "group0": {
+      "sumstate": {
+        "value": "1"
+      }
+    }
+  },
+  "alarms_logics": {
+    "item0": {
+      "sumstate": {
+        "value": "1.00"
+      }
+    },
+    "group0": {
+      "sumstate": {
+        "value": "1"
+      }
+    }
+  },
+  "actions": {
+    "item0": {
+      "sumstate": {
+        "value": "0;1;0"
+      }
+    },
+    "item1": {
+      "sumstate": {
+        "value": "0;1;0"
+      }
+    },
+    "item2": {
+      "sumstate": {
+        "value": "0;1;0"
+      }
+    },
+    "item3": {
+      "sumstate": {
+        "value": "0;1;0"
+      }
+    },
+    "item4": {
+      "sumstate": {
+        "value": "0;1;0"
+      }
+    },
+    "group0": {
+      "sumstate": {
+        "value": "0"
+      }
+    }
+  },
+  "hotwater_systems": {
+    "item0": {
+      "sumstate": {
+        "value": "1;0;48.00;45.34;23.34;0.00;1;0"
+      }
+    },
+    "group0": {
+      "sumstate": {
+        "value": "1"
+      }
+    }
+  },
+  "clocks": {
+    "item0": {
+      "sumstate": {
+        "value": "1;1;0;"
+      }
+    },
+    "item1": {
+      "sumstate": {
+        "value": "2;0;0;"
+      }
+    }
+  },
+  "energymanager": {
+    "item0": {
+      "sumstate": {
+        "value": "0;1;1;1;825.00;0.00;363.00;12.00;0.00;1200.00;363.00;11113.17;0.00;463.57;132.91;0.00;11707.38;0;1;1;65;1;3.00;0.00;10000.00;10000.00;"
+      }
+    }
+  },
+  "emobils": {
+    "item0": {
+      "sumstate": {
+        "value": "1;1;1;11.00;22.00;11.00;16;Max Mustermann;01:23:45;5.40;0;18:00:00;3;"
+      }
+    }
+  },
+  "heatingcircuits": {
+    "item0": {
+      "sumstate": {
+        "value": "1;35.00;28.00;12.00;80.00;0;40.00;100.00;0;2;"
+      }
+    }
+  }
+}

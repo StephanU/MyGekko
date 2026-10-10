@@ -1,0 +1,569 @@
+{
+  "globals": {
+    "network": {
+      "gekkoname": {
+        "value": "Hostname of myGEKKO",
+        "type": "STRING",
+        "permission": "READ",
+        "index": 1
+      },
+      "language": {
+        "value": "Language of myGEKKO [0=DE|1=IT|2=EN|3=NL|4=ES|5=FR|6=CS]",
+        "type": "STRING",
+        "permission": "READ",
+        "index": 2
+      },
+      "version": {
+        "value": "Software version of myGEKKO",
+        "type": "STRING",
+        "permission": "READ",
+        "index": 3
+      },
+      "hardware": {
+        "value": "Hardware version of myGEKKO",
+        "type": "STRING",
+        "permission": "READ",
+        "index": 4
+      }
+    }
+  },
+  "blinds": {
+    "item0": {
+      "name": "Living Room",
+      "page": "...",
+      "sumstate": {
+        "value": "state[-2=Hold_down|-1=Down|0=Stop|1=Up|2=Hold_up]; position[%]; angle[°]; sum[0=Ok|1=ManualOff|2=ManualOn|3=Locked|4=Alarm]; slatRotationArea[°]",
+        "type": "STRING",
+        "permission": "READ",
+        "index": 150000
+      },
+      "scmd": {
+        "value": "-2|-1|0|1|2|T|P55.4|S32.4 (Hold_down|Down|Stop|Up|Hold_up|Toggle|Position|Angle)",
+        "type": "STRING",
+        "permission": "WRITE",
+        "index": 150070
+      }
+    },
+    "item1": {
+      "name": "Bedroom",
+      "page": "...",
+      "sumstate": {
+        "value": "state[-2=Hold_down|-1=Down|0=Stop|1=Up|2=Hold_up]; position[%]; angle[°]; sum[0=Ok|1=ManualOff|2=ManualOn|3=Locked|4=Alarm]; slatRotationArea[°]",
+        "type": "STRING",
+        "permission": "READ",
+        "index": 150100
+      },
+      "scmd": {
+        "value": "-2|-1|0|1|2|T|P55.4|S32.4 (Hold_down|Down|Stop|Up|Hold_up|Toggle|Position|Angle)",
+        "type": "STRING",
+        "permission": "WRITE",
+        "index": 150170
+      }
+    },
+    "item2": {
+      "name": "Kitchen",
+      "page": "...",
+      "sumstate": {
+        "value": "state[-2=Hold_down|-1=Down|0=Stop|1=Up|2=Hold_up]; position[%]; angle[°]; sum[0=Ok|1=ManualOff|2=ManualOn|3=Locked|4=Alarm]; slatRotationArea[°]",
+        "type": "STRING",
+        "permission": "READ",
+        "index": 150200
+      },
+      "scmd": {
+        "value": "-2|-1|0|1|2|T|P55.4|S32.4 (Hold_down|Down|Stop|Up|Hold_up|Toggle|Position|Angle)",
+        "type": "STRING",
+        "permission": "WRITE",
+        "index": 150270
+      }
+    },
+    "item3": {
+      "name": "Children's Room",
+      "page": "...",
+      "sumstate": {
+        "value": "state[-2=Hold_down|-1=Down|0=Stop|1=Up|2=Hold_up]; position[%]; angle[°]; sum[0=Ok|1=ManualOff|2=ManualOn|3=Locked|4=Alarm]; slatRotationArea[°]",
+        "type": "STRING",
+        "permission": "READ",
+        "index": 150300
+      },
+      "scmd": {
+        "value": "-2|-1|0|1|2|T|P55.4|S32.4 (Hold_down|Down|Stop|Up|Hold_up|Toggle|Position|Angle)",
+        "type": "STRING",
+        "permission": "WRITE",
+        "index": 150370
+      }
+    },
+    "group0": {
+      "name": "All",
+      "sumstate": {
+        "value": "State[1=Up|-1=Down]",
+        "type": "AO",
+        "permission": "READ",
+        "index": 1500000
+      },
+      "scmd": {
+        "value": "2|-2 (Up|Down)",
+        "type": "AV",
+        "permission": "WRITE",
+        "index": 1500001
+      }
+    },
+    "group1": {
+      "name": "South",
+      "sumstate": {
+        "value": "State[1=Up|-1=Down]",
+        "type": "AO",
+        "permission": "READ",
+        "index": 1500100
+      },
+      "scmd": {
+        "value": "2|-2 (Up|Down)",
+        "type": "AV",
+        "permission": "WRITE",
+        "index": 1500101
+      }
+    }
+  },
+  "vents": {
+    "item0": {
+      "name": "Ventilation",
+      "page": "...",
+      "sumstate": {
+        "value": "level[0-4]; type[Int]; mode[Int]; bypassState[Int]; maxLevel[0-4]; humidity[%rH]; quality[%]; CO2[ppm]; tempSupplyAir[°C]; tempExhaustAir[°C]; tempOutsideAir[°C]; tempOutgoingAir[°C]; levelIn[%]; levelOut[%]; sum[0=Ok|1=ManualOff|2=ManualOn|3=Locked|4=Alarm]; subType[Int]; cooling[Int]; dehumid[Int]; bypassMode[Int]",
+        "type": "STRING",
+        "permission": "READ",
+        "index": 200000
+      },
+      "scmd": {
+        "value": "-1|1|2|3|4|T|BY0|BY1|BY2|C0|C1|D0|D1|Mx (Off|Level1|Level2|Level3|Level4|Toggle|BypassAuto|BypassManual|BypassSummer|Cool.Off|Cool.On|Dehumid.Off|Dehumid.On|OperatingMode[0..x])",
+        "type": "STRING",
+        "permission": "WRITE",
+        "index": 200070
+      }
+    },
+    "group0": {
+      "name": "Grp 1",
+      "sumstate": {
+        "value": "State[0=Off|1=On]",
+        "type": "AO",
+        "permission": "READ",
+        "index": 2000000
+      },
+      "scmd": {
+        "value": "-1|1|2|3|4 (Off|Level1|Level2|Level3|Level4)",
+        "type": "AV",
+        "permission": "WRITE",
+        "index": 2000001
+      }
+    }
+  },
+  "lights": {
+    "item0": {
+      "name": "Living Room",
+      "page": "...",
+      "sumstate": {
+        "value": "state[0=Off|1=On]; dimValue[%]; RGBcolor[24Bit]; tunableWhite[0-100]; sum[0=Ok|1=ManualOff|2=ManualOn|3=Locked|4=Alarm]",
+        "type": "STRING",
+        "permission": "READ",
+        "index": 100000
+      },
+      "scmd": {
+        "value": "0|1|D100|T|C44782|TW100 ([0=Off|1=On]|[Dim%]|[Toggle]|[RGB24Bit]|[TW0-100])",
+        "type": "STRING",
+        "permission": "WRITE",
+        "index": 100001
+      }
+    },
+    "item1": {
+      "name": "Kitchen",
+      "page": "...",
+      "sumstate": {
+        "value": "state[0=Off|1=On]; dimValue[%]; RGBcolor[24Bit]; tunableWhite[0-100]; sum[0=Ok|1=ManualOff|2=ManualOn|3=Locked|4=Alarm]",
+        "type": "STRING",
+        "permission": "READ",
+        "index": 100000
+      },
+      "scmd": {
+        "value": "0|1|D100|T|C44782|TW100 ([0=Off|1=On]|[Dim%]|[Toggle]|[RGB24Bit]|[TW0-100])",
+        "type": "STRING",
+        "permission": "WRITE",
+        "index": 100001
+      }
+    },
+    "item2": {
+      "name": "Bedroom",
+      "page": "...",
+      "sumstate": {
+        "value": "state[0=Off|1=On]; dimValue[%]; RGBcolor[24Bit]; tunableWhite[0-100]; sum[0=Ok|1=ManualOff|2=ManualOn|3=Locked|4=Alarm]",
+        "type": "STRING",
+        "permission": "READ",
+        "index": 100000
+      },
+      "scmd": {
+        "value": "0|1|D100|T|C44782|TW100 ([0=Off|1=On]|[Dim%]|[Toggle]|[RGB24Bit]|[TW0-100])",
+        "type": "STRING",
+        "permission": "WRITE",
+        "index": 100001
+      }
+    },
+    "group0": {
+      "name": "All",
+      "sumstate": {
+        "value": "State[0=Off|1=On]",
+        "type": "AO",
+        "permission": "READ",
+        "index": 1000000
+      },
+      "scmd": {
+        "value": "0|1 (Off|On)",
+        "type": "AV",
+        "permission": "WRITE",
+        "index": 1000001
+      }
+    }
+  },
+  "roomtemps": {
+    "item0": {
+      "name": "Living Room",
+      "page": "...",
+      "sumstate": {
+        "value": "actTemp[°C]; setpointTemp[°C]; valve[%]; mode[1=Off|8=Comfort|16=Reduced|64=Manual|256=Standby]; Reserved[Reserved]; tempAdjustment[°C]; cooling[0=Off|1=On]; sum[0=Ok|1=ManualOff|2=ManualOn|3=Locked|4=Alarm]; humidity[%rF]; airQuality[ppm|%]; floorTemp[°C]",
+        "type": "STRING",
+        "permission": "READ",
+        "index": 300000
+      },
+      "scmd": {
+        "value": "M1|M2|M8|M16|M64|M256|K2.4|S22.5 (ModeOff|ModeOn|ModeComfort|ModeReduced|ModeManual|ModeStandby|TempAdjustment[°C]|Setpoint[°C])",
+        "type": "STRING",
+        "permission": "WRITE",
+        "index": 300070
+      }
+    },
+    "item1": {
+      "name": "Kitchen",
+      "page": "...",
+      "sumstate": {
+        "value": "actTemp[°C]; setpointTemp[°C]; valve[%]; mode[1=Off|8=Comfort|16=Reduced|64=Manual|256=Standby]; Reserved[Reserved]; tempAdjustment[°C]; cooling[0=Off|1=On]; sum[0=Ok|1=ManualOff|2=ManualOn|3=Locked|4=Alarm]; humidity[%rF]; airQuality[ppm|%]; floorTemp[°C]",
+        "type": "STRING",
+        "permission": "READ",
+        "index": 300100
+      },
+      "scmd": {
+        "value": "M1|M2|M8|M16|M64|M256|K2.4|S22.5 (ModeOff|ModeOn|ModeComfort|ModeReduced|ModeManual|ModeStandby|TempAdjustment[°C]|Setpoint[°C])",
+        "type": "STRING",
+        "permission": "WRITE",
+        "index": 300170
+      }
+    },
+    "item2": {
+      "name": "Bedroom",
+      "page": "...",
+      "sumstate": {
+        "value": "actTemp[°C]; setpointTemp[°C]; valve[%]; mode[1=Off|8=Comfort|16=Reduced|64=Manual|256=Standby]; Reserved[Reserved]; tempAdjustment[°C]; cooling[0=Off|1=On]; sum[0=Ok|1=ManualOff|2=ManualOn|3=Locked|4=Alarm]; humidity[%rF]; airQuality[ppm|%]; floorTemp[°C]",
+        "type": "STRING",
+        "permission": "READ",
+        "index": 300200
+      },
+      "scmd": {
+        "value": "M1|M2|M8|M16|M64|M256|K2.4|S22.5 (ModeOff|ModeOn|ModeComfort|ModeReduced|ModeManual|ModeStandby|TempAdjustment[°C]|Setpoint[°C])",
+        "type": "STRING",
+        "permission": "WRITE",
+        "index": 300270
+      }
+    },
+    "item3": {
+      "name": "Children's Room",
+      "page": "...",
+      "sumstate": {
+        "value": "actTemp[°C]; setpointTemp[°C]; valve[%]; mode[1=Off|8=Comfort|16=Reduced|64=Manual|256=Standby]; Reserved[Reserved]; tempAdjustment[°C]; cooling[0=Off|1=On]; sum[0=Ok|1=ManualOff|2=ManualOn|3=Locked|4=Alarm]; humidity[%rF]; airQuality[ppm|%]; floorTemp[°C]",
+        "type": "STRING",
+        "permission": "READ",
+        "index": 300300
+      },
+      "scmd": {
+        "value": "M1|M2|M8|M16|M64|M256|K2.4|S22.5 (ModeOff|ModeOn|ModeComfort|ModeReduced|ModeManual|ModeStandby|TempAdjustment[°C]|Setpoint[°C])",
+        "type": "STRING",
+        "permission": "WRITE",
+        "index": 300370
+      }
+    },
+    "group0": {
+      "name": "alle",
+      "sumstate": {
+        "value": "State[0=Off|1=On|2=Comfort|3=Reduced]",
+        "type": "AO",
+        "permission": "READ",
+        "index": 3000000
+      },
+      "scmd": {
+        "value": "M1|M2|M8|M16 (Mode_Off|Mode_On|Mode_Comfort|Mode_Reduced)",
+        "type": "AV",
+        "permission": "WRITE",
+        "index": 3000001
+      }
+    }
+  },
+  "energycosts": {
+    "item0": {
+      "name": "Main electricity meter",
+      "page": "...",
+      "sumstate": {
+        "value": "actPower[kW]; energyToday[kWh]; energyMonth[kWh]; energySum[kWh]; powerMax[kW]; unitEnergy[Unit]; unitPower[Unit]; energyToday6[kWh]; energyToday12[kWh]; energyToday18[kWh]; energyToday24[kWh]; energyYesterd6[kWh]; energyYesterd12[kWh]; energyYesterd18[kWh]; energyYesterd24[kWh]; sum[0=Ok|1=ManualOff|2=ManualOn|3=Locked|4=Alarm]; energyYear[kWh]; energyPeriod[kWh]; energyPeriodFrom[DateTime]",
+        "type": "STRING",
+        "permission": "READ",
+        "index": 450000
+      },
+      "scmd": {
+        "value": "RP (ResetPeriod)",
+        "type": "STRING",
+        "permission": "WRITE",
+        "index": 450070
+      }
+    },
+    "item1": {
+      "name": "Heating electricity meter",
+      "page": "...",
+      "sumstate": {
+        "value": "actPower[kW]; energyToday[kWh]; energyMonth[kWh]; energySum[kWh]; powerMax[kW]; unitEnergy[Unit]; unitPower[Unit]; energyToday6[kWh]; energyToday12[kWh]; energyToday18[kWh]; energyToday24[kWh]; energyYesterd6[kWh]; energyYesterd12[kWh]; energyYesterd18[kWh]; energyYesterd24[kWh]; sum[0=Ok|1=ManualOff|2=ManualOn|3=Locked|4=Alarm]; energyYear[kWh]; energyPeriod[kWh]; energyPeriodFrom[DateTime]",
+        "type": "STRING",
+        "permission": "READ",
+        "index": 450100
+      },
+      "scmd": {
+        "value": "RP (ResetPeriod)",
+        "type": "STRING",
+        "permission": "WRITE",
+        "index": 450170
+      }
+    },
+    "group0": {
+      "name": "Grp 1",
+      "sumstate": {
+        "value": "State[0=Off|1=On]",
+        "type": "AO",
+        "permission": "READ",
+        "index": 4500000
+      }
+    }
+  },
+  "alarms_logics": {
+    "item0": {
+      "name": "Doorbell",
+      "page": "...",
+      "sumstate": {
+        "value": "actValue[Status]",
+        "type": "STRING",
+        "permission": "READ",
+        "index": 500000
+      },
+      "scmd": {
+        "value": "S44.7 (SetpointValue)",
+        "type": "STRING",
+        "permission": "WRITE",
+        "index": 500070
+      }
+    },
+    "group0": {
+      "name": "Grp 1",
+      "sumstate": {
+        "value": "State[0=Off|1=On]",
+        "type": "AO",
+        "permission": "READ",
+        "index": 5000000
+      }
+    }
+  },
+  "actions": {
+    "item0": {
+      "name": "Heating Off",
+      "page": "...",
+      "sumstate": {
+        "value": "state[0=Off|1=On]; startcondition[0=Off|1=On]; sum[0=Ok|1=ManualOff|2=ManualOn|3=Locked|4=Alarm]",
+        "type": "STRING",
+        "permission": "READ",
+        "index": 850000
+      },
+      "scmd": {
+        "value": "-1|1|T (Stop|Start|Toggle)",
+        "type": "STRING",
+        "permission": "WRITE",
+        "index": 850070
+      }
+    },
+    "item1": {
+      "name": "Heating On",
+      "page": "...",
+      "sumstate": {
+        "value": "state[0=Off|1=On]; startcondition[0=Off|1=On]; sum[0=Ok|1=ManualOff|2=ManualOn|3=Locked|4=Alarm]",
+        "type": "STRING",
+        "permission": "READ",
+        "index": 850100
+      },
+      "scmd": {
+        "value": "-1|1|T (Stop|Start|Toggle)",
+        "type": "STRING",
+        "permission": "WRITE",
+        "index": 850170
+      }
+    },
+    "item2": {
+      "name": "All Covers Stop",
+      "page": "...",
+      "sumstate": {
+        "value": "state[0=Off|1=On]; startcondition[0=Off|1=On]; sum[0=Ok|1=ManualOff|2=ManualOn|3=Locked|4=Alarm]",
+        "type": "STRING",
+        "permission": "READ",
+        "index": 850200
+      },
+      "scmd": {
+        "value": "-1|1|T (Stop|Start|Toggle)",
+        "type": "STRING",
+        "permission": "WRITE",
+        "index": 850270
+      }
+    },
+    "item3": {
+      "name": "All Covers Up",
+      "page": "...",
+      "sumstate": {
+        "value": "state[0=Off|1=On]; startcondition[0=Off|1=On]; sum[0=Ok|1=ManualOff|2=ManualOn|3=Locked|4=Alarm]",
+        "type": "STRING",
+        "permission": "READ",
+        "index": 850300
+      },
+      "scmd": {
+        "value": "-1|1|T (Stop|Start|Toggle)",
+        "type": "STRING",
+        "permission": "WRITE",
+        "index": 850370
+      }
+    },
+    "item4": {
+      "name": "All Covers Down",
+      "page": "...",
+      "sumstate": {
+        "value": "state[0=Off|1=On]; startcondition[0=Off|1=On]; sum[0=Ok|1=ManualOff|2=ManualOn|3=Locked|4=Alarm]",
+        "type": "STRING",
+        "permission": "READ",
+        "index": 850400
+      },
+      "scmd": {
+        "value": "-1|1|T (Stop|Start|Toggle)",
+        "type": "STRING",
+        "permission": "WRITE",
+        "index": 850470
+      }
+    },
+    "group0": {
+      "name": "Grp 1",
+      "sumstate": {
+        "value": "State[0=Off|1=On]",
+        "type": "AO",
+        "permission": "READ",
+        "index": 8500000
+      }
+    }
+  },
+  "hotwater_systems": {
+    "item0": {
+      "name": "Hot water boiler",
+      "page": "...",
+      "sumstate": {
+        "value": "type[Type]; cooling[0=Off|1=On]; setpointTemp[°C]; topTemp[°C]; bottomTemp[°C]; collectorTemp[°C]; state[0=Off|1=On]; sum[0=Ok|1=ManualOff|2=ManualOn|3=Locked|4=Alarm",
+        "type": "STRING",
+        "permission": "READ",
+        "index": 1950000
+      },
+      "scmd": {
+        "value": "0|1|T100 (Off|On|Temperature[°C])",
+        "type": "STRING",
+        "permission": "WRITE",
+        "index": 1950070
+      }
+    },
+    "group0": {
+      "name": "Grp 1",
+      "sumstate": {
+        "value": "State[0=Off|1=On]",
+        "type": "AO",
+        "permission": "READ",
+        "index": 19500000
+      }
+    }
+  },
+  "clocks": {
+    "item0": {
+      "name": "Schiebetüren",
+      "page": "Allgemein",
+      "sumstate": {
+        "value": "currentState enum[0=off,1=on,2=onCoincidence](); startConditionState enum[0=off,1=on](); elementInfo enum[0=ok,1=manualOff,2=manualOn,3=locked,4=alarm](); ",
+        "type": "STRING",
+        "permission": "READ",
+        "index": 900000
+      },
+      "scmd": {
+        "value": "0|1|2 (Off|On|onCoincidence)",
+        "type": "STRING",
+        "permission": "WRITE",
+        "index": 900070
+      }
+    },
+    "item1": {
+      "name": "Tor Hofeinfahrt",
+      "page": "Allgemein",
+      "sumstate": {
+        "value": "currentState enum[0=off,1=on,2=onCoincidence](); startConditionState enum[0=off,1=on](); elementInfo enum[0=ok,1=manualOff,2=manualOn,3=locked,4=alarm](); ",
+        "type": "STRING",
+        "permission": "READ",
+        "index": 900100
+      },
+      "scmd": {
+        "value": "0|1|2 (Off|On|onCoincidence)",
+        "type": "STRING",
+        "permission": "WRITE",
+        "index": 900170
+      }
+    }
+  },
+  "energymanager": {
+    "item0": {
+      "name": "Energy by MOBEX",
+      "page": "-",
+      "sumstate": {
+        "value": "elementInfo enum[0=ok,1=manualOff,2=manualOn,3=locked,4=alarm](); gridMeterState enum[0=notActive,1=active](); solarPanelState enum[0=notActive,1=active](); batteryState enum[0=notActive,1=active](); gridMeterCurrentPowerValue float[0.00,...](W); currentPowerExportedToGridValue float[0.00,...](W); currentPowerFromSolarPanelsValue float[0.00,...](W); currentPowerFromBatteryValue float[0.00,...](W); currentPowerChargingBatteryValue float[0.00,...](W); currentHomePowerConsumptionValue float[0.00,...](W); currentAlternativePowerConsupmtionValue float[0.00,...](W); totalDailyImportedEnergyFromGridValue float[0.00,...](Wh); totalDailyExportedEnergyToGridValue float[0.00,...](Wh); totalDailyEnergyFromSolarPanelsValue float[0.00,...](Wh); totalDailyEnergyFromBatteryValue float[0.00,...](Wh); totalDailyEneryChargingBatteryValue float[0.00,...](Wh); totalDailyHomeEnergyConsumptionValue float[0.00,...](Wh); loadSheddingState enum[0=off,1=on](); EMSState enum[0=off,1=on](); batteryModel enum[0=unavailable,1=e3dc-s10,2=byd,3=vartastorage,4=individual,5=bySunSpecInverters](); batterySoCLevel int[0,100](%); EMSEnabled enum[0=disabled,1=enabled](); maximumPowerConsumptionFromGridValue float[0.00,...](kW); maximumPowerExportToGridValue float[0.00,...](kW); maximumPowerSolarPanelsValue float[0.00,...](kW); maximumPowerBatteryValue float[0.00,...](kW); ",
+        "type": "STRING",
+        "permission": "READ",
+        "index": 1300000
+      }
+    }
+  },
+  "emobils": {
+    "item0": {
+      "name": "Wallbox Garage",
+      "page": "Ladestationen",
+      "sumstate": {
+        "value": "pluggedState enum[0=notPlugged,1=plugged](); chargeState enum[0=off,1=on,2=paused](); chargeRequestState enum[0=off,1=on](); currentChargingPowerValue float[1.00,100.00](kW); maximumChargingPowerValue float[1.00,100.00](kW); chargingPowerSetPointValue float[1.00,100.00](kW); electricCurrentSetPointValue int[0,...](A); chargeUserName string[name](); chargeDurationTime string[hh:mm:ss](); currentChargingEnergyValue float[0.00,...](kWh); elementInfo enum[0=ok,1=manualOff,2=manualOn,3=locked,4=alarm](); chargeStartTime string[hh:mm:ss](); chargeUserIndex int[1,20](userID); ",
+        "type": "STRING",
+        "permission": "READ",
+        "index": 1400000
+      },
+      "scmd": {
+        "value": "1|-1|P10|R4|LO|LI4|CS4.6 (Start Charge|Stop Charge|Start Partial Energy Charge [kWh]|Reset User Charging History[1..20]|Logout User|Login User [1..20]|Charge Power Setpoint [kW])",
+        "type": "STRING",
+        "permission": "WRITE",
+        "index": 1400070
+      }
+    }
+  },
+  "heatingcircuits": {
+    "item0": {
+      "name": "Heizen/Kühlen",
+      "page": "EG",
+      "sumstate": {
+        "value": "deviceModel enum[0=individual,1=buderus,2=stiebel,3=vaillant](); flowTemperatureValue float[0.00,100.00](°C); returnFlowTemperatureValue float[0.00,100.00](°C); dewPointValue float[0.00,100.00](°C); pumpWorkingLevel float[0.00,100.00](%); coolingModeState enum[0=off,1=on](); flowTemperatureSetPointValue float[0.00,100.00](°C); valveOpeningLevel float[0.00,100.00](%); elementInfo enum[0=ok,1=manualOff,2=manualOn,3=locked,4=alarm](); currentState enum[0=off,1=on,2=auto](); ",
+        "type": "STRING",
+        "permission": "READ",
+        "index": 4000000
+      }
+    }
+  }
+}

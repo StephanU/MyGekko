@@ -1,15 +1,14 @@
 """Button platform for MyGekko."""
 from homeassistant.components.button import ButtonEntity
-from PyMyGekko.resources.Lights import Light
-from PyMyGekko.resources.Lights import LightState
+from .pymygekko.resources.Lights import Light
+from .pymygekko.resources.Lights import LightState
 
-from .const import DOMAIN
 from .entity import MyGekkoEntity
 
 
 async def async_setup_entry(hass, entry, async_add_devices):
     """Set up button platform."""
-    coordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator = entry.runtime_data
     lights = coordinator.api.get_lights()
     if lights is not None:
         async_add_devices(
@@ -38,8 +37,7 @@ class MyGekkoLightGroupOnButton(MyGekkoEntity, ButtonEntity):
 
     async def async_press(self) -> None:
         """Press the button."""
-        await self._light.set_state(LightState.ON)
-        await self.coordinator.async_request_refresh()
+        await self.coordinator.async_write(self._light.set_state, LightState.ON)
 
 
 class MyGekkoLightGroupOffButton(MyGekkoEntity, ButtonEntity):
@@ -54,5 +52,4 @@ class MyGekkoLightGroupOffButton(MyGekkoEntity, ButtonEntity):
 
     async def async_press(self) -> None:
         """Press the button."""
-        await self._light.set_state(LightState.OFF)
-        await self.coordinator.async_request_refresh()
+        await self.coordinator.async_write(self._light.set_state, LightState.OFF)

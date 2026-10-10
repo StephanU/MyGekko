@@ -1,7 +1,7 @@
 """Tests for MyGekko api."""
 import pytest
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from PyMyGekko import MyGekkoQueryApiClient
+from custom_components.mygekko.pymygekko import MyGekkoQueryApiClient
 
 
 @pytest.mark.asyncio

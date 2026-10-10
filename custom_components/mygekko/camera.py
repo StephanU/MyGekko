@@ -4,13 +4,12 @@ import logging
 import aiohttp
 from homeassistant.components.camera import Camera
 from homeassistant.components.camera import CameraEntityFeature
-from homeassistant.core import callback
-from PyMyGekko.resources.Cams import Cam
-from PyMyGekko.resources.Cams import CamFeature
-from PyMyGekko.resources.DoorInterComs import DoorInterCom
-from PyMyGekko.resources.DoorInterComs import DoorInterComFeature
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from .pymygekko.resources.Cams import Cam
+from .pymygekko.resources.Cams import CamFeature
+from .pymygekko.resources.DoorInterComs import DoorInterCom
+from .pymygekko.resources.DoorInterComs import DoorInterComFeature
 
-from .const import DOMAIN
 from .entity import MyGekkoEntity
 
 
@@ -19,7 +18,7 @@ _LOGGER: logging.Logger = logging.getLogger(__name__)
 
 async def async_setup_entry(hass, entry, async_add_devices):
     """Set up Camera platform."""
-    coordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator = entry.runtime_data
     cams = coordinator.api.get_cams()
     if cams is not None:
         async_add_devices(MyGekkoCam(coordinator, cam) for cam in cams)
@@ -40,15 +39,10 @@ class MyGekkoInterComCam(MyGekkoEntity, Camera):
 
         self._door_inter_com = door_inter_com
         supported_features = self._door_inter_com.supported_features
-        self._attr_supported_features = 0
+        self._attr_supported_features = CameraEntityFeature(0)
 
-        if CamFeature.STREAM in supported_features:
-            self._attr_supported_features |= DoorInterComFeature.STREAM
-
-    @callback
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
-        self.async_write_ha_state()
+        if DoorInterComFeature.STREAM in supported_features:
+            self._attr_supported_features |= CameraEntityFeature.STREAM
 
     async def stream_source(self) -> str | None:
         """Return the source of the stream."""
@@ -60,15 +54,19 @@ class MyGekkoInterComCam(MyGekkoEntity, Camera):
         """Return bytes of camera image."""
         if self._door_inter_com.image_url:
             try:
-                async with aiohttp.ClientSession() as session, session.get(self._door_inter_com.image_url) as resp:
+                session = async_get_clientsession(self.hass, verify_ssl=False)
+                async with session.get(
+                    self._door_inter_com.image_url, timeout=aiohttp.ClientTimeout(total=10)
+                ) as resp:
                     if resp.status != 200:
-                        _LOGGER.error("Error fetching camera image from camera %s. Error: %s", self._door_inter_com.name, resp.msg)
+                        _LOGGER.error("Error fetching camera image from camera %s. Error: %s", self._door_inter_com.name, resp.reason)
                         return None
                     image_bytes = await resp.read()
 
                 return image_bytes
 
-            except Exception:
+            except (aiohttp.ClientError, TimeoutError) as err:
+                _LOGGER.debug("Image fetch failed: %s", err)
                 return None
         else:
             return None
@@ -86,15 +84,10 @@ class MyGekkoCam(MyGekkoEntity, Camera):
 
         self._cam = cam
         supported_features = self._cam.supported_features
-        self._attr_supported_features = 0
+        self._attr_supported_features = CameraEntityFeature(0)
 
         if CamFeature.STREAM in supported_features:
             self._attr_supported_features |= CameraEntityFeature.STREAM
-
-    @callback
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
-        self.async_write_ha_state()
 
     async def stream_source(self) -> str | None:
         """Return the source of the stream."""
@@ -106,15 +99,19 @@ class MyGekkoCam(MyGekkoEntity, Camera):
         """Return bytes of camera image."""
         if self._cam.image_url:
             try:
-                async with aiohttp.ClientSession() as session, session.get(self._cam.image_url) as resp:
+                session = async_get_clientsession(self.hass, verify_ssl=False)
+                async with session.get(
+                    self._cam.image_url, timeout=aiohttp.ClientTimeout(total=10)
+                ) as resp:
                     if resp.status != 200:
-                        _LOGGER.error("Error fetching camera image from camera %s. Error: %s", self._cam.name, resp.msg)
+                        _LOGGER.error("Error fetching camera image from camera %s. Error: %s", self._cam.name, resp.reason)
                         return None
                     image_bytes = await resp.read()
 
                 return image_bytes
 
-            except Exception:
+            except (aiohttp.ClientError, TimeoutError) as err:
+                _LOGGER.debug("Image fetch failed: %s", err)
                 return None
         else:
             return None

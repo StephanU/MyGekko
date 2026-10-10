@@ -1,9 +1,10 @@
 """MyGekkoEntity class."""
 import logging
 
+from homeassistant.core import callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from PyMyGekko.resources import ReadOnlyEntity
+from .pymygekko.resources import ReadOnlyEntity
 
 from .const import DOMAIN
 from .const import MANUFACTURER
@@ -35,6 +36,14 @@ class MyGekkoEntity(CoordinatorEntity):
         )
 
         _LOGGER.debug("Added MyGekko entity id='%s'", self.unique_id)
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data; one failing entity must not stop the others."""
+        try:
+            self.async_write_ha_state()
+        except Exception:  # noqa: BLE001
+            _LOGGER.exception("State update failed for %s", self.entity_id)
 
 
 class MyGekkoControllerEntity(CoordinatorEntity):
@@ -68,3 +77,11 @@ class MyGekkoControllerEntity(CoordinatorEntity):
             self.unique_id,
             self.name,
         )
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data; one failing entity must not stop the others."""
+        try:
+            self.async_write_ha_state()
+        except Exception:  # noqa: BLE001
+            _LOGGER.exception("State update failed for %s", self.entity_id)

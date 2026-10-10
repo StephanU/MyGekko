@@ -38,21 +38,20 @@ async def test_setup_unload_and_reload_entry(hass, bypass_get_data):
     # them to be. Because we have patched the MyGekkoDataUpdateCoordinator.async_get_data
     # call, no code from custom_components/mygekko/api.py actually runs.
     assert await async_setup_entry(hass, config_entry)
-    assert DOMAIN in hass.data and config_entry.entry_id in hass.data[DOMAIN]
+    assert config_entry.runtime_data
     assert isinstance(
-        hass.data[DOMAIN][config_entry.entry_id], MyGekkoDataUpdateCoordinator
+        config_entry.runtime_data, MyGekkoDataUpdateCoordinator
     )
 
     # Reload the entry and assert that the data from above is still there
     assert await async_reload_entry(hass, config_entry) is None
-    assert DOMAIN in hass.data and config_entry.entry_id in hass.data[DOMAIN]
+    assert config_entry.runtime_data
     assert isinstance(
-        hass.data[DOMAIN][config_entry.entry_id], MyGekkoDataUpdateCoordinator
+        config_entry.runtime_data, MyGekkoDataUpdateCoordinator
     )
 
     # Unload the entry and verify that the data has been removed
     assert await async_unload_entry(hass, config_entry)
-    assert config_entry.entry_id not in hass.data[DOMAIN]
 
 
 @pytest.mark.asyncio
