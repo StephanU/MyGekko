@@ -292,6 +292,20 @@
       },
       "mygekko_roomtemp_floor_temperature": {
         "name": "Bodentemperatur"
+      },
+      "mygekko_controller_api_state": {
+        "name": "API-Status",
+        "state": {
+          "ok": "OK",
+          "rate_limited": "Rate Limit",
+          "error": "Fehler"
+        }
+      },
+      "mygekko_controller_last_update": {
+        "name": "Letzte Aktualisierung"
+      },
+      "mygekko_controller_rate_limited_until": {
+        "name": "Rate-Limit-Pause bis"
       }
     },
     "button": {
@@ -375,6 +389,10 @@
     "rate_limited": {
       "title": "MyGekko begrenzt die Anfragen",
       "description": "MyGekko ({name}) lehnt Anfragen ab, weil zu viele gesendet wurden (HTTP 429). Die Werte sind möglicherweise veraltet. Erhöhe das Aktualisierungsintervall in den Optionen der Integration und vermeide Automationen, die Geräte in einer schnellen Schleife schalten."
+    },
+    "duplicate_entry": {
+      "title": "MyGekko ist mehrfach eingerichtet",
+      "description": "{name} ist {count}-mal eingerichtet (davon deaktiviert: {disabled}). Die Einträge teilen sich die Geräte desselben myGEKKO, mehrere aktive Einträge vervielfachen die Anfragen und lösen das Rate Limit von MyGekko aus. Lösche die überzähligen Einträge unter Einstellungen > Geräte & Dienste > MyGekko."
     }
   },
   "exceptions": {

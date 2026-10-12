@@ -24,7 +24,6 @@ def auto_enable_custom_integrations(enable_custom_integrations):
 def fast_writes(monkeypatch):
     """Do not wait between commands in tests."""
     monkeypatch.setattr(coordinator_module, "WRITE_MIN_DELAY", 0)
-    monkeypatch.setattr(coordinator_module, "WRITE_RETRY_DELAY", 0)
 
 
 @pytest.fixture

@@ -1,5 +1,6 @@
 """Sensor platform for MyGekko."""
 from custom_components.mygekko.entity import MyGekkoControllerEntity
+from custom_components.mygekko.entity import MyGekkoControllerStatusEntity
 from custom_components.mygekko.entity import MyGekkoEntity
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.sensor import SensorEntity
@@ -25,6 +26,9 @@ from .api import Vent
 from .api import VentFeature
 from .api import Meteo
 
+from .coordinator import API_STATE_ERROR
+from .coordinator import API_STATE_OK
+from .coordinator import API_STATE_RATE_LIMITED
 from .sensor_extra import build_extra_sensors
 
 SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
@@ -208,6 +212,15 @@ async def async_setup_entry(hass, entry, async_add_entities):
     entities.extend(build_extra_sensors(coordinator))
 
     globals_network = api.get_globals_network()
+    if globals_network and globals_network.get("gekkoname"):
+        entities.extend(
+            sensor_class(coordinator, globals_network)
+            for sensor_class in (
+                MyGekkoApiStateSensor,
+                MyGekkoLastUpdateSensor,
+                MyGekkoRateLimitedUntilSensor,
+            )
+        )
     if globals_network:
         entities.extend(
             MyGekkoAlarmsLogicsSensor(coordinator, alarms_logic, globals_network)
@@ -279,6 +292,55 @@ async def async_setup_entry(hass, entry, async_add_entities):
         )
 
     async_add_entities(entities)
+
+
+class MyGekkoApiStateSensor(MyGekkoControllerStatusEntity, SensorEntity):
+    """State of the connection to MyGekko: ok, rate limited or error."""
+
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_options = [API_STATE_OK, API_STATE_RATE_LIMITED, API_STATE_ERROR]
+
+    def __init__(self, coordinator, globals_network):
+        """Initialize the connection state sensor."""
+        super().__init__(coordinator, globals_network, "api_state")
+
+    @property
+    def native_value(self):
+        """Return the connection state."""
+        return self.coordinator.api_state
+
+
+class MyGekkoLastUpdateSensor(MyGekkoControllerStatusEntity, SensorEntity):
+    """Time of the last values read successfully from MyGekko."""
+
+    _attr_device_class = SensorDeviceClass.TIMESTAMP
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator, globals_network):
+        """Initialize the last update sensor."""
+        super().__init__(coordinator, globals_network, "last_update")
+
+    @property
+    def native_value(self):
+        """Return the time of the last successful update."""
+        return self.coordinator.last_success
+
+
+class MyGekkoRateLimitedUntilSensor(MyGekkoControllerStatusEntity, SensorEntity):
+    """End of the pause after MyGekko limited the requests, unknown without one."""
+
+    _attr_device_class = SensorDeviceClass.TIMESTAMP
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator, globals_network):
+        """Initialize the rate limit sensor."""
+        super().__init__(coordinator, globals_network, "rate_limited_until")
+
+    @property
+    def native_value(self):
+        """Return the end of the rate limit pause."""
+        return self.coordinator.rate_limited_until
 
 
 class MyGekkoAlarmsLogicsSensor(MyGekkoControllerEntity, SensorEntity):

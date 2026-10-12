@@ -33,3 +33,6 @@ jobs:
           uses: "hacs/action@main"
           with:
             category: "integration"
+            # repository settings, not code: issues are disabled and topics are
+            # not required for installing the repository as custom repository
+            ignore: "issues topics"

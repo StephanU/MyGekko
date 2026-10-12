@@ -31,7 +31,8 @@ The alarm system and the door/gate openers are deliberately **read only**: they 
 
 - Every device belongs to the MyGekko controller device (model, software version and link to the web interface).
 - Optional: use the pages of the MyGekko app (floor, room) as Home Assistant areas.
-- Careful with the cloud rate limit: one request per poll, automatic back-off on HTTP 429 (entities keep their values), configurable update interval and a repair hint if the limit persists.
+- Careful with the cloud rate limit: one request per poll, a 4 minute pause on HTTP 429 (entities always keep their last state, also across restarts), configurable update interval and a repair hint if the limit persists.
+- The myGEKKO controller device shows the API status, the last update and the end of a rate limit pause; a MyGekko that is set up twice is reported as repair issue.
 - Elements that are locked, in manual operation or in alarm show an `element_status` attribute.
 - Re-authentication, reconfiguration, diagnostics download (credentials are redacted) and a demo mode that needs no MyGekko.
 - Translated into English, German, French, Italian and Norwegian.

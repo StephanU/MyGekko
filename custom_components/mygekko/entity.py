@@ -120,3 +120,22 @@ class MyGekkoControllerEntity(_MyGekkoBaseEntity):
             self.unique_id,
             self.name,
         )
+
+
+class MyGekkoControllerStatusEntity(_MyGekkoBaseEntity):
+    """Base class of the entities describing the connection to the MyGekko controller.
+
+    They stay available while MyGekko cannot be read, that is what they report.
+    """
+
+    def __init__(self, coordinator, globals_network, key: str):
+        """Initialize a MyGekko controller status entity."""
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{controller_device_id(globals_network)}_{key}"
+        self._attr_translation_key = f"mygekko_controller_{key}"
+        self._attr_device_info = controller_device_info(globals_network)
+
+    @property
+    def available(self) -> bool:
+        """Return True, the status is known even when MyGekko is not reachable."""
+        return True

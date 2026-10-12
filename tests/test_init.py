@@ -16,6 +16,7 @@ from custom_components.mygekko.api import MyGekkoTooManyRequests
 from custom_components.mygekko.const import CONF_CONNECTION_MY_GEKKO_CLOUD
 from custom_components.mygekko.const import DOMAIN
 
+from .const import CLOUD_CONFIG
 from .const import CLOUD_INPUT
 from .const import DEMO_CONFIG
 from .const import LOCAL_CONFIG
@@ -193,3 +194,42 @@ async def test_removing_the_entry_clears_the_repair_issue(hass, setup_demo):
     )
     await hass.config_entries.async_remove(setup_demo.entry_id)
     assert ir.async_get(hass).async_get_issue(DOMAIN, issue_id) is None
+
+
+async def test_duplicate_entries_are_reported(hass):
+    """The same MyGekko set up twice (one entry disabled) is reported and adopts its id."""
+    from homeassistant.config_entries import ConfigEntryDisabler
+
+    old = MockConfigEntry(
+        domain=DOMAIN,
+        version=3,
+        data=CLOUD_CONFIG,
+        unique_id=None,
+        disabled_by=ConfigEntryDisabler.USER,
+    )
+    old.add_to_hass(hass)
+    entry = MockConfigEntry(domain=DOMAIN, version=3, data=CLOUD_CONFIG, unique_id=None)
+    entry.add_to_hass(hass)
+    with patch(
+        "custom_components.mygekko.api.MyGekkoHttpClient._fetch_resources",
+        return_value=_demo("api_var_demo_data.json"),
+    ), patch(
+        "custom_components.mygekko.api.MyGekkoHttpClient._fetch_status",
+        return_value=_demo("api_var_status_demo_data.json"),
+    ):
+        await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
+
+    assert entry.unique_id == "cloud_A1B2C3"
+    registry = ir.async_get(hass)
+    issue = registry.async_get_issue(DOMAIN, f"duplicate_entry_{old.entry_id}")
+    assert issue is not None
+    assert issue.translation_placeholders["count"] == "2"
+    assert issue.translation_placeholders["disabled"] == "1"
+
+    await hass.config_entries.async_remove(old.entry_id)
+    await hass.async_block_till_done()
+    assert not [
+        issue_id for (domain, issue_id) in registry.issues if domain == DOMAIN
+        and issue_id.startswith("duplicate_entry")
+    ]

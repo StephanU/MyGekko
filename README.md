@@ -36,7 +36,8 @@ The alarm system is deliberately **read only**: it can be monitored but not arme
 
 - Every device belongs to the MyGekko controller device (model, software version and link to the web interface).
 - Optional: use the pages of the MyGekko app (floor, room) as Home Assistant areas.
-- Careful with the cloud rate limit: one request per poll, automatic back-off on HTTP 429 (entities keep their values), configurable update interval and a repair hint if the limit persists.
+- Careful with the cloud rate limit: one request per poll, a 4 minute pause on HTTP 429 (entities always keep their last state, also across restarts), configurable update interval and a repair hint if the limit persists.
+- The myGEKKO controller device shows the API status, the last update and the end of a rate limit pause; a MyGekko that is set up twice is reported as repair issue.
 - Elements that are locked, in manual operation or in alarm show an `element_status` attribute.
 - Re-authentication, reconfiguration, diagnostics download (credentials are redacted) and a demo mode that needs no MyGekko.
 - Translated into English, German, French, Italian and Norwegian.
@@ -86,7 +87,7 @@ The integration supports the MyGekko Plus query API (cloud, needs a MyGekko Plus
 - **Local connection:** the integration tries https first and falls back to http (older firmware or a MyGekko without https). Only a refused connection or a failed SSL handshake triggers the fallback (not a timeout). With http the login travels unencrypted over your local network (a warning is logged), so use it only in a trusted network. The scheme is detected again when you reconfigure the entry.
 - **Reconfigure** (integration → three dots): change credentials or the IP address without removing the integration.
 - If MyGekko rejects the credentials Home Assistant asks for them again (re-authentication).
-- **Troubleshooting:** download the diagnostics of the integration (credentials, Gekko ID and IP address are redacted) and attach them to an issue. Rate limit warnings (`skipping this update`) mean that MyGekko limits the requests: increase the update interval and avoid automations that switch devices in a fast loop.
+- **Troubleshooting:** download the diagnostics of the integration (credentials, Gekko ID and IP address are redacted) and attach them to an issue. Rate limit warnings (`pausing requests until`) mean that MyGekko limits the requests: increase the update interval and avoid automations that switch devices in a fast loop.
 
 ## Breaking changes
 
@@ -101,7 +102,7 @@ The integration checks which Home Assistant it runs on and uses the matching API
 ## How it works
 
 - **Polling:** the integration polls `GET /api/v1/var/status` every 30 seconds. The document with the device names (`GET /api/v1/var`) is read once and refreshed every 30 minutes or when a new device appears, so only one request per poll is needed.
-- **Rate limit:** the MyGekko Plus query API limits the number of requests. On HTTP 429 the poll interval is doubled (up to 5 minutes) and restored automatically once the API answers again. Commands are sent one after another and retried on 429.
+- **Rate limit:** the MyGekko Plus query API limits the number of requests. On HTTP 429 no request is sent for 4 minutes and the entities keep their last state for as long as the limit lasts. Other errors (timeout, network) keep the last state for 15 minutes. The last state is saved, so a restart during a rate limit or outage starts with it instead of unavailable entities. Commands are sent one after another; a command that hits the rate limit (or arrives during the pause) is kept and sent automatically when the 4 minute pause is over (the newest command per device wins, dropped after 3 pauses). A rate limit at the first start also waits 4 minutes before the next request.
 - **Timeouts:** every request is bound by a timeout (15 s), a hanging device never blocks Home Assistant.
 - **API layer (`custom_components/mygekko/api`):** `schema.py` describes the `sumstate` values of every resource type, `store.py` parses the API documents generically, `models.py` contains the device classes (`Light`, `Blind`, ...) and `client.py` the cloud, local and demo clients. There is no external dependency. To support a new resource type add a `ResourceSpec` in `schema.py` and a model class in `models.py`, then expose it in `client.py`.
 

@@ -291,6 +291,20 @@
       },
       "mygekko_roomtemp_floor_temperature": {
         "name": "Temperatura del pavimento"
+      },
+      "mygekko_controller_api_state": {
+        "name": "Stato API",
+        "state": {
+          "ok": "OK",
+          "rate_limited": "Limite richieste",
+          "error": "Errore"
+        }
+      },
+      "mygekko_controller_last_update": {
+        "name": "Ultimo aggiornamento"
+      },
+      "mygekko_controller_rate_limited_until": {
+        "name": "Pausa limite richieste fino a"
       }
     },
     "button": {
@@ -374,6 +388,10 @@
     "rate_limited": {
       "title": "MyGekko limita le richieste",
       "description": "MyGekko ({name}) rifiuta le richieste perché ne sono state inviate troppe (HTTP 429). I valori potrebbero non essere aggiornati. Aumenta l'intervallo di aggiornamento nelle opzioni dell'integrazione ed evita automazioni che commutano dispositivi in un ciclo rapido."
+    },
+    "duplicate_entry": {
+      "title": "MyGekko è configurato più volte",
+      "description": "{name} è configurato {count} volte (voci disattivate: {disabled}). Le voci condividono i dispositivi dello stesso myGEKKO, più voci attive moltiplicano le richieste e raggiungono il limite di MyGekko. Elimina le voci superflue in Impostazioni > Dispositivi e servizi > MyGekko."
     }
   },
   "exceptions": {

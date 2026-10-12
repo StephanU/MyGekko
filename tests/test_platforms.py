@@ -1,6 +1,5 @@
 """Tests for the commands sent by the platforms."""
 import pytest
-from homeassistant.exceptions import HomeAssistantError
 
 from custom_components.mygekko import coordinator as coordinator_module
 from custom_components.mygekko.api import MyGekkoTooManyRequests
@@ -61,19 +60,37 @@ async def test_rgb_color_command(hass, setup_demo):
     assert _sent(setup_demo)[0][1] == f"C{(1 << 16) + (2 << 8) + 3}"
 
 
-async def test_rate_limited_command_is_retried_then_reported(hass, setup_demo):
-    """A rate limited command is retried and finally reported to the user."""
-    setup_demo.write.side_effect = MyGekkoTooManyRequests("429")
-    with pytest.raises(HomeAssistantError, match="rate limit"):
-        await _call(hass, "light", "turn_on", "light.bedroom")
-    assert setup_demo.write.call_count == coordinator_module.WRITE_RETRIES
-
-
-async def test_command_recovers_after_one_rate_limit(hass, setup_demo):
-    """One 429 is absorbed by the retry."""
+async def test_rate_limited_command_is_sent_after_the_pause(hass, setup_demo):
+    """A command hitting the rate limit is sent automatically after 4 minutes."""
+    coordinator = setup_demo.runtime_data
     setup_demo.write.side_effect = [MyGekkoTooManyRequests("429"), None]
     await _call(hass, "light", "turn_on", "light.bedroom")
+    assert setup_demo.write.call_count == 1
+    assert coordinator.is_backing_off
+
+    # a command during the pause is not sent now, the newest one per target wins
+    await _call(hass, "light", "turn_off", "light.bedroom")
+    assert setup_demo.write.call_count == 1
+
+    # the pause is over
+    assert coordinator._unsub_queued is not None
+    coordinator._backoff_until = 0
+    await coordinator._async_send_queued()
     assert setup_demo.write.call_count == 2
+    assert not coordinator._queued
+
+
+async def test_rate_limited_command_is_dropped_after_some_pauses(hass, setup_demo):
+    """A rate limit that does not end drops the delayed command."""
+    coordinator = setup_demo.runtime_data
+    setup_demo.write.side_effect = MyGekkoTooManyRequests("429")
+    await _call(hass, "light", "turn_on", "light.bedroom")
+    for _ in range(coordinator_module.MAX_QUEUED_ATTEMPTS):
+        # the pause is over
+        coordinator._backoff_until = 0
+        await coordinator._async_send_queued()
+    assert setup_demo.write.call_count == 1 + coordinator_module.MAX_QUEUED_ATTEMPTS
+    assert not coordinator._queued
 
 
 async def test_commands_are_sent_one_after_another(hass, setup_demo):

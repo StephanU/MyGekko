@@ -62,6 +62,9 @@ class MyGekkoClient:
         self._resources_read_at: float | None = None
         # devices that stay unnamed even after reading the resources
         self._unnamed: set[tuple[str, str]] = set()
+        # the last documents read successfully, kept to restore them after a restart
+        self.last_resources: dict | None = None
+        self.last_status: dict | None = None
 
     # --- transport, implemented by the subclasses ---------------------------------
 
@@ -104,7 +107,20 @@ class MyGekkoClient:
             self.store.update_resources(resources)
             self._resources_read_at = time.monotonic()
             self._unnamed = self.store.unnamed_keys(status)
+            self.last_resources = resources
         self.store.update_status(status)
+        self.last_status = status
+
+    def restore(self, resources: dict, status: dict) -> None:
+        """Load documents saved earlier, used when MyGekko cannot be read at startup.
+
+        The names count as outdated: they are read again with the next successful poll.
+        """
+        self.store.update_resources(resources)
+        self.store.update_status(status)
+        self.last_resources = resources
+        self.last_status = status
+        self._unnamed = self.store.unnamed_keys(status)
 
     def _resources_outdated(self, status: dict) -> bool:
         if self._resources_read_at is None:

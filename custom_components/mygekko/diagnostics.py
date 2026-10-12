@@ -40,8 +40,10 @@ async def async_get_config_entry_diagnostics(
         "coordinator": {
             "last_update_success": coordinator.last_update_success,
             "update_interval": str(coordinator.update_interval),
-            "skipped_polls": coordinator._skipped_polls,
+            "api_state": coordinator.api_state,
             "backoff_active": coordinator.is_backing_off,
+            "rate_limited_until": str(coordinator.rate_limited_until),
+            "last_success": str(coordinator.last_success),
         },
         "controller": {
             key: value

@@ -292,6 +292,20 @@
       },
       "mygekko_roomtemp_floor_temperature": {
         "name": "Gulvtemperatur"
+      },
+      "mygekko_controller_api_state": {
+        "name": "API-status",
+        "state": {
+          "ok": "OK",
+          "rate_limited": "Forespørselsgrense",
+          "error": "Feil"
+        }
+      },
+      "mygekko_controller_last_update": {
+        "name": "Siste oppdatering"
+      },
+      "mygekko_controller_rate_limited_until": {
+        "name": "Pause for forespørselsgrense til"
       }
     },
     "button": {
@@ -375,6 +389,10 @@
     "rate_limited": {
       "title": "MyGekko begrenser forespørslene",
       "description": "MyGekko ({name}) avviser forespørsler fordi for mange ble sendt (HTTP 429). Verdiene kan være utdaterte. Øk oppdateringsintervallet i innstillingene for integrasjonen og unngå automatiseringer som veksler enheter i en rask løkke."
+    },
+    "duplicate_entry": {
+      "title": "MyGekko er satt opp flere ganger",
+      "description": "{name} er satt opp {count} ganger (deaktiverte oppføringer: {disabled}). Oppføringene deler enhetene til samme myGEKKO, flere aktive oppføringer mangedobler forespørslene og når forespørselsgrensen til MyGekko. Slett overflødige oppføringer under Innstillinger > Enheter og tjenester > MyGekko."
     }
   },
   "exceptions": {
