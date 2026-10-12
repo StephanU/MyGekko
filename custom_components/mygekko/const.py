@@ -7,7 +7,7 @@ DOMAIN_DATA = f"{DOMAIN}_data"
 VERSION = "1.5.0"
 
 ATTRIBUTION = "Data provided by http://jsonplaceholder.typicode.com/"
-ISSUE_URL = "https://github.com/stephanu/mygekko/issues"
+ISSUE_URL = "https://github.com/merlin2533/MyGekko/issues"
 
 
 # Platforms

@@ -2,14 +2,14 @@
   "domain": "mygekko",
   "name": "MyGekko",
   "codeowners": [
-    "@stephanu"
+    "@merlin2533"
   ],
   "config_flow": true,
   "dependencies": [],
-  "documentation": "https://github.com/stephanu/mygekko",
+  "documentation": "https://github.com/merlin2533/MyGekko",
   "integration_type": "hub",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/stephanu/mygekko/issues",
+  "issue_tracker": "https://github.com/merlin2533/MyGekko/issues",
   "loggers": [
     "custom_components.mygekko.api"
   ],

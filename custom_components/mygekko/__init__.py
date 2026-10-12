@@ -1,7 +1,7 @@
 """Custom integration to integrate MyGekko with Home Assistant.
 
 For more details about this integration, please refer to
-https://github.com/stephanu/mygekko
+https://github.com/merlin2533/MyGekko
 """
 import logging
 

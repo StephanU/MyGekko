@@ -1,5 +1,7 @@
 # MyGekko
 
+> **Fork:** This is the maintained fork [merlin2533/MyGekko](https://github.com/merlin2533/MyGekko) of the original integration [StephanU/MyGekko](https://github.com/StephanU/MyGekko) by Stephan Uhle ([original README](https://github.com/StephanU/MyGekko#readme)). Please report issues for this version [here](https://github.com/merlin2533/MyGekko/issues).
+
 MyGekko integration for Home Assistant. It talks to the MyGekko REST API directly with its own, dependency-free API layer (`custom_components/mygekko/api`), which is derived from [PyMyGekko](https://github.com/StephanU/PyMyGekko) (see [Credits](#credits)).
 
 [![GitHub Release][releases-shield]][releases]
@@ -7,7 +9,6 @@ MyGekko integration for Home Assistant. It talks to the MyGekko REST API directl
 [![License][license-shield]](LICENSE)
 
 ![Project Maintenance][maintenance-shield]
-[![BuyMeCoffee][buymecoffeebadge]][buymecoffee]
 
 [![hacs][hacsbadge]][hacs]
 [![Discord][discord-shield]][discord]
@@ -129,6 +130,8 @@ The GitHub workflow `Tests` runs this on every pull request with the Home Assist
 
 ## Credits
 
+This integration is a fork of [StephanU/MyGekko](https://github.com/StephanU/MyGekko) by Stephan Uhle (MIT License), maintained at [merlin2533/MyGekko](https://github.com/merlin2533/MyGekko).
+
 This project was generated from [@oncleben31](https://github.com/oncleben31)'s [Home Assistant Custom Component Cookiecutter](https://github.com/oncleben31/cookiecutter-homeassistant-custom-component) template.
 
 The API layer in `custom_components/mygekko/api` is derived from [PyMyGekko](https://github.com/StephanU/PyMyGekko) by Stephan Uhle (MIT License, copy in [`custom_components/mygekko/api/LICENSE-PyMyGekko`](custom_components/mygekko/api/LICENSE-PyMyGekko)). The device models, the field layout of the MyGekko `sumstate` values and the command formats originate from that library; the parser, the client and the polling strategy were rewritten.
@@ -140,10 +143,8 @@ Code template was mainly taken from [@Ludeeus](https://github.com/ludeeus)'s [in
 [integration_blueprint]: https://github.com/custom-components/integration_blueprint
 [black]: https://github.com/psf/black
 [black-shield]: https://img.shields.io/badge/code%20style-black-000000.svg?style=for-the-badge
-[buymecoffee]: https://www.buymeacoffee.com/stephanu
-[buymecoffeebadge]: https://img.shields.io/badge/buy%20me%20a%20coffee-donate-yellow.svg?style=for-the-badge
-[commits-shield]: https://img.shields.io/github/commit-activity/y/stephanu/mygekko.svg?style=for-the-badge
-[commits]: https://github.com/stephanu/mygekko/commits/main
+[commits-shield]: https://img.shields.io/github/commit-activity/y/merlin2533/MyGekko.svg?style=for-the-badge
+[commits]: https://github.com/merlin2533/MyGekko/commits/main
 [hacs]: https://hacs.xyz
 [hacsbadge]: https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge
 [dashboard-screenshot]: DashboardScreenshot.png
@@ -151,8 +152,8 @@ Code template was mainly taken from [@Ludeeus](https://github.com/ludeeus)'s [in
 [discord-shield]: https://img.shields.io/discord/330944238910963714.svg?style=for-the-badge
 [forum-shield]: https://img.shields.io/badge/community-forum-brightgreen.svg?style=for-the-badge
 [forum]: https://community.home-assistant.io/
-[license-shield]: https://img.shields.io/github/license/stephanu/mygekko.svg?style=for-the-badge
-[maintenance-shield]: https://img.shields.io/badge/maintainer-%40stephanu-blue.svg?style=for-the-badge
-[releases-shield]: https://img.shields.io/github/release/stephanu/mygekko.svg?style=for-the-badge
-[releases]: https://github.com/stephanu/mygekko/releases
-[user_profile]: https://github.com/stephanu
+[license-shield]: https://img.shields.io/github/license/merlin2533/MyGekko.svg?style=for-the-badge
+[maintenance-shield]: https://img.shields.io/badge/maintainer-%40merlin2533-blue.svg?style=for-the-badge
+[releases-shield]: https://img.shields.io/github/release/merlin2533/MyGekko.svg?style=for-the-badge
+[releases]: https://github.com/merlin2533/MyGekko/releases
+[user_profile]: https://github.com/merlin2533
