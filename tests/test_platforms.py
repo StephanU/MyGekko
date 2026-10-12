@@ -101,12 +101,29 @@ async def test_burst_of_commands_hits_the_rate_limit_once(hass, setup_demo, capl
     assert setup_demo.write.call_count == 1
     # the newest command per target is kept
     assert len(coordinator._queued) == 2
+    # one warning per target, naming the element
     warnings = [
-        record
+        record.getMessage()
         for record in caplog.records
         if "sent automatically" in record.getMessage()
     ]
-    assert len(warnings) == 1
+    assert len(warnings) == 2
+    assert any("/lights/" in message for message in warnings)
+
+    # after the pause the target that got many commands is named
+    setup_demo.write.side_effect = None
+    coordinator._backoff_until = 0
+    caplog.clear()
+    await coordinator._async_send_queued()
+    assert setup_demo.write.call_count == 3
+    replaced = [
+        record.getMessage()
+        for record in caplog.records
+        if "received" in record.getMessage()
+    ]
+    assert len(replaced) == 1
+    assert "received 20 commands" in replaced[0]
+    assert not coordinator._queued_counts
 
 
 async def test_rate_limited_command_is_dropped_after_some_pauses(hass, setup_demo):
