@@ -5,21 +5,21 @@ from homeassistant.components.light import ATTR_BRIGHTNESS
 from homeassistant.components.light import ATTR_RGB_COLOR
 from homeassistant.components.light import ColorMode
 from homeassistant.components.light import LightEntity
-from homeassistant.core import callback
-from PyMyGekko.resources.Lights import Light
-from PyMyGekko.resources.Lights import LightFeature
-from PyMyGekko.resources.Lights import LightState
+from .api import Light
+from .api import LightFeature
+from .api import LightState
 
-from .const import DOMAIN
 from .entity import MyGekkoEntity
 
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 
+PARALLEL_UPDATES = 0
+
 
 async def async_setup_entry(hass, entry, async_add_devices):
     """Set up light platform."""
-    coordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator = entry.runtime_data
     lights: list[Light] = coordinator.api.get_lights()
     if lights is not None:
         async_add_devices(
@@ -52,36 +52,36 @@ class MyGekkoLight(MyGekkoEntity, LightEntity):
         elif LightFeature.ON_OFF in supported_features:
             self._attr_supported_color_modes.add(ColorMode.ONOFF)
             self._attr_color_mode = ColorMode.ONOFF
-
-    @callback
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
-        self.async_write_ha_state()
+        else:
+            self._attr_supported_color_modes.add(ColorMode.ONOFF)
+            self._attr_color_mode = ColorMode.ONOFF
 
     @property
     def is_on(self) -> bool | None:
         """Check whether the light is on."""
         _LOGGER.debug(
-            "The light state of %s is %d", self._light.name, self._light.state
+            "The light state of %s is %s", self._light.name, self._light.state
         )
         return self._light.state == LightState.ON
 
     async def async_turn_off(self, **kwargs):
         """Turn off the light."""
         _LOGGER.debug("Switch off light %s", self._light.name)
-        await self._light.set_state(LightState.OFF)
-        await self.coordinator.async_request_refresh()
+        await self.coordinator.async_write(self._light.set_state, LightState.OFF)
 
     async def async_turn_on(self, **kwargs):
         """Turn on the light."""
         _LOGGER.debug("Switch on light %s", self._light.name)
         if ATTR_RGB_COLOR in kwargs and kwargs[ATTR_RGB_COLOR]:
-            await self._light.set_rgb_color(kwargs[ATTR_RGB_COLOR])
+            await self.coordinator.async_write(
+                self._light.set_rgb_color, kwargs[ATTR_RGB_COLOR]
+            )
         elif ATTR_BRIGHTNESS in kwargs and kwargs[ATTR_BRIGHTNESS]:
-            await self._light.set_brightness(round(kwargs[ATTR_BRIGHTNESS] / 255 * 100))
+            await self.coordinator.async_write(
+                self._light.set_brightness, round(kwargs[ATTR_BRIGHTNESS] / 255 * 100)
+            )
         else:
-            await self._light.set_state(LightState.ON)
-        await self.coordinator.async_request_refresh()
+            await self.coordinator.async_write(self._light.set_state, LightState.ON)
 
     @property
     def brightness(self) -> int | None:

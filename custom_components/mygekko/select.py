@@ -1,19 +1,27 @@
 """Select platform for MyGekko."""
 from homeassistant.components.select import SelectEntity
 from homeassistant.components.select import SelectEntityDescription
-from PyMyGekko.resources.Vents import Vent
-from PyMyGekko.resources.Vents import VentBypassMode
-from PyMyGekko.resources.Vents import VentWorkingLevel
-from PyMyGekko.resources.Vents import VentWorkingMode
+from .api import Clock
+from .api import ClockState
+from .api import Vent
+from .api import VentBypassMode
+from .api import VentWorkingLevel
+from .api import VentWorkingMode
 
-from .const import DOMAIN
 from .entity import MyGekkoEntity
+
+
+PARALLEL_UPDATES = 0
 
 
 async def async_setup_entry(hass, entry, async_add_devices):
     """Set up select platform."""
-    coordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator = entry.runtime_data
 
+    async_add_devices(
+        MyGekkoClockSelect(coordinator, clock)
+        for clock in coordinator.api.get_clocks() or []
+    )
     async_add_devices(
         MyGekkoVentBypassSelect(coordinator, vent)
         for vent in coordinator.api.get_vents()
@@ -56,8 +64,7 @@ class MyGekkoVentBypassSelect(MyGekkoEntity, SelectEntity):
 
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""
-        await self._vent.set_bypass_state(option)
-        await self.coordinator.async_request_refresh()
+        await self.coordinator.async_write(self._vent.set_bypass_state, option)
 
 
 class MyGekkoVentWorkingModeSelect(MyGekkoEntity, SelectEntity):
@@ -89,8 +96,7 @@ class MyGekkoVentWorkingModeSelect(MyGekkoEntity, SelectEntity):
 
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""
-        await self._vent.set_working_mode(option)
-        await self.coordinator.async_request_refresh()
+        await self.coordinator.async_write(self._vent.set_working_mode, option)
 
 
 class MyGekkoVentWorkingLevelSelect(MyGekkoEntity, SelectEntity):
@@ -123,5 +129,28 @@ class MyGekkoVentWorkingLevelSelect(MyGekkoEntity, SelectEntity):
 
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""
-        await self._vent.set_working_level(option)
-        await self.coordinator.async_request_refresh()
+        await self.coordinator.async_write(self._vent.set_working_level, VentWorkingLevel(int(option)))
+
+
+class MyGekkoClockSelect(MyGekkoEntity, SelectEntity):
+    """mygekko clock (time switch) mode select."""
+
+    _attr_name = None
+    _attr_options = [state.name.lower() for state in ClockState]
+
+    def __init__(self, coordinator, clock: Clock):
+        """Initialize a MyGekko clock select."""
+        super().__init__(coordinator, clock, "clocks")
+        self._clock = clock
+
+    @property
+    def current_option(self) -> str | None:
+        """Return the current clock mode."""
+        state = self._clock.state
+        return state.name.lower() if state is not None else None
+
+    async def async_select_option(self, option: str) -> None:
+        """Change the clock mode."""
+        await self.coordinator.async_write(
+            self._clock.set_state, ClockState[option.upper()]
+        )

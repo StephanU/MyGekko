@@ -6,4 +6,4 @@ logger:
   default: info
   logs:
     custom_components.mygekko: debug
-    PyMyGekko: debug
+    custom_components.mygekko.api: debug

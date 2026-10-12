@@ -1,36 +1,87 @@
 """Data Update Coordinator for the MyGekko integration."""
+import asyncio
 import logging
+import time
+from collections import deque
+from datetime import datetime
 from datetime import timedelta
 
+from aiohttp import ClientError
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_API_KEY
 from homeassistant.const import CONF_IP_ADDRESS
 from homeassistant.const import CONF_PASSWORD
 from homeassistant.const import CONF_USERNAME
 from homeassistant.core import HomeAssistant
+from homeassistant.core import callback
+from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.exceptions import ConfigEntryError
+from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.debounce import Debouncer
+from homeassistant.helpers.event import async_call_later
+from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.helpers.update_coordinator import UpdateFailed
-from PyMyGekko import MyGekkoDemoModeClient
-from PyMyGekko import MyGekkoLocalApiClient
-from PyMyGekko import MyGekkoQueryApiClient
+from homeassistant.util import dt as dt_util
+from .api import MyGekkoDemoModeClient
+from .api import MyGekkoLocalApiClient
+from .api import MyGekkoQueryApiClient
+from .api import MyGekkoError
+from .api import MyGekkoForbidden
+from .api import MyGekkoTooManyRequests
 
 from .const import CONF_CONNECTION_DEMO_MODE
 from .const import CONF_CONNECTION_LOCAL
 from .const import CONF_CONNECTION_MY_GEKKO_CLOUD
 from .const import CONF_CONNECTION_TYPE
 from .const import CONF_GEKKOID
+from .const import CONF_SCAN_INTERVAL
+from .const import CONF_SCHEME
+from .const import DEFAULT_SCAN_INTERVAL
 from .const import DOMAIN
 
 
-SCAN_INTERVAL = timedelta(seconds=30)
+SCAN_INTERVAL = timedelta(seconds=DEFAULT_SCAN_INTERVAL)
+# after HTTP 429 (rate limit) no request is sent for this time
+RATE_LIMIT_PAUSE = timedelta(minutes=4)
+# a rate limit lasting this long is reported as repair issue (the values are kept)
+RATE_LIMIT_ISSUE_AFTER = timedelta(minutes=30)
+# other errors (timeout, network, server) keep the last values for this time
+ERROR_GRACE = timedelta(minutes=15)
+UPDATE_TIMEOUT = 40
+REFRESH_COOLDOWN = 2.0
+WRITE_TIMEOUT = 15
+WRITE_MIN_DELAY = 0.3
+# at most COMMAND_BURST commands are sent within COMMAND_WINDOW seconds, more wait
+COMMAND_BURST = 10
+COMMAND_WINDOW = 10.0
+# rejected requests (HTTP 401/403) before the user has to log in again
+MAX_AUTH_FAILURES = 3
+# a command delayed by the rate limit is tried after this many pauses at most
+MAX_QUEUED_ATTEMPTS = 3
+# the last state is saved at most this often (and when Home Assistant stops)
+CACHE_SAVE_DELAY = 300
+CACHE_VERSION = 1
+
+API_STATE_OK = "ok"
+API_STATE_RATE_LIMITED = "rate_limited"
+API_STATE_ERROR = "error"
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
 
+MyGekkoConfigEntry = ConfigEntry["MyGekkoDataUpdateCoordinator"]
+
 
 class MyGekkoDataUpdateCoordinator(DataUpdateCoordinator):
-    """Class to manage fetching data from the API."""
+    """Class to manage fetching data from the API.
+
+    The last state read from MyGekko is always kept: a rate limit (HTTP 429)
+    pauses all requests for RATE_LIMIT_PAUSE, other errors are tolerated for
+    ERROR_GRACE, and the state is saved so that a restart during a rate limit
+    or an outage starts with the last known values instead of unavailable ones.
+    """
 
     def __init__(
         self,
@@ -38,7 +89,19 @@ class MyGekkoDataUpdateCoordinator(DataUpdateCoordinator):
         entry: ConfigEntry,
     ) -> None:
         """Initialize."""
-        super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=SCAN_INTERVAL)
+        self._base_interval = timedelta(
+            seconds=entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+        )
+        super().__init__(
+            hass,
+            _LOGGER,
+            config_entry=entry,
+            name=DOMAIN,
+            update_interval=self._base_interval,
+            request_refresh_debouncer=Debouncer(
+                hass, _LOGGER, cooldown=REFRESH_COOLDOWN, immediate=False
+            ),
+        )
 
         client = None
 
@@ -56,7 +119,13 @@ class MyGekkoDataUpdateCoordinator(DataUpdateCoordinator):
             ip_address = entry.data.get(CONF_IP_ADDRESS)
 
             session = async_get_clientsession(hass, verify_ssl=False)
-            client = MyGekkoLocalApiClient(username, password, session, ip_address)
+            client = MyGekkoLocalApiClient(
+                username,
+                password,
+                session,
+                ip_address,
+                scheme=entry.data.get(CONF_SCHEME, "https"),
+            )
 
         if entry.data.get(CONF_CONNECTION_TYPE) == CONF_CONNECTION_DEMO_MODE:
             client = MyGekkoDemoModeClient()
@@ -68,12 +137,452 @@ class MyGekkoDataUpdateCoordinator(DataUpdateCoordinator):
             raise ConfigEntryError
 
         self.api = client
+        self._write_lock = asyncio.Lock()
+        # commands waiting to be sent: key -> (method, args, future), oldest first
+        self._pending: dict[tuple, tuple] = {}
+        self._pending_worker: asyncio.Task | None = None
+        # when the last commands were sent, for the command rate limit
+        self._sent_times: deque[float] = deque()
+        # commands kept during a rate limit pause: key -> (method, args, attempts)
+        self._queued: dict[tuple, tuple] = {}
+        self._unsub_queued = None
+        # commands received per target during the pause, to spot a looping automation
+        self._queued_counts: dict[tuple, int] = {}
+        # the targets reported as delayed, per pause (its end)
+        self._queued_reported: tuple[datetime | None, set[tuple]] = (None, set())
+        self._cache: Store = Store(
+            hass, CACHE_VERSION, f"{DOMAIN}.{entry.entry_id}", private=True
+        )
+        self._cached: dict | None = None
+        # a rate limit pause outlives a retried setup (new coordinator, same entry)
+        self._pauses: dict[str, float] = hass.data.setdefault(DOMAIN, {}).setdefault(
+            "rate_limit_pauses", {}
+        )
+        self._backoff_until = self._pauses.get(entry.entry_id, 0.0)
+        self._has_data = False
+        self._auth_failures = 0
+        self._rate_limited_since: datetime | None = None
+        self._failing_since: datetime | None = None
+        self.rate_limited_until: datetime | None = None
+        self.last_success: datetime | None = None
+        self.api_state: str = API_STATE_OK
+        self.controller_registry_id: str | None = None
+
+    @property
+    def base_interval(self) -> timedelta:
+        """Return the configured poll interval."""
+        return self._base_interval
+
+    @property
+    def is_backing_off(self) -> bool:
+        """Return whether polls are currently skipped because of the rate limit."""
+        return self._has_data and time.monotonic() < self._backoff_until
+
+    def _issue_id(self) -> str:
+        return f"rate_limited_{self.config_entry.entry_id}"
+
+    def _create_rate_limit_issue(self) -> None:
+        """Tell the user that MyGekko limits the requests."""
+        ir.async_create_issue(
+            self.hass,
+            DOMAIN,
+            self._issue_id(),
+            is_fixable=False,
+            severity=ir.IssueSeverity.WARNING,
+            translation_key="rate_limited",
+            translation_placeholders={"name": self.config_entry.title},
+        )
+
+    def _clear_rate_limit_issue(self) -> None:
+        ir.async_delete_issue(self.hass, DOMAIN, self._issue_id())
+
+    # --- saved state ---------------------------------------------------------------
+
+    async def async_load_cache(self) -> None:
+        """Load the state saved before the last restart."""
+        try:
+            cached = await self._cache.async_load()
+        except Exception:  # noqa: BLE001
+            _LOGGER.warning("The saved MyGekko state could not be read")
+            return
+        if (
+            isinstance(cached, dict)
+            and isinstance(cached.get("resources"), dict)
+            and isinstance(cached.get("status"), dict)
+        ):
+            self._cached = cached
+
+    def _cache_data(self) -> dict:
+        return {
+            "resources": self.api.last_resources,
+            "status": self.api.last_status,
+            "saved_at": self.last_success.isoformat() if self.last_success else None,
+            "rate_limited_until": (
+                self.rate_limited_until.isoformat() if self.rate_limited_until else None
+            ),
+        }
+
+    def _save_cache(self) -> None:
+        if self.api.last_resources is not None and self.api.last_status is not None:
+            self._cache.async_delay_save(self._cache_data, CACHE_SAVE_DELAY)
+
+    async def async_remove_cache(self) -> None:
+        """Delete the saved state (the config entry was removed)."""
+        await self._cache.async_remove()
+
+    def _restore_cache(self) -> bool:
+        """Use the saved state when MyGekko cannot be read at startup."""
+        if self._has_data or self._cached is None:
+            return False
+        self.api.restore(self._cached["resources"], self._cached["status"])
+        saved_at = dt_util.parse_datetime(self._cached.get("saved_at") or "")
+        self.last_success = saved_at
+        self._cached = None
+        self._has_data = True
+        _LOGGER.warning(
+            "MyGekko cannot be read right now, using the state saved at %s", saved_at
+        )
+        return True
+
+    def _saved_rate_limit_pause(self) -> float:
+        """Return the seconds left of a rate limit pause from before the restart."""
+        if self._cached is None:
+            return 0.0
+        until = dt_util.parse_datetime(self._cached.get("rate_limited_until") or "")
+        if until is None:
+            return 0.0
+        return max(0.0, (until - dt_util.utcnow()).total_seconds())
+
+    # --- polling -------------------------------------------------------------------
+
+    def _pause_for_rate_limit(self, seconds: float | None = None) -> None:
+        """Stop sending requests for the rate limit pause."""
+        pause = max(RATE_LIMIT_PAUSE, self._base_interval)
+        if seconds is not None:
+            pause = timedelta(seconds=seconds)
+        now = dt_util.utcnow()
+        self._backoff_until = time.monotonic() + pause.total_seconds()
+        self._pauses[self.config_entry.entry_id] = self._backoff_until
+        self.rate_limited_until = now + pause
+        self._rate_limited_since = self._rate_limited_since or now
+        self.api_state = API_STATE_RATE_LIMITED
+        self.update_interval = max(pause, self._base_interval)
+        if now - self._rate_limited_since >= RATE_LIMIT_ISSUE_AFTER:
+            self._create_rate_limit_issue()
 
     async def _async_update_data(self):
-        """Update data via library."""
-        _LOGGER.debug("_async_update_data ")
+        """Update data via the MyGekko API.
+
+        HTTP 429 (rate limit) pauses the requests for RATE_LIMIT_PAUSE, the
+        entities keep their last values for as long as the rate limit lasts.
+        Other errors keep the last values for ERROR_GRACE.
+        """
+        if self.is_backing_off:
+            _LOGGER.debug("Skipping update, MyGekko rate limit pause is active")
+            return self.data
+
+        # a rate limit pause from before the restart is respected
+        remaining = self._saved_rate_limit_pause()
+        if remaining and self._restore_cache():
+            self._pause_for_rate_limit(remaining)
+            return self.data
+
+        if not self._has_data and time.monotonic() < self._backoff_until:
+            # no request during the pause, also not while the setup is retried
+            if self._restore_cache():
+                self.api_state = API_STATE_RATE_LIMITED
+                return self.data
+            raise UpdateFailed(
+                "MyGekko rate limit pause is active, waiting before the next request"
+            )
+
+        _LOGGER.debug("_async_update_data")
         try:
-            return await self.api.read_data()
-        except Exception as exception:
-            _LOGGER.exception("_async_update_data failed")
-            raise UpdateFailed() from exception
+            async with asyncio.timeout(UPDATE_TIMEOUT):
+                result = await self.api.read_data()
+        except MyGekkoTooManyRequests as exception:
+            self._restore_cache()
+            if not self._has_data:
+                # nothing to keep (first start without saved state): setup retries
+                self._pause_for_rate_limit()
+                raise UpdateFailed(
+                    f"MyGekko rate limit reached, retrying in {self.update_interval}"
+                ) from exception
+            self._pause_for_rate_limit()
+            self._save_cache()
+            _LOGGER.warning(
+                "MyGekko rate limit reached (HTTP 429), keeping the last state and "
+                "pausing requests until %s",
+                dt_util.as_local(self.rate_limited_until).strftime("%H:%M:%S"),
+            )
+            return self.data
+        except MyGekkoForbidden as exception:
+            # a running integration tolerates a few rejections before asking the user
+            self._auth_failures += 1
+            if not self._has_data or self._auth_failures >= MAX_AUTH_FAILURES:
+                raise ConfigEntryAuthFailed(
+                    "MyGekko rejected the credentials or access"
+                ) from exception
+            self.api_state = API_STATE_ERROR
+            _LOGGER.warning(
+                "MyGekko rejected the request (%s/%s), keeping the last state",
+                self._auth_failures,
+                MAX_AUTH_FAILURES,
+            )
+            return self.data
+        except Exception as exception:  # noqa: BLE001
+            if isinstance(exception, TimeoutError):
+                message = f"Timeout after {UPDATE_TIMEOUT}s while fetching MyGekko data"
+            else:
+                message = (
+                    f"Error fetching MyGekko data: {type(exception).__name__}: {exception}"
+                )
+            self._restore_cache()
+            self.api_state = API_STATE_ERROR
+            self._failing_since = self._failing_since or dt_util.utcnow()
+            if self._within_grace():
+                _LOGGER.warning("%s, keeping the last state", message)
+                return self.data
+            raise UpdateFailed(message) from exception
+
+        if self.api_state != API_STATE_OK or self.update_interval != self._base_interval:
+            _LOGGER.info("MyGekko API reachable again, restoring update interval")
+        self._has_data = True
+        self._cached = None
+        self._auth_failures = 0
+        self._backoff_until = 0.0
+        self._rate_limited_since = None
+        self._failing_since = None
+        self._pauses.pop(self.config_entry.entry_id, None)
+        self.rate_limited_until = None
+        self.last_success = dt_util.utcnow()
+        self.api_state = API_STATE_OK
+        self.update_interval = self._base_interval
+        self._clear_rate_limit_issue()
+        self._save_cache()
+        return result
+
+    def _within_grace(self) -> bool:
+        """Return whether the errors started recently enough to keep the last state."""
+        if not self._has_data or self._failing_since is None:
+            return False
+        return dt_util.utcnow() - self._failing_since < ERROR_GRACE
+
+    # --- commands ----------------------------------------------------------------
+
+    @staticmethod
+    def _command_key(method) -> tuple:
+        """Return the key of a command: a newer command for the same target replaces it."""
+        return (id(getattr(method, "__self__", method)), getattr(method, "__name__", ""))
+
+    @staticmethod
+    def _command_target(method) -> str:
+        """Return the element a command is sent to, e.g. 'Kitchen (/lights/item1)'."""
+        device = getattr(method, "__self__", None)
+        path = getattr(device, "resource_path", None)
+        if path is None:
+            return getattr(method, "__name__", repr(method))
+        name = getattr(device, "name", None)
+        return f"{name} ({path})" if name else path
+
+    def _queue_command(self, method, args) -> None:
+        """Keep a command until the rate limit pause is over, then send it."""
+        key = self._command_key(method)
+        attempts = self._queued.get(key, (None, None, 0))[2]
+        self._queued[key] = (method, args, attempts)
+        self._queued_counts[key] = self._queued_counts.get(key, 0) + 1
+        self._schedule_queued()
+        send_at = dt_util.as_local(self.rate_limited_until or dt_util.utcnow())
+        target = self._command_target(method)
+        until, reported = self._queued_reported
+        if until != self.rate_limited_until:
+            reported = set()
+            self._queued_reported = (self.rate_limited_until, reported)
+        if key in reported:
+            # a burst of commands (e.g. an automation) is reported once per target
+            _LOGGER.debug(
+                "MyGekko rate limit: command for %s delayed until %s",
+                target,
+                send_at.strftime("%H:%M:%S"),
+            )
+            return
+        reported.add(key)
+        _LOGGER.warning(
+            "MyGekko rate limit: the command for %s is sent automatically at %s, "
+            "only the newest command per target is sent",
+            target,
+            send_at.strftime("%H:%M:%S"),
+        )
+
+    def _report_replaced_commands(self, key, method) -> None:
+        """Tell which target got several commands during the pause (a loop?)."""
+        count = self._queued_counts.pop(key, 0)
+        if count > 1:
+            _LOGGER.warning(
+                "MyGekko rate limit: %s received %s commands during the pause, "
+                "only the newest was sent; check the automations using it",
+                self._command_target(method),
+                count,
+            )
+
+    def _schedule_queued(self) -> None:
+        if self._unsub_queued is not None or not self._queued:
+            return
+        delay = max(0.0, self._backoff_until - time.monotonic()) + 1
+        self._unsub_queued = async_call_later(self.hass, delay, self._async_send_queued)
+
+    async def _async_send_queued(self, _now=None) -> None:
+        """Send the commands kept during the rate limit pause."""
+        if self._unsub_queued is not None:
+            self._unsub_queued()
+            self._unsub_queued = None
+        if self.is_backing_off:
+            self._schedule_queued()
+            return
+        queued, self._queued = self._queued, {}
+        sent = False
+        for key, (method, args, attempts) in queued.items():
+            if self._backoff_until > time.monotonic():
+                # rate limited again: the rest waits for the next pause to end
+                self._queued[key] = (method, args, attempts)
+                continue
+            try:
+                await self._async_send(method, args)
+                sent = True
+                self._report_replaced_commands(key, method)
+            except MyGekkoTooManyRequests:
+                if attempts + 1 >= MAX_QUEUED_ATTEMPTS:
+                    self._report_replaced_commands(key, method)
+                    _LOGGER.error(
+                        "MyGekko rate limit persists, the command for %s was dropped "
+                        "after %s attempts",
+                        self._command_target(method),
+                        MAX_QUEUED_ATTEMPTS,
+                    )
+                    continue
+                self._queued[key] = (method, args, attempts + 1)
+            except HomeAssistantError as err:
+                self._report_replaced_commands(key, method)
+                _LOGGER.error(
+                    "Sending a delayed command for %s to MyGekko failed: %s",
+                    self._command_target(method),
+                    err,
+                )
+        self._schedule_queued()
+        if sent and not self.is_backing_off:
+            await self.async_request_refresh()
+
+    @callback
+    def async_cancel_queued(self) -> None:
+        """Drop the commands kept for later (the entry is unloaded)."""
+        if self._unsub_queued is not None:
+            self._unsub_queued()
+            self._unsub_queued = None
+        self._queued.clear()
+        self._queued_counts.clear()
+        if self._pending_worker is not None:
+            self._pending_worker.cancel()
+            self._pending_worker = None
+        for _method, _args, future in self._pending.values():
+            _resolve(future)
+        self._pending.clear()
+
+    async def _async_throttle(self) -> None:
+        """Wait until one more command fits into COMMAND_BURST per COMMAND_WINDOW."""
+        while True:
+            now = time.monotonic()
+            while self._sent_times and now - self._sent_times[0] >= COMMAND_WINDOW:
+                self._sent_times.popleft()
+            if len(self._sent_times) < COMMAND_BURST:
+                self._sent_times.append(now)
+                return
+            wait = COMMAND_WINDOW - (now - self._sent_times[0])
+            _LOGGER.debug("Many MyGekko commands, waiting %.1fs before the next", wait)
+            await asyncio.sleep(wait)
+
+    async def _async_send(self, method, args) -> None:
+        """Send one command; HTTP 429 pauses the requests and is raised."""
+        async with self._write_lock:
+            await self._async_throttle()
+            if time.monotonic() < self._backoff_until:
+                # a command waiting for the lock must not hit the rate limit again
+                raise MyGekkoTooManyRequests("MyGekko rate limit pause is active")
+            try:
+                async with asyncio.timeout(WRITE_TIMEOUT):
+                    await method(*args)
+            except MyGekkoTooManyRequests:
+                self._pause_for_rate_limit()
+                raise
+            except TimeoutError as exception:
+                raise HomeAssistantError(
+                    f"Timeout while sending command to MyGekko ({WRITE_TIMEOUT}s)"
+                ) from exception
+            except (MyGekkoError, ClientError) as exception:
+                raise HomeAssistantError(
+                    f"MyGekko command failed: {type(exception).__name__}"
+                ) from exception
+            finally:
+                await asyncio.sleep(WRITE_MIN_DELAY)
+
+    async def async_write(self, method, *args) -> None:
+        """Send a command to MyGekko.
+
+        Commands wait in one queue and are sent one after another, spaced out
+        (at most COMMAND_BURST per COMMAND_WINDOW) and followed by a (debounced)
+        refresh. A newer command for the same element replaces one that is still
+        waiting, so a burst from automations is reduced to the newest commands.
+        When MyGekko limits the requests (HTTP 429), or a rate limit pause is
+        active, the command is kept and sent automatically when the pause of
+        RATE_LIMIT_PAUSE is over. Other errors surface as HomeAssistantError.
+        """
+        if self.is_backing_off:
+            self._queue_command(method, args)
+            return
+        key = self._command_key(method)
+        future = self.hass.loop.create_future()
+        replaced = self._pending.get(key)
+        if replaced is not None:
+            # the waiting command is outdated, its caller is done
+            _LOGGER.debug(
+                "MyGekko command for %s replaced by a newer one",
+                self._command_target(method),
+            )
+            _resolve(replaced[2])
+        self._pending[key] = (method, args, future)
+        if self._pending_worker is None or self._pending_worker.done():
+            self._pending_worker = self.config_entry.async_create_background_task(
+                self.hass, self._async_send_pending(), "mygekko_commands"
+            )
+        await future
+
+    async def _async_send_pending(self) -> None:
+        """Send the waiting commands one after another, oldest first."""
+        while self._pending:
+            key = next(iter(self._pending))
+            method, args, future = self._pending.pop(key)
+            if self.is_backing_off:
+                self._queue_command(method, args)
+                _resolve(future)
+                continue
+            try:
+                await self._async_send(method, args)
+            except MyGekkoTooManyRequests:
+                self._queue_command(method, args)
+                _resolve(future)
+                continue
+            except Exception as err:  # noqa: BLE001
+                # also unexpected errors go to the caller, the next commands are sent
+                _resolve(future, err)
+                continue
+            _resolve(future)
+            await self.async_request_refresh()
+
+
+def _resolve(future: asyncio.Future, error: Exception | None = None) -> None:
+    """Finish the call waiting for a command (unless it gave up already)."""
+    if future.done():
+        return
+    if error is None:
+        future.set_result(None)
+    else:
+        future.set_exception(error)

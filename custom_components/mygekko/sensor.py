@@ -1,30 +1,35 @@
 """Sensor platform for MyGekko."""
 from custom_components.mygekko.entity import MyGekkoControllerEntity
+from custom_components.mygekko.entity import MyGekkoControllerStatusEntity
 from custom_components.mygekko.entity import MyGekkoEntity
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
 from homeassistant.components.sensor import SensorStateClass
-from homeassistant.const import CONCENTRATION_PARTS_PER_MILLION
 from homeassistant.const import LIGHT_LUX
+from homeassistant.const import EntityCategory
 from homeassistant.const import PERCENTAGE
 from homeassistant.const import UnitOfEnergy
 from homeassistant.const import UnitOfPower
+from homeassistant.const import UnitOfRatio
 from homeassistant.const import UnitOfSpeed
 from homeassistant.const import UnitOfTemperature
 from homeassistant.const import UnitOfVolumeFlowRate
-from PyMyGekko.resources.AlarmsLogics import AlarmsLogic
-from PyMyGekko.resources.DoorInterComs import DoorInterCom
-from PyMyGekko.resources.EnergyCosts import EnergyCost
-from PyMyGekko.resources.HotWaterSystems import HotWaterSystem
-from PyMyGekko.resources.HotWaterSystems import HotWaterSystemFeature
-from PyMyGekko.resources.RoomTemps import RoomTemp
-from PyMyGekko.resources.RoomTemps import RoomTempsFeature
-from PyMyGekko.resources.Vents import Vent
-from PyMyGekko.resources.Vents import VentFeature
-from PyMyGekko.resources.Meteo import Meteo
+from .api import AlarmsLogic
+from .api import DoorInterCom
+from .api import EnergyCost
+from .api import HotWaterSystem
+from .api import HotWaterSystemFeature
+from .api import RoomTemp
+from .api import RoomTempsFeature
+from .api import Vent
+from .api import VentFeature
+from .api import Meteo
 
-from .const import DOMAIN
+from .coordinator import API_STATE_ERROR
+from .coordinator import API_STATE_OK
+from .coordinator import API_STATE_RATE_LIMITED
+from .sensor_extra import build_extra_sensors
 
 SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
     SensorEntityDescription(
@@ -35,6 +40,7 @@ SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
     ),
     SensorEntityDescription(
         key="powerMax",
+        entity_category=EntityCategory.DIAGNOSTIC,
         name="Power Max",
         translation_key="mygekko_energycost_power_max",
         state_class=SensorStateClass.MEASUREMENT,
@@ -63,6 +69,7 @@ SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
     ),
     SensorEntityDescription(
         key="energyToday6",
+        entity_registry_enabled_default=False,
         name="Energy Today 6",
         translation_key="mygekko_energycost_energy_today6",
         state_class=SensorStateClass.TOTAL,
@@ -70,6 +77,7 @@ SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
     ),
     SensorEntityDescription(
         key="energyToday12",
+        entity_registry_enabled_default=False,
         name="Energy Today 12",
         translation_key="mygekko_energycost_energy_today12",
         state_class=SensorStateClass.TOTAL,
@@ -77,6 +85,7 @@ SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
     ),
     SensorEntityDescription(
         key="energyToday18",
+        entity_registry_enabled_default=False,
         name="Energy Today 18",
         translation_key="mygekko_energycost_energy_today18",
         state_class=SensorStateClass.TOTAL,
@@ -84,6 +93,7 @@ SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
     ),
     SensorEntityDescription(
         key="energyToday24",
+        entity_registry_enabled_default=False,
         name="Energy Today 24",
         translation_key="mygekko_energycost_energy_today24",
         state_class=SensorStateClass.TOTAL,
@@ -91,6 +101,7 @@ SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
     ),
     SensorEntityDescription(
         key="energyYesterd6",
+        entity_registry_enabled_default=False,
         name="Energy Yesterday 6",
         translation_key="mygekko_energycost_energy_yesterd6",
         state_class=SensorStateClass.TOTAL,
@@ -98,6 +109,7 @@ SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
     ),
     SensorEntityDescription(
         key="energyYesterd12",
+        entity_registry_enabled_default=False,
         name="Energy Yesterday 12",
         translation_key="mygekko_energycost_energy_yesterd12",
         state_class=SensorStateClass.TOTAL,
@@ -105,6 +117,7 @@ SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
     ),
     SensorEntityDescription(
         key="energyYesterd18",
+        entity_registry_enabled_default=False,
         name="Energy Yesterday 18",
         translation_key="mygekko_energycost_energy_yesterd18",
         state_class=SensorStateClass.TOTAL,
@@ -112,6 +125,7 @@ SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
     ),
     SensorEntityDescription(
         key="energyYesterd24",
+        entity_registry_enabled_default=False,
         name="Energy Yesterday 24",
         translation_key="mygekko_energycost_energy_yesterd24",
         state_class=SensorStateClass.TOTAL,
@@ -176,107 +190,157 @@ SENSOR_UNIT_MAPPING = {
 }
 
 
-async def async_setup_entry(hass, entry, async_add_devices):
+PARALLEL_UPDATES = 0
+
+
+async def async_setup_entry(hass, entry, async_add_entities):
     """Set up sensor platform."""
-    coordinator = hass.data[DOMAIN][entry.entry_id]
-    energy_costs: list[EnergyCost] = coordinator.api.get_energy_costs()
-    for energy_cost in energy_costs:
-        if energy_cost.sensor_data and "values" in energy_cost.sensor_data:
-            for index, sensor in enumerate(energy_cost.sensor_data["values"]):
-                if sensor and "name" in sensor and sensor["name"] in SENSORS:
-                    async_add_devices(
-                        [
-                            MyGekkoEnergySensor(
-                                coordinator,
-                                energy_cost,
-                                index,
-                                SENSORS[sensor["name"]],
-                            )
-                        ]
-                    )
+    coordinator = entry.runtime_data
+    api = coordinator.api
+    entities: list[SensorEntity] = []
 
-    globals_network = coordinator.api.get_globals_network()
-    alarms_logics: list[AlarmsLogic] = coordinator.api.get_alarms_logics()
-    for alarms_logic in alarms_logics:
-        async_add_devices(
-            [MyGekkoAlarmsLogicsSensor(coordinator, alarms_logic, globals_network)]
+    for energy_cost in api.get_energy_costs():
+        values = (energy_cost.sensor_data or {}).get("values") or []
+        for index, sensor in enumerate(values):
+            if sensor and sensor.get("name") in SENSORS:
+                entities.append(
+                    MyGekkoEnergySensor(
+                        coordinator, energy_cost, index, SENSORS[sensor["name"]]
+                    )
+                )
+
+    entities.extend(build_extra_sensors(coordinator))
+
+    globals_network = api.get_globals_network()
+    if globals_network and globals_network.get("gekkoname"):
+        entities.extend(
+            sensor_class(coordinator, globals_network)
+            for sensor_class in (
+                MyGekkoApiStateSensor,
+                MyGekkoLastUpdateSensor,
+                MyGekkoRateLimitedUntilSensor,
+            )
+        )
+    if globals_network:
+        entities.extend(
+            MyGekkoAlarmsLogicsSensor(coordinator, alarms_logic, globals_network)
+            for alarms_logic in api.get_alarms_logics()
         )
 
-    room_temps: list[RoomTemp] = coordinator.api.get_room_temps()
-    for room_temp in room_temps:
+    for room_temp in api.get_room_temps():
         if RoomTempsFeature.AIR_QUALITY in room_temp.supported_features:
-            async_add_devices(
-                [MyGekkoRoomTempsAirQualitySensor(coordinator, room_temp)]
+            entities.append(MyGekkoRoomTempsAirQualitySensor(coordinator, room_temp))
+
+    for hotwater_system in api.get_hot_water_systems():
+        features = hotwater_system.supported_features
+        if HotWaterSystemFeature.BOTTOM_TEMPERATURE in features:
+            entities.append(
+                MyGekkoHotwaterSystemsBottomTemperatureSensor(
+                    coordinator, hotwater_system
+                )
+            )
+        if HotWaterSystemFeature.TOP_TEMPERATURE in features:
+            entities.append(
+                MyGekkoHotwaterSystemsTopTemperatureSensor(coordinator, hotwater_system)
             )
 
-    hotwater_systems: list[HotWaterSystem] = coordinator.api.get_hot_water_systems()
-    for hotwater_system in hotwater_systems:
-        if (
-            HotWaterSystemFeature.BOTTOM_TEMPERATURE
-            in hotwater_system.supported_features
-        ):
-            async_add_devices(
-                [
-                    MyGekkoHotwaterSystemsBottomTemperatureSensor(
-                        coordinator, hotwater_system
-                    )
-                ]
+    for vent in api.get_vents():
+        features = vent.supported_features
+        if VentFeature.HUMIDITY in features:
+            entities.append(MyGekkoVentHumiditySensor(coordinator, vent))
+        if VentFeature.AIR_QUALITY in features:
+            entities.append(MyGekkoVentAirQualitySensor(coordinator, vent))
+        if VentFeature.CO2 in features:
+            entities.append(MyGekkoVentCo2Sensor(coordinator, vent))
+        entities.extend(
+            sensor_class(coordinator, vent)
+            for sensor_class in (
+                MyGekkoVentExhaustAirTemperatureSensor,
+                MyGekkoVentOutgoingAirTemperatureSensor,
+                MyGekkoVentOutsideAirTemperatureSensor,
+                MyGekkoVentSupplyAirTemperatureSensor,
+                MyGekkoVentSupplyAirWorkingLevelSensor,
+                MyGekkoVentExhaustAirWorkingLevelSensor,
             )
-        if (
-            HotWaterSystemFeature.BOTTOM_TEMPERATURE
-            in hotwater_system.supported_features
-        ):
-            async_add_devices(
-                [
-                    MyGekkoHotwaterSystemsTopTemperatureSensor(
-                        coordinator, hotwater_system
-                    )
-                ]
-            )
-    vents: list[Vent] = coordinator.api.get_vents()
-    for vent in vents:
-        if VentFeature.HUMIDITY in vent.supported_features:
-            async_add_devices([MyGekkoVentHumiditySensor(coordinator, vent)])
-        if VentFeature.AIR_QUALITY in vent.supported_features:
-            async_add_devices([MyGekkoVentAirQualitySensor(coordinator, vent)])
-        if VentFeature.CO2 in vent.supported_features:
-            async_add_devices([MyGekkoVentCo2Sensor(coordinator, vent)])
-
-        async_add_devices(
-            [
-                MyGekkoVentExhaustAirTemperatureSensor(coordinator, vent),
-                MyGekkoVentOutgoingAirTemperatureSensor(coordinator, vent),
-                MyGekkoVentOutsideAirTemperatureSensor(coordinator, vent),
-                MyGekkoVentSupplyAirTemperatureSensor(coordinator, vent),
-                MyGekkoVentSupplyAirWorkingLevelSensor(coordinator, vent),
-                MyGekkoVentExhaustAirWorkingLevelSensor(coordinator, vent),
-            ]
         )
 
-    meteo: Meteo = coordinator.api.get_meteo()
-    async_add_devices(
-        [
-            MyGekkoMeteoRainSensor(coordinator, meteo),
-            MyGekkoMeteoTwilightSensor(coordinator, meteo),
-            MyGekkoMeteoBrightnessSensor(coordinator, meteo),
-            MyGekkoMeteoBrightnessWestSensor(coordinator, meteo),
-            MyGekkoMeteoBrightnessEastSensor(coordinator, meteo),
-            MyGekkoMeteoHumiditySensor(coordinator, meteo),
-            MyGekkoMeteoWindSensor(coordinator, meteo),
-            MyGekkoMeteoTemperatureSensor(coordinator, meteo),
-        ]
+    # only the weather values that the weather station really reports
+    meteo = api.get_meteo()
+    meteo_sensors = {
+        "rain": MyGekkoMeteoRainSensor,
+        "twilight": MyGekkoMeteoTwilightSensor,
+        "brightness": MyGekkoMeteoBrightnessSensor,
+        "brightnessw": MyGekkoMeteoBrightnessWestSensor,
+        "brightnesso": MyGekkoMeteoBrightnessEastSensor,
+        "humidity": MyGekkoMeteoHumiditySensor,
+        "wind": MyGekkoMeteoWindSensor,
+        "temperature": MyGekkoMeteoTemperatureSensor,
+    }
+    entities.extend(
+        sensor_class(coordinator, meteo)
+        for key, sensor_class in meteo_sensors.items()
+        if key in meteo.sensor_data
     )
 
-    door_inter_coms: DoorInterCom = coordinator.api.get_door_inter_coms()
-    for door_inter_com in door_inter_coms:
-        async_add_devices(
+    for door_inter_com in api.get_door_inter_coms():
+        entities.extend(
             [
                 MyGekkoDoorInterComConnectionState(coordinator, door_inter_com),
                 MyGekkoDoorInterComSoundMode(coordinator, door_inter_com),
                 MyGekkoDoorInterComMissedCalls(coordinator, door_inter_com),
-
             ]
         )
+
+    async_add_entities(entities)
+
+
+class MyGekkoApiStateSensor(MyGekkoControllerStatusEntity, SensorEntity):
+    """State of the connection to MyGekko: ok, rate limited or error."""
+
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_options = [API_STATE_OK, API_STATE_RATE_LIMITED, API_STATE_ERROR]
+
+    def __init__(self, coordinator, globals_network):
+        """Initialize the connection state sensor."""
+        super().__init__(coordinator, globals_network, "api_state")
+
+    @property
+    def native_value(self):
+        """Return the connection state."""
+        return self.coordinator.api_state
+
+
+class MyGekkoLastUpdateSensor(MyGekkoControllerStatusEntity, SensorEntity):
+    """Time of the last values read successfully from MyGekko."""
+
+    _attr_device_class = SensorDeviceClass.TIMESTAMP
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator, globals_network):
+        """Initialize the last update sensor."""
+        super().__init__(coordinator, globals_network, "last_update")
+
+    @property
+    def native_value(self):
+        """Return the time of the last successful update."""
+        return self.coordinator.last_success
+
+
+class MyGekkoRateLimitedUntilSensor(MyGekkoControllerStatusEntity, SensorEntity):
+    """End of the pause after MyGekko limited the requests, unknown without one."""
+
+    _attr_device_class = SensorDeviceClass.TIMESTAMP
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator, globals_network):
+        """Initialize the rate limit sensor."""
+        super().__init__(coordinator, globals_network, "rate_limited_until")
+
+    @property
+    def native_value(self):
+        """Return the end of the rate limit pause."""
+        return self.coordinator.rate_limited_until
 
 
 class MyGekkoAlarmsLogicsSensor(MyGekkoControllerEntity, SensorEntity):
@@ -318,17 +382,21 @@ class MyGekkoEnergySensor(MyGekkoEntity, SensorEntity):
     @property
     def native_value(self):
         """Return the state of the sensor."""
-        return self._energy_cost.sensor_data["values"][self._index]["value"]
+        values = (self._energy_cost.sensor_data or {}).get("values") or []
+        if self._index >= len(values):
+            return None
+        return values[self._index]["value"]
 
     @property
     def native_unit_of_measurement(self) -> str | None:
         """Return the unit of measurement."""
-        if (
-            unit := self._energy_cost.sensor_data["values"][self._index]["unit"]
-        ) is None or unit == 0:
+        values = (self._energy_cost.sensor_data or {}).get("values") or []
+        if self._index >= len(values):
+            return None
+        if (unit := values[self._index]["unit"]) is None or unit == 0:
             return None
 
-        return SENSOR_UNIT_MAPPING[unit]
+        return SENSOR_UNIT_MAPPING.get(unit)
 
 
 class MyGekkoRoomTempsHumiditySensor(MyGekkoEntity, SensorEntity):
@@ -351,7 +419,7 @@ class MyGekkoRoomTempsHumiditySensor(MyGekkoEntity, SensorEntity):
 class MyGekkoRoomTempsAirQualitySensor(MyGekkoEntity, SensorEntity):
     """mygekko AirQuality Sensor class."""
 
-    _attr_native_unit_of_measurement = CONCENTRATION_PARTS_PER_MILLION
+    _attr_native_unit_of_measurement = UnitOfRatio.PARTS_PER_MILLION
 
     def __init__(self, coordinator, room_temp: RoomTemp):
         """Initialize a MyGekko RoomTemp air quality sensor."""
@@ -425,7 +493,8 @@ class MyGekkoVentHumiditySensor(MyGekkoEntity, SensorEntity):
 class MyGekkoVentAirQualitySensor(MyGekkoEntity, SensorEntity):
     """mygekko Vent Air Quality Sensor class."""
 
-    _attr_native_unit_of_measurement = PERCENTAGE
+    # the air quality index has no unit
+    _attr_native_unit_of_measurement = None
 
     def __init__(self, coordinator, vent: Vent):
         """Initialize a MyGekko vent air quality sensor."""
@@ -442,7 +511,7 @@ class MyGekkoVentAirQualitySensor(MyGekkoEntity, SensorEntity):
 class MyGekkoVentCo2Sensor(MyGekkoEntity, SensorEntity):
     """mygekko Vent CO2 Sensor class."""
 
-    _attr_native_unit_of_measurement = CONCENTRATION_PARTS_PER_MILLION
+    _attr_native_unit_of_measurement = UnitOfRatio.PARTS_PER_MILLION
 
     def __init__(self, coordinator, vent: Vent):
         """Initialize a MyGekko vent co2 sensor."""
@@ -581,7 +650,7 @@ class MyGekkoMeteoRainSensor(MyGekkoEntity, SensorEntity):
     def native_value(self):
         """Return the state of the sensor."""
         data = self._meteo.sensor_data.get("rain", None)
-        return float(data) / 60 if data else None  # rain im MyGekko is in l/h
+        return float(data) / 60 if data not in (None, "") else None  # rain im MyGekko is in l/h
 
 
 class MyGekkoMeteoTwilightSensor(MyGekkoEntity, SensorEntity):
@@ -601,7 +670,7 @@ class MyGekkoMeteoTwilightSensor(MyGekkoEntity, SensorEntity):
     def native_value(self):
         """Return the state of the sensor."""
         data = self._meteo.sensor_data.get("twilight", None)
-        return float(data) if data else None
+        return float(data) if data not in (None, "") else None
 
 
 class MyGekkoMeteoBrightnessSensor(MyGekkoEntity, SensorEntity):
@@ -621,7 +690,7 @@ class MyGekkoMeteoBrightnessSensor(MyGekkoEntity, SensorEntity):
     def native_value(self):
         """Return the state of the sensor."""
         data = self._meteo.sensor_data.get("brightness", None)
-        return float(data) * 1000 if data else None  # brightness im MyGekko is in klx
+        return float(data) * 1000 if data not in (None, "") else None  # brightness im MyGekko is in klx
 
 
 class MyGekkoMeteoBrightnessWestSensor(MyGekkoEntity, SensorEntity):
@@ -641,7 +710,7 @@ class MyGekkoMeteoBrightnessWestSensor(MyGekkoEntity, SensorEntity):
     def native_value(self):
         """Return the state of the sensor."""
         data = self._meteo.sensor_data.get("brightnessw", None)
-        return float(data) * 1000 if data else None  # brightness im MyGekko is in klx
+        return float(data) * 1000 if data not in (None, "") else None  # brightness im MyGekko is in klx
 
 
 class MyGekkoMeteoBrightnessEastSensor(MyGekkoEntity, SensorEntity):
@@ -661,7 +730,7 @@ class MyGekkoMeteoBrightnessEastSensor(MyGekkoEntity, SensorEntity):
     def native_value(self):
         """Return the state of the sensor."""
         data = self._meteo.sensor_data.get("brightnesso", None)
-        return float(data) * 1000 if data else None  # brightness im MyGekko is in klx
+        return float(data) * 1000 if data not in (None, "") else None  # brightness im MyGekko is in klx
 
 
 class MyGekkoMeteoHumiditySensor(MyGekkoEntity, SensorEntity):
@@ -681,7 +750,7 @@ class MyGekkoMeteoHumiditySensor(MyGekkoEntity, SensorEntity):
     def native_value(self):
         """Return the state of the sensor."""
         data = self._meteo.sensor_data.get("humidity", None)
-        return float(data) if data else None
+        return float(data) if data not in (None, "") else None
 
 
 class MyGekkoMeteoWindSensor(MyGekkoEntity, SensorEntity):
@@ -701,7 +770,7 @@ class MyGekkoMeteoWindSensor(MyGekkoEntity, SensorEntity):
     def native_value(self):
         """Return the state of the sensor."""
         data = self._meteo.sensor_data.get("wind", None)
-        return float(data) if data else None
+        return float(data) if data not in (None, "") else None
 
 
 class MyGekkoMeteoTemperatureSensor(MyGekkoEntity, SensorEntity):
@@ -721,7 +790,7 @@ class MyGekkoMeteoTemperatureSensor(MyGekkoEntity, SensorEntity):
     def native_value(self):
         """Return the state of the sensor."""
         data = self._meteo.sensor_data.get("temperature", None)
-        return float(data) if data else None
+        return float(data) if data not in (None, "") else None
 
 
 class MyGekkoDoorInterComConnectionState(MyGekkoEntity, SensorEntity):
@@ -780,12 +849,12 @@ class MyGekkoDoorInterComSoundMode(MyGekkoEntity, SensorEntity):
     @property
     def native_value(self):
         """Return the state of the sensor."""
-        return self.STATE_MAP.get(self._door_inter_com.connection_state, None)
+        return self.STATE_MAP.get(self._door_inter_com.sound_mode, None)
 
     @property
     def extra_state_attributes(self):
         """Return the extra state of the sensor."""
-        return {"raw_state": self._door_inter_com.connection_state}
+        return {"raw_state": self._door_inter_com.sound_mode}
 
 
 class MyGekkoDoorInterComMissedCalls(MyGekkoEntity, SensorEntity):

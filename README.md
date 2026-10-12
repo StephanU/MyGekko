@@ -1,30 +1,47 @@
 # MyGekko
 
-MyGekko integration for HomeAssistant using the [PyMyGekko](https://github.com/StephanU/PyMyGekko) library.
+> **Fork:** This is the maintained fork [merlin2533/MyGekko](https://github.com/merlin2533/MyGekko) of the original integration [StephanU/MyGekko](https://github.com/StephanU/MyGekko) by Stephan Uhle ([original README](https://github.com/StephanU/MyGekko#readme)). Please report issues for this version [here](https://github.com/merlin2533/MyGekko/issues).
+
+MyGekko integration for Home Assistant. It talks to the MyGekko REST API directly with its own, dependency-free API layer (`custom_components/mygekko/api`), which is derived from [PyMyGekko](https://github.com/StephanU/PyMyGekko) (see [Credits](#credits)).
 
 [![GitHub Release][releases-shield]][releases]
 [![GitHub Activity][commits-shield]][commits]
 [![License][license-shield]](LICENSE)
 
 ![Project Maintenance][maintenance-shield]
-[![BuyMeCoffee][buymecoffeebadge]][buymecoffee]
 
 [![hacs][hacsbadge]][hacs]
 [![Discord][discord-shield]][discord]
 [![Community Forum][forum-shield]][forum]
 
-**This component will set up the following platforms.**
+**This integration sets up the following platforms.**
 
-| Platform       | Description                                                        |
-| -------------- | ------------------------------------------------------------------ |
-| `button`       | For light groups in MyGekko                                        |
-| `climate`      | Thermostats (called roomtemps in MyGekko)                          |
-| `cover`        | Covers (called blinds in MyGekko)                                  |
-| `light`        | Lights                                                             |
-| `switch`       | Switches (called loads in MyGekko)                                 |
-| `water_heater` | Water Heater (called hotwater_systems in MyGekko)                  |
-| `sensor`       | MyGekko energy_cost metrics and alarms_logics are added as sensors |
-| `scene`        | MyGekko actions are added as scenes                                |
+| Platform        | What you get                                                                                                         |
+| --------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `light`         | Lights and light groups (on/off, brightness, RGB)                                                                    |
+| `cover`         | Blinds with position and slat angle, blind groups                                                                    |
+| `climate`       | Room controllers with target temperature, presets, humidity and heating/cooling action                               |
+| `switch`        | Loads, and the charging switch of a wallbox                                                                          |
+| `water_heater`  | Hot water systems                                                                                                    |
+| `select`        | Ventilation settings and clocks (time switches)                                                                      |
+| `scene`         | MyGekko actions as scenes                                                                                            |
+| `button`        | Light group buttons                                                                                                  |
+| `sensor`        | Energy meters, energy manager (grid, solar, battery), wallbox, heating circuits and systems, ventilation, floor temperature, weather station, multiroom audio, trends, alarms and logics |
+| `binary_sensor` | Doors and gates (open), alarm system and zones (read only), wallbox plugged in, load shedding, heating running/cooling, notifications |
+| `alarm_control_panel` | One panel per zone of the alarm system (disarmed / armed / triggered), read only |
+| `camera`        | Cameras and door intercoms (image and stream)                                                                        |
+
+The alarm system is deliberately **read only**: it can be monitored but not armed or disarmed from Home Assistant. Doors, gates and barriers get an **Open** button which is **disabled by default**: enable it on purpose in the entity settings and do not expose it to voice assistants.
+
+**Highlights**
+
+- Every device belongs to the MyGekko controller device (model, software version and link to the web interface).
+- Optional: use the pages of the MyGekko app (floor, room) as Home Assistant areas.
+- Careful with the cloud rate limit: one request per poll, a 4 minute pause on HTTP 429 (entities always keep their last state, also across restarts), configurable update interval and a repair hint if the limit persists.
+- The myGEKKO controller device shows the API status, the last update and the end of a rate limit pause; a MyGekko that is set up twice is reported as repair issue.
+- Elements that are locked, in manual operation or in alarm show an `element_status` attribute.
+- Re-authentication, reconfiguration, diagnostics download (credentials are redacted) and a demo mode that needs no MyGekko.
+- Translated into English, German, French, Italian and Norwegian.
 
 ![Dashboard Screenshot][dashboard-screenshot]
 
@@ -33,7 +50,7 @@ MyGekko integration for HomeAssistant using the [PyMyGekko](https://github.com/S
 ### Via HACS
 
 1. Install [HACS](https://hacs.xyz/docs/setup/:requisites)
-2. Add 'https://github.com/StephanU/MyGekko' as a [Custom Repository](https://hacs.xyz/docs/faq/custom_repositories)
+2. Add 'https://github.com/merlin2533/MyGekko' as a [Custom Repository](https://hacs.xyz/docs/faq/custom_repositories)
 3. Restart Home Assistant
 4. In the HA UI go to "Configuration" -> "Integrations" click "+" and search for "MyGekko"
 
@@ -50,50 +67,74 @@ MyGekko integration for HomeAssistant using the [PyMyGekko](https://github.com/S
 Using your HA configuration directory (folder) as a starting point you should now also have something like this:
 
 ```text
-custom_components/mygekko/translations/en.json
-custom_components/mygekko/translations/fr.json
-custom_components/mygekko/translations/nb.json
-custom_components/mygekko/translations/sensor.en.json
-custom_components/mygekko/translations/sensor.fr.json
-custom_components/mygekko/translations/sensor.nb.json
-custom_components/mygekko/translations/sensor.nb.json
 custom_components/mygekko/__init__.py
-custom_components/mygekko/api.py
-custom_components/mygekko/binary_sensor.py
+custom_components/mygekko/api/
 custom_components/mygekko/config_flow.py
-custom_components/mygekko/const.py
+custom_components/mygekko/coordinator.py
 custom_components/mygekko/manifest.json
-custom_components/mygekko/sensor.py
-custom_components/mygekko/switch.py
+custom_components/mygekko/translations/
+... (one file per platform: sensor.py, light.py, cover.py, ...)
 ```
-
-## Configuration is done in the UI
-
-The integration supports access via the MyGekko Query Api (you need a MyGekko Plus subscription) or by connecting to your MyGekko locally.
 
 ## Contributions are welcome!
 
 If you want to contribute to this please read the [Contribution guidelines](CONTRIBUTING.md)
 
+## Configuration
+
+The integration supports the MyGekko Plus query API (cloud, needs a MyGekko Plus subscription), the local API of your MyGekko and a demo mode with static data.
+
+- **Options** (integration → Configure): update interval (default 30 s, minimum 10 s) and "use the MyGekko pages as areas".
+- **Local connection:** the integration tries https first and falls back to http (older firmware or a MyGekko without https). Only a refused connection or a failed SSL handshake triggers the fallback (not a timeout). With http the login travels unencrypted over your local network (a warning is logged), so use it only in a trusted network. The scheme is detected again when you reconfigure the entry.
+- **Reconfigure** (integration → three dots): change credentials or the IP address without removing the integration.
+- If MyGekko rejects the credentials Home Assistant asks for them again (re-authentication).
+- **Troubleshooting:** download the diagnostics of the integration (credentials, Gekko ID and IP address are redacted) and attach them to an issue. Rate limit warnings (`pausing requests until`) mean that MyGekko limits the requests: increase the update interval and avoid automations that switch devices in a fast loop.
+
+## Breaking changes
+
+**1.4.0: climate presets.** The presets of the room controllers now have readable ids: `off`, `comfort`, `reduced`, `manual`, `standby` (before: `1`, `8`, `16`, `64`, `256`). Update automations, scripts and dashboards that call `climate.set_preset_mode` or compare `preset_mode` with the old numbers. The displayed names are translated as before.
+
+**1.5.0: room controllers** can be switched off and on with the standard heating mode buttons (`off` / `auto`); `auto` switches a controller that is off back to comfort. The presets are unchanged.
+
+## Home Assistant versions
+
+The integration checks which Home Assistant it runs on and uses the matching API: from Home Assistant 2026.11 the `native_*` temperature properties of climate and water heater entities (no deprecation warnings), before that the previous names. It is tested against Home Assistant 2026.8, the current release and the development version of the next release. The diagnostics show the versions in use.
+
+## How it works
+
+- **Polling:** the integration polls `GET /api/v1/var/status` every 30 seconds. The document with the device names (`GET /api/v1/var`) is read once and refreshed every 30 minutes or when a new device appears, so only one request per poll is needed.
+- **Rate limit:** the MyGekko Plus query API limits the number of requests. On HTTP 429 no request is sent for 4 minutes and the entities keep their last state for as long as the limit lasts. Other errors (timeout, network) keep the last state for 15 minutes. The last state is saved, so a restart during a rate limit or outage starts with it instead of unavailable entities. Commands wait in one queue and are sent one after another, at most 10 within 10 seconds; a newer command for the same device replaces one that is still waiting, so a burst from automations does not run into the limit. A command that hits the rate limit (or arrives during the pause) is kept and sent automatically when the 4 minute pause is over (the newest command per device wins, dropped after 3 pauses). The warning names the device, and a device that received several commands during the pause is reported, which points to an automation switching it in a loop. A rate limit at the first start also waits 4 minutes before the next request.
+- **Timeouts:** every request is bound by a timeout (15 s), a hanging device never blocks Home Assistant.
+- **API layer (`custom_components/mygekko/api`):** `schema.py` describes the `sumstate` values of every resource type, `store.py` parses the API documents generically, `models.py` contains the device classes (`Light`, `Blind`, ...) and `client.py` the cloud, local and demo clients. There is no external dependency. To support a new resource type add a `ResourceSpec` in `schema.py` and a model class in `models.py`, then expose it in `client.py`.
+
+## Testing
+
+The tests run against a real Home Assistant (`pytest-homeassistant-custom-component`), they set up the integration in demo mode, send commands through the Home Assistant services and cover the config flow, the polling/rate-limit behavior and the API layer.
+
+```bash
+python3.14 -m venv .venv && . .venv/bin/activate
+pip install -r requirements.txt
+pytest tests
+```
+
+The GitHub workflow `Tests` runs this on every pull request with the Home Assistant version from `requirements.txt`, and weekly against the newest stable and the beta Home Assistant to find upcoming incompatibilities early. `Validate` runs hassfest and the HACS validation daily.
+
 ## Development Hints
+
+- `scripts/test-ha-dev` runs the tests against the development version of Home Assistant (needs a checkout of home-assistant/core, see the header of the script)
 
 - Start in VsCode in with the DevContainer extension
 - execute `scripts/setup` to install dependencies
 - execute `scripts/develop` to start HomeAssistant
-- to use PyMyGekko from git instead of PyPi add the following to the .devcontainer
-```
-  "mounts": [
-    "source=<local path to PyMyGekko>/PyMyGekko,target=/workspaces/PyMyGekko,type=bind"
-  ]
-```
-- when the devcontainer is started:
-```
- pip install -e /workspaces/PyMyGekko
-```
+- `tests/test_api.py` tests the API layer against a fake MyGekko server; the layer itself has no Home Assistant dependency
 
 ## Credits
 
+This integration is a fork of [StephanU/MyGekko](https://github.com/StephanU/MyGekko) by Stephan Uhle (MIT License), maintained at [merlin2533/MyGekko](https://github.com/merlin2533/MyGekko).
+
 This project was generated from [@oncleben31](https://github.com/oncleben31)'s [Home Assistant Custom Component Cookiecutter](https://github.com/oncleben31/cookiecutter-homeassistant-custom-component) template.
+
+The API layer in `custom_components/mygekko/api` is derived from [PyMyGekko](https://github.com/StephanU/PyMyGekko) by Stephan Uhle (MIT License, copy in [`custom_components/mygekko/api/LICENSE-PyMyGekko`](custom_components/mygekko/api/LICENSE-PyMyGekko)). The device models, the field layout of the MyGekko `sumstate` values and the command formats originate from that library; the parser, the client and the polling strategy were rewritten.
 
 Code template was mainly taken from [@Ludeeus](https://github.com/ludeeus)'s [integration_blueprint][integration_blueprint] template
 
@@ -102,10 +143,8 @@ Code template was mainly taken from [@Ludeeus](https://github.com/ludeeus)'s [in
 [integration_blueprint]: https://github.com/custom-components/integration_blueprint
 [black]: https://github.com/psf/black
 [black-shield]: https://img.shields.io/badge/code%20style-black-000000.svg?style=for-the-badge
-[buymecoffee]: https://www.buymeacoffee.com/stephanu
-[buymecoffeebadge]: https://img.shields.io/badge/buy%20me%20a%20coffee-donate-yellow.svg?style=for-the-badge
-[commits-shield]: https://img.shields.io/github/commit-activity/y/stephanu/mygekko.svg?style=for-the-badge
-[commits]: https://github.com/stephanu/mygekko/commits/main
+[commits-shield]: https://img.shields.io/github/commit-activity/y/merlin2533/MyGekko.svg?style=for-the-badge
+[commits]: https://github.com/merlin2533/MyGekko/commits/main
 [hacs]: https://hacs.xyz
 [hacsbadge]: https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge
 [dashboard-screenshot]: DashboardScreenshot.png
@@ -113,8 +152,8 @@ Code template was mainly taken from [@Ludeeus](https://github.com/ludeeus)'s [in
 [discord-shield]: https://img.shields.io/discord/330944238910963714.svg?style=for-the-badge
 [forum-shield]: https://img.shields.io/badge/community-forum-brightgreen.svg?style=for-the-badge
 [forum]: https://community.home-assistant.io/
-[license-shield]: https://img.shields.io/github/license/stephanu/mygekko.svg?style=for-the-badge
-[maintenance-shield]: https://img.shields.io/badge/maintainer-%40stephanu-blue.svg?style=for-the-badge
-[releases-shield]: https://img.shields.io/github/release/stephanu/mygekko.svg?style=for-the-badge
-[releases]: https://github.com/stephanu/mygekko/releases
-[user_profile]: https://github.com/stephanu
+[license-shield]: https://img.shields.io/github/license/merlin2533/MyGekko.svg?style=for-the-badge
+[maintenance-shield]: https://img.shields.io/badge/maintainer-%40merlin2533-blue.svg?style=for-the-badge
+[releases-shield]: https://img.shields.io/github/release/merlin2533/MyGekko.svg?style=for-the-badge
+[releases]: https://github.com/merlin2533/MyGekko/releases
+[user_profile]: https://github.com/merlin2533

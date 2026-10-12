@@ -1,0 +1,203 @@
+{
+  "entity": {
+    "sensor": {
+      "mygekko_energycost_act_power": {
+        "default": "mdi:flash"
+      },
+      "mygekko_energycost_power_max": {
+        "default": "mdi:flash"
+      },
+      "mygekko_energycost_energy_sum": {
+        "default": "mdi:flash"
+      },
+      "mygekko_energycost_energy_today": {
+        "default": "mdi:flash"
+      },
+      "mygekko_energycost_energy_month": {
+        "default": "mdi:flash"
+      },
+      "mygekko_energycost_energy_today6": {
+        "default": "mdi:flash"
+      },
+      "mygekko_energycost_energy_today12": {
+        "default": "mdi:flash"
+      },
+      "mygekko_energycost_energy_today18": {
+        "default": "mdi:flash"
+      },
+      "mygekko_energycost_energy_today24": {
+        "default": "mdi:flash"
+      },
+      "mygekko_energycost_energy_yesterd6": {
+        "default": "mdi:flash"
+      },
+      "mygekko_energycost_energy_yesterd12": {
+        "default": "mdi:flash"
+      },
+      "mygekko_energycost_energy_yesterd18": {
+        "default": "mdi:flash"
+      },
+      "mygekko_energycost_energy_yesterd24": {
+        "default": "mdi:flash"
+      },
+      "mygekko_energycost_energy_year": {
+        "default": "mdi:flash"
+      },
+      "mygekko_energymanager_grid_meter_power": {
+        "default": "mdi:transmission-tower"
+      },
+      "mygekko_energymanager_power_exported_to_grid": {
+        "default": "mdi:transmission-tower-export"
+      },
+      "mygekko_energymanager_power_from_solar_panels": {
+        "default": "mdi:solar-power"
+      },
+      "mygekko_energymanager_power_from_battery": {
+        "default": "mdi:battery-charging"
+      },
+      "mygekko_energymanager_power_charging_battery": {
+        "default": "mdi:battery-charging"
+      },
+      "mygekko_energymanager_home_power_consumption": {
+        "default": "mdi:home-lightning-bolt"
+      },
+      "mygekko_energymanager_daily_energy_imported_from_grid": {
+        "default": "mdi:transmission-tower-import"
+      },
+      "mygekko_energymanager_daily_energy_exported_to_grid": {
+        "default": "mdi:transmission-tower-export"
+      },
+      "mygekko_energymanager_daily_energy_from_solar_panels": {
+        "default": "mdi:solar-power"
+      },
+      "mygekko_energymanager_daily_energy_from_battery": {
+        "default": "mdi:battery-charging"
+      },
+      "mygekko_energymanager_daily_energy_charging_battery": {
+        "default": "mdi:battery-charging"
+      },
+      "mygekko_energymanager_daily_home_energy_consumption": {
+        "default": "mdi:home-lightning-bolt"
+      },
+      "mygekko_energymanager_battery_soc": {
+        "default": "mdi:battery-charging-medium"
+      },
+      "mygekko_emobil_current_charging_power": {
+        "default": "mdi:ev-station"
+      },
+      "mygekko_emobil_maximum_charging_power": {
+        "default": "mdi:ev-station"
+      },
+      "mygekko_emobil_charging_power_setpoint": {
+        "default": "mdi:ev-station"
+      },
+      "mygekko_emobil_current_charging_energy": {
+        "default": "mdi:ev-station"
+      },
+      "mygekko_heatingcircuit_flow_temperature": {
+        "default": "mdi:radiator"
+      },
+      "mygekko_heatingcircuit_return_flow_temperature": {
+        "default": "mdi:radiator"
+      },
+      "mygekko_heatingcircuit_flow_temperature_setpoint": {
+        "default": "mdi:radiator"
+      },
+      "mygekko_heatingcircuit_dew_point": {
+        "default": "mdi:water-thermometer"
+      },
+      "mygekko_heatingcircuit_pump_working_level": {
+        "default": "mdi:pump"
+      },
+      "mygekko_heatingcircuit_valve_opening_level": {
+        "default": "mdi:valve"
+      },
+      "mygekko_heatingsystem_flow_temperature": {
+        "default": "mdi:heat-pump"
+      },
+      "mygekko_heatingsystem_flow_temperature_setpoint": {
+        "default": "mdi:heat-pump"
+      },
+      "mygekko_multiroom_volume": {
+        "default": "mdi:volume-high"
+      },
+      "mygekko_multiroom_audio_title": {
+        "default": "mdi:music-note"
+      },
+      "mygekko_roomtemp_floor_temperature": {
+        "default": "mdi:heating-coil"
+      }
+    },
+    "binary_sensor": {
+      "mygekko_alarmsystem_alarm": {
+        "default": "mdi:shield-check",
+        "state": {
+          "on": "mdi:shield-alert"
+        }
+      },
+      "mygekko_alarmsystem_zone_armed": {
+        "default": "mdi:shield-off",
+        "state": {
+          "on": "mdi:shield-lock"
+        }
+      },
+      "mygekko_alarmsystem_zone_alarm": {
+        "default": "mdi:shield-check",
+        "state": {
+          "on": "mdi:shield-alert"
+        }
+      },
+      "mygekko_emobil_plugged": {
+        "default": "mdi:power-plug-off",
+        "state": {
+          "on": "mdi:power-plug"
+        }
+      },
+      "mygekko_emobil_charge_request": {
+        "default": "mdi:ev-station"
+      },
+      "mygekko_energymanager_load_shedding": {
+        "default": "mdi:flash-off"
+      },
+      "mygekko_energymanager_ems": {
+        "default": "mdi:home-battery"
+      },
+      "mygekko_heatingcircuit_running": {
+        "default": "mdi:radiator-off",
+        "state": {
+          "on": "mdi:radiator"
+        }
+      },
+      "mygekko_heatingcircuit_cooling": {
+        "default": "mdi:snowflake-off",
+        "state": {
+          "on": "mdi:snowflake"
+        }
+      },
+      "mygekko_heatingsystem_running": {
+        "default": "mdi:heat-pump-outline",
+        "state": {
+          "on": "mdi:heat-pump"
+        }
+      },
+      "mygekko_heatingsystem_cooling": {
+        "default": "mdi:snowflake-off",
+        "state": {
+          "on": "mdi:snowflake"
+        }
+      },
+      "mygekko_smsemail_active": {
+        "default": "mdi:email-off",
+        "state": {
+          "on": "mdi:email-fast"
+        }
+      },
+      "mygekko_multiroom_playing": {
+        "default": "mdi:speaker-off",
+        "state": {
+          "on": "mdi:speaker-play"
+        }
+      }
+    }
+  }
+}

@@ -35,14 +35,42 @@
           "username": "De Brukernavn van een gebruiker van de lokale query API.",
           "password": "Het wachtwoord van de gebruiker."
         }
+      },
+      "reconfigure": {
+        "title": "Konfigurer MyGekko på nytt",
+        "description": "Endre påloggingsinformasjonen eller adressen til denne MyGekko.",
+        "data": {
+          "username": "Brukernavn",
+          "api_key": "API-nøkkel",
+          "gekkoid": "Gekko-ID",
+          "ip_address": "IP-adresse",
+          "password": "Passord"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Logg inn på MyGekko på nytt",
+        "description": "MyGekko avviste påloggingsinformasjonen. Skriv den inn på nytt.",
+        "data": {
+          "username": "Brukernavn",
+          "api_key": "API-nøkkel",
+          "gekkoid": "Gekko-ID",
+          "ip_address": "IP-adresse",
+          "password": "Passord"
+        }
       }
     },
     "error": {
       "auth": "Brukernavn/Api sleutel/Gekko ID er feil. Raadpleeg de logboeken voor meer informatie.",
-      "auth_local": "Brukernavn/Wachtwoord/IP-adres er feil. Raadpleeg de logboeken voor meer informatie."
+      "auth_local": "Brukernavn/Wachtwoord/IP-adres er feil. Raadpleeg de logboeken voor meer informatie.",
+      "auth_cloud": "Brukernavn/API-nøkkel/Gekko-ID er feil. Se loggene for detaljer."
     },
     "abort": {
-      "single_instance_allowed": "Denne integrasjonen kan kun konfigureres en gang."
+      "single_instance_allowed": "Denne integrasjonen kan kun konfigureres en gang.",
+      "already_configured": "Denne MyGekko er allerede konfigurert.",
+      "reconfigure_successful": "Konfigurasjonen ble oppdatert.",
+      "reconfigure_not_supported": "Demomodus kan ikke konfigureres på nytt.",
+      "reauth_successful": "Påloggingsinformasjonen ble oppdatert.",
+      "wrong_account": "Påloggingsinformasjonen tilhører en annen MyGekko."
     }
   },
   "entity": {
@@ -51,11 +79,11 @@
         "state_attributes": {
           "preset_mode": {
             "state": {
-              "1": "Uit",
-              "8": "Comfort",
-              "16": "Verminderd",
-              "64": "Handmatig",
-              "256": "Stand-by"
+              "off": "Uit",
+              "comfort": "Comfort",
+              "reduced": "Verminderd",
+              "manual": "Handmatig",
+              "standby": "Stand-by"
             }
           }
         }
@@ -180,6 +208,104 @@
       },
       "mygekko_meteo_temperature": {
         "name": "Temperatuur"
+      },
+      "mygekko_energymanager_grid_meter_power": {
+        "name": "Netteffekt"
+      },
+      "mygekko_energymanager_power_exported_to_grid": {
+        "name": "Effekt sendt til nettet"
+      },
+      "mygekko_energymanager_power_from_solar_panels": {
+        "name": "Solenergi effekt"
+      },
+      "mygekko_energymanager_power_from_battery": {
+        "name": "Batterieffekt"
+      },
+      "mygekko_energymanager_power_charging_battery": {
+        "name": "Ladeeffekt batteri"
+      },
+      "mygekko_energymanager_home_power_consumption": {
+        "name": "Husets effektforbruk"
+      },
+      "mygekko_energymanager_daily_energy_imported_from_grid": {
+        "name": "Energi fra nettet i dag"
+      },
+      "mygekko_energymanager_daily_energy_exported_to_grid": {
+        "name": "Energi sendt til nettet i dag"
+      },
+      "mygekko_energymanager_daily_energy_from_solar_panels": {
+        "name": "Solenergi i dag"
+      },
+      "mygekko_energymanager_daily_energy_from_battery": {
+        "name": "Energi fra batteri i dag"
+      },
+      "mygekko_energymanager_daily_energy_charging_battery": {
+        "name": "Batteriladeenergi i dag"
+      },
+      "mygekko_energymanager_daily_home_energy_consumption": {
+        "name": "Husets forbruk i dag"
+      },
+      "mygekko_energymanager_battery_soc": {
+        "name": "Batterinivå"
+      },
+      "mygekko_emobil_current_charging_power": {
+        "name": "Ladeeffekt"
+      },
+      "mygekko_emobil_maximum_charging_power": {
+        "name": "Maksimal ladeeffekt"
+      },
+      "mygekko_emobil_charging_power_setpoint": {
+        "name": "Settpunkt ladeeffekt"
+      },
+      "mygekko_emobil_current_charging_energy": {
+        "name": "Ladet energi"
+      },
+      "mygekko_heatingcircuit_flow_temperature": {
+        "name": "Fremløpstemperatur"
+      },
+      "mygekko_heatingcircuit_return_flow_temperature": {
+        "name": "Returtemperatur"
+      },
+      "mygekko_heatingcircuit_flow_temperature_setpoint": {
+        "name": "Settpunkt fremløpstemperatur"
+      },
+      "mygekko_heatingcircuit_dew_point": {
+        "name": "Duggpunkt"
+      },
+      "mygekko_heatingcircuit_pump_working_level": {
+        "name": "Pumpenivå"
+      },
+      "mygekko_heatingcircuit_valve_opening_level": {
+        "name": "Ventilåpning"
+      },
+      "mygekko_heatingsystem_flow_temperature": {
+        "name": "Fremløpstemperatur"
+      },
+      "mygekko_heatingsystem_flow_temperature_setpoint": {
+        "name": "Settpunkt fremløpstemperatur"
+      },
+      "mygekko_multiroom_volume": {
+        "name": "Volum"
+      },
+      "mygekko_multiroom_audio_title": {
+        "name": "Tittel"
+      },
+      "mygekko_roomtemp_floor_temperature": {
+        "name": "Gulvtemperatur"
+      },
+      "mygekko_controller_api_state": {
+        "name": "API-status",
+        "state": {
+          "ok": "OK",
+          "rate_limited": "Forespørselsgrense",
+          "error": "Feil"
+        }
+      },
+      "mygekko_controller_last_update": {
+        "name": "Siste oppdatering"
+      },
+      "mygekko_controller_rate_limited_until": {
+        "name": "Pause for forespørselsgrense til"
       }
     },
     "button": {
@@ -188,7 +314,90 @@
       },
       "mygekko_light_group_off": {
         "name": "Uitschakelen"
+      },
+      "mygekko_access_door_open": {
+        "name": "Åpne"
       }
+    },
+    "binary_sensor": {
+      "mygekko_accessdoor_open": {
+        "name": "Åpen"
+      },
+      "mygekko_emobil_plugged": {
+        "name": "Tilkoblet"
+      },
+      "mygekko_emobil_charge_request": {
+        "name": "Ladeforespørsel"
+      },
+      "mygekko_energymanager_load_shedding": {
+        "name": "Lastavkobling"
+      },
+      "mygekko_energymanager_ems": {
+        "name": "Energistyring aktiv"
+      },
+      "mygekko_heatingcircuit_running": {
+        "name": "Går"
+      },
+      "mygekko_heatingcircuit_cooling": {
+        "name": "Kjøling"
+      },
+      "mygekko_heatingsystem_running": {
+        "name": "Går"
+      },
+      "mygekko_heatingsystem_cooling": {
+        "name": "Kjøling"
+      },
+      "mygekko_alarmsystem_alarm": {
+        "name": "Alarm"
+      },
+      "mygekko_alarmsystem_zone_armed": {
+        "name": "Sone {zone} aktivert"
+      },
+      "mygekko_alarmsystem_zone_alarm": {
+        "name": "Alarm sone {zone}"
+      },
+      "mygekko_smsemail_active": {
+        "name": "Aktiv"
+      },
+      "mygekko_multiroom_playing": {
+        "name": "Spiller"
+      }
+    },
+    "alarm_control_panel": {
+      "mygekko_alarmsystem_zone": {
+        "name": "Sone {zone}"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "MyGekko-innstillinger",
+        "description": "MyGekko Plus query-API-et begrenser antall forespørsler. Øk intervallet hvis det vises advarsler om grense.",
+        "data": {
+          "scan_interval": "Oppdateringsintervall (sekunder)",
+          "use_pages_as_areas": "Bruk MyGekko-sidene som områder"
+        },
+        "data_description": {
+          "scan_interval": "Hvor ofte verdiene leses. Standard 30 sekunder, minimum 10.",
+          "use_pages_as_areas": "Foreslår siden (f.eks. etasje eller rom) til en enhet i MyGekko-appen som område. Gjelder bare nylig lagt til enheter."
+        }
+      }
+    }
+  },
+  "issues": {
+    "rate_limited": {
+      "title": "MyGekko begrenser forespørslene",
+      "description": "MyGekko ({name}) avviser forespørsler fordi for mange ble sendt (HTTP 429). Verdiene kan være utdaterte. Øk oppdateringsintervallet i innstillingene for integrasjonen og unngå automatiseringer som veksler enheter i en rask løkke."
+    },
+    "duplicate_entry": {
+      "title": "MyGekko er satt opp flere ganger",
+      "description": "{name} er satt opp {count} ganger (deaktiverte oppføringer: {disabled}). Oppføringene deler enhetene til samme myGEKKO, flere aktive oppføringer mangedobler forespørslene og når forespørselsgrensen til MyGekko. Slett overflødige oppføringer under Innstillinger > Enheter og tjenester > MyGekko."
+    }
+  },
+  "exceptions": {
+    "alarm_read_only": {
+      "message": "Alarmsystemet er skrivebeskyttet og kan ikke deaktiveres fra Home Assistant."
     }
   }
 }

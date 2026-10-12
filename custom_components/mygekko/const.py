@@ -4,10 +4,10 @@ NAME = "MyGekko"
 MANUFACTURER = "myGEKKO | Ekon GmbH"
 DOMAIN = "mygekko"
 DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "1.2.4"
+VERSION = "1.5.0"
 
 ATTRIBUTION = "Data provided by http://jsonplaceholder.typicode.com/"
-ISSUE_URL = "https://github.com/stephanu/mygekko/issues"
+ISSUE_URL = "https://github.com/merlin2533/MyGekko/issues"
 
 
 # Platforms
@@ -19,9 +19,24 @@ SWITCH = "switch"
 SCENE = "scene"
 WATER_HEATER = "water_heater"
 BUTTON = "button"
+BINARY_SENSOR = "binary_sensor"
 SELECT = "select"
 CAMERA = "camera"
-PLATFORMS = [COVER, LIGHT, CLIMATE, SWITCH, SCENE, WATER_HEATER, SENSOR, BUTTON, SELECT, CAMERA]
+ALARM_CONTROL_PANEL = "alarm_control_panel"
+PLATFORMS = [
+    ALARM_CONTROL_PANEL,
+    BINARY_SENSOR,
+    BUTTON,
+    CAMERA,
+    CLIMATE,
+    COVER,
+    LIGHT,
+    SCENE,
+    SELECT,
+    SENSOR,
+    SWITCH,
+    WATER_HEATER,
+]
 
 
 # Configuration and options
@@ -37,6 +52,12 @@ CONF_CONNECTION_DEMO_MODE_LABEL = "Demo Mode"
 
 # Defaults
 DEFAULT_NAME = DOMAIN
+CONF_SCAN_INTERVAL = "scan_interval"
+CONF_USE_PAGES_AS_AREAS = "use_pages_as_areas"
+CONF_SCHEME = "scheme"  # "https" (default) or "http" of a local MyGekko
+DEFAULT_SCAN_INTERVAL = 30  # seconds
+MIN_SCAN_INTERVAL = 10
+MAX_SCAN_INTERVAL = 600
 
 
 STARTUP_MESSAGE = f"""

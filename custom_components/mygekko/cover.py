@@ -7,18 +7,19 @@ from homeassistant.components.cover import ATTR_TILT_POSITION
 from homeassistant.components.cover import CoverDeviceClass
 from homeassistant.components.cover import CoverEntity
 from homeassistant.components.cover import CoverEntityFeature
-from homeassistant.core import callback
-from PyMyGekko.resources.Blinds import Blind
-from PyMyGekko.resources.Blinds import BlindFeature
-from PyMyGekko.resources.Blinds import BlindState
+from .api import Blind
+from .api import BlindFeature
+from .api import BlindState
 
-from .const import DOMAIN
 from .entity import MyGekkoEntity
+
+
+PARALLEL_UPDATES = 0
 
 
 async def async_setup_entry(hass, entry, async_add_devices):
     """Set up cover platform."""
-    coordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator = entry.runtime_data
     blinds = coordinator.api.get_blinds()
     if blinds is not None:
         async_add_devices(MyGekkoCover(coordinator, blind) for blind in blinds)
@@ -35,7 +36,7 @@ class MyGekkoCover(MyGekkoEntity, CoverEntity):
         super().__init__(coordinator, blind, "blinds")
         self._blind = blind
         supported_features = self._blind.supported_features
-        self._attr_supported_features = 0
+        self._attr_supported_features = CoverEntityFeature(0)
 
         if BlindFeature.OPEN_CLOSE in supported_features:
             self._attr_supported_features |= (
@@ -59,11 +60,6 @@ class MyGekkoCover(MyGekkoEntity, CoverEntity):
                 | CoverEntityFeature.STOP_TILT
                 | CoverEntityFeature.SET_TILT_POSITION
             )
-
-    @callback
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
-        self.async_write_ha_state()
 
     @property
     def is_closed(self) -> bool | None:
@@ -113,42 +109,34 @@ class MyGekkoCover(MyGekkoEntity, CoverEntity):
 
     async def async_open_cover(self, **kwargs: Any):
         """Open the cover."""
-        await self._blind.set_state(BlindState.HOLD_UP)
-        await self.coordinator.async_request_refresh()
+        await self.coordinator.async_write(self._blind.set_state, BlindState.HOLD_UP)
 
     async def async_close_cover(self, **kwargs: Any):
         """Close cover."""
-        await self._blind.set_state(BlindState.HOLD_DOWN)
-        await self.coordinator.async_request_refresh()
+        await self.coordinator.async_write(self._blind.set_state, BlindState.HOLD_DOWN)
 
     async def async_stop_cover(self, **kwargs: Any):
         """Stop the cover."""
-        await self._blind.set_state(BlindState.STOP)
-        await self.coordinator.async_request_refresh()
+        await self.coordinator.async_write(self._blind.set_state, BlindState.STOP)
 
     async def async_set_cover_position(self, **kwargs: Any) -> None:
         """Set the cover position."""
         # myGekko blinds are closed on 100 and open on 0
-        await self._blind.set_position(100.0 - float(kwargs[ATTR_POSITION]))
-        await self.coordinator.async_request_refresh()
+        await self.coordinator.async_write(self._blind.set_position, 100.0 - float(kwargs[ATTR_POSITION]))
 
     async def async_open_cover_tilt(self, **kwargs: Any):
         """Open the cover."""
-        await self._blind.set_tilt_position(0.0)
-        await self.coordinator.async_request_refresh()
+        await self.coordinator.async_write(self._blind.set_tilt_position, 0.0)
 
     async def async_close_cover_tilt(self, **kwargs: Any):
         """Close cover."""
-        await self._blind.set_tilt_position(100.0)
-        await self.coordinator.async_request_refresh()
+        await self.coordinator.async_write(self._blind.set_tilt_position, 100.0)
 
     async def async_stop_cover_tilt(self, **kwargs: Any):
         """Stop the cover."""
-        await self._blind.set_state(BlindState.STOP)
-        await self.coordinator.async_request_refresh()
+        await self.coordinator.async_write(self._blind.set_state, BlindState.STOP)
 
     async def async_set_cover_tilt_position(self, **kwargs: Any) -> None:
         """Move the cover tilt to a specific position."""
         # myGekko blinds are closed on 100 and open on 0
-        await self._blind.set_tilt_position(100.0 - float(kwargs[ATTR_TILT_POSITION]))
-        await self.coordinator.async_request_refresh()
+        await self.coordinator.async_write(self._blind.set_tilt_position, 100.0 - float(kwargs[ATTR_TILT_POSITION]))

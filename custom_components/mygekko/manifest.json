@@ -2,18 +2,17 @@
   "domain": "mygekko",
   "name": "MyGekko",
   "codeowners": [
-    "@stephanu"
+    "@merlin2533"
   ],
   "config_flow": true,
   "dependencies": [],
-  "documentation": "https://github.com/stephanu/mygekko",
+  "documentation": "https://github.com/merlin2533/MyGekko",
+  "integration_type": "hub",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/stephanu/mygekko/issues",
+  "issue_tracker": "https://github.com/merlin2533/MyGekko/issues",
   "loggers": [
-    "PyMyGekko"
+    "custom_components.mygekko.api"
   ],
-  "requirements": [
-    "PyMyGekko==1.5.2"
-  ],
-  "version": "1.2.4"
+  "requirements": [],
+  "version": "1.5.0"
 }
