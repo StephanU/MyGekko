@@ -8,7 +8,7 @@ from .api import ActionState
 
 
 
-PARALLEL_UPDATES = 1
+PARALLEL_UPDATES = 0
 
 
 async def async_setup_entry(hass, entry, async_add_devices):

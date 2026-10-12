@@ -122,8 +122,49 @@ async def test_burst_of_commands_hits_the_rate_limit_once(hass, setup_demo, capl
         if "received" in record.getMessage()
     ]
     assert len(replaced) == 1
-    assert "received 20 commands" in replaced[0]
+    assert "/lights/" in replaced[0]
     assert not coordinator._queued_counts
+
+
+async def test_waiting_command_is_replaced_by_a_newer_one(hass, setup_demo):
+    """A burst for one element sends the first and the newest command only."""
+    import asyncio
+
+    release = asyncio.Event()
+
+    async def slow_write(*_args):
+        await release.wait()
+
+    setup_demo.write.side_effect = slow_write
+    calls = [
+        asyncio.ensure_future(
+            hass.services.async_call(
+                "light", service, {"entity_id": "light.bedroom"}, blocking=True
+            )
+        )
+        for service in ["turn_on", "turn_off"] * 5
+    ]
+    await asyncio.sleep(0.1)
+    release.set()
+    await asyncio.gather(*calls)
+    await hass.async_block_till_done()
+    assert [value for _path, value in _sent(setup_demo)] == ["1", "0"]
+
+
+async def test_commands_are_throttled(hass, setup_demo, monkeypatch):
+    """More than COMMAND_BURST commands wait for the COMMAND_WINDOW."""
+    import asyncio
+
+    monkeypatch.setattr(coordinator_module, "COMMAND_BURST", 2)
+    monkeypatch.setattr(coordinator_module, "COMMAND_WINDOW", 0.5)
+    coordinator = setup_demo.runtime_data
+    coordinator._sent_times.clear()
+    loop = asyncio.get_running_loop()
+    start = loop.time()
+    for entity_id in ("light.bedroom", "light.kitchen", "light.living_room"):
+        await _call(hass, "light", "turn_off", entity_id)
+    assert setup_demo.write.call_count == 3
+    assert loop.time() - start >= 0.4
 
 
 async def test_rate_limited_command_is_dropped_after_some_pauses(hass, setup_demo):
