@@ -163,7 +163,7 @@ HOT_WATER_SYSTEMS = ResourceSpec(
         "bottomTemp",
         "collectorTemp",
         "state",
-        "sum",
+        "elementInfo",
     ),
 )
 LIGHTS = ResourceSpec(

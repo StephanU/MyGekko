@@ -101,6 +101,18 @@ async def test_element_status_is_an_attribute(hass):
     assert all(light.attributes["element_status"] == "locked" for light in lights)
 
 
+async def test_hot_water_element_status_is_read(hass):
+    """The last value of a hot water system is its element status (real Slide 2 data)."""
+
+    def lock_boiler(status):
+        boiler = status["hotwater_systems"]["item0"]["sumstate"]
+        boiler["value"] = boiler["value"].rsplit(";", 1)[0] + ";3"
+
+    await _setup_with(hass, lock_boiler)
+    state = hass.states.get("water_heater.hot_water_boiler")
+    assert state.attributes["element_status"] == "locked"
+
+
 async def test_ok_elements_have_no_status_attribute(hass, setup_demo):
     """Elements in normal operation do not clutter the attributes."""
     assert all(

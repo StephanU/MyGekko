@@ -137,6 +137,8 @@ class MyGekkoDataUpdateCoordinator(DataUpdateCoordinator):
         # commands kept during a rate limit pause: key -> (method, args, attempts)
         self._queued: dict[tuple, tuple] = {}
         self._unsub_queued = None
+        # the end of the pause the delayed commands were last reported for
+        self._queued_reported_until: datetime | None = None
         self._cache: Store = Store(
             hass, CACHE_VERSION, f"{DOMAIN}.{entry.entry_id}", private=True
         )
@@ -368,11 +370,19 @@ class MyGekkoDataUpdateCoordinator(DataUpdateCoordinator):
         attempts = self._queued.get(key, (None, None, 0))[2]
         self._queued[key] = (method, args, attempts)
         self._schedule_queued()
+        send_at = dt_util.as_local(self.rate_limited_until or dt_util.utcnow())
+        if self._queued_reported_until == self.rate_limited_until:
+            # a burst of commands (e.g. an automation) is reported once per pause
+            _LOGGER.debug(
+                "MyGekko rate limit: command delayed until %s",
+                send_at.strftime("%H:%M:%S"),
+            )
+            return
+        self._queued_reported_until = self.rate_limited_until
         _LOGGER.warning(
-            "MyGekko rate limit: the command is sent automatically at %s",
-            dt_util.as_local(self.rate_limited_until or dt_util.utcnow()).strftime(
-                "%H:%M:%S"
-            ),
+            "MyGekko rate limit: commands are sent automatically at %s, "
+            "only the newest command per target is sent",
+            send_at.strftime("%H:%M:%S"),
         )
 
     def _schedule_queued(self) -> None:
@@ -424,6 +434,9 @@ class MyGekkoDataUpdateCoordinator(DataUpdateCoordinator):
     async def _async_send(self, method, args) -> None:
         """Send one command; HTTP 429 pauses the requests and is raised."""
         async with self._write_lock:
+            if time.monotonic() < self._backoff_until:
+                # a command waiting for the lock must not hit the rate limit again
+                raise MyGekkoTooManyRequests("MyGekko rate limit pause is active")
             try:
                 async with asyncio.timeout(WRITE_TIMEOUT):
                     await method(*args)

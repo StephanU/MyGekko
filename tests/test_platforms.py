@@ -80,6 +80,35 @@ async def test_rate_limited_command_is_sent_after_the_pause(hass, setup_demo):
     assert not coordinator._queued
 
 
+async def test_burst_of_commands_hits_the_rate_limit_once(hass, setup_demo, caplog):
+    """Commands waiting while the first one hits 429 are not sent and reported once."""
+    import asyncio
+
+    coordinator = setup_demo.runtime_data
+
+    async def rate_limited(*_args):
+        await asyncio.sleep(0.01)
+        raise MyGekkoTooManyRequests("429")
+
+    setup_demo.write.side_effect = rate_limited
+    await asyncio.gather(
+        *(
+            _call(hass, "light", service, "light.bedroom")
+            for service in ["turn_on", "turn_off"] * 10
+        ),
+        _call(hass, "light", "turn_off", "light.kitchen"),
+    )
+    assert setup_demo.write.call_count == 1
+    # the newest command per target is kept
+    assert len(coordinator._queued) == 2
+    warnings = [
+        record
+        for record in caplog.records
+        if "sent automatically" in record.getMessage()
+    ]
+    assert len(warnings) == 1
+
+
 async def test_rate_limited_command_is_dropped_after_some_pauses(hass, setup_demo):
     """A rate limit that does not end drops the delayed command."""
     coordinator = setup_demo.runtime_data
