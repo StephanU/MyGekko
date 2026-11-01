@@ -5,7 +5,7 @@ from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
 from homeassistant.components.sensor import SensorStateClass
-from homeassistant.const import CONCENTRATION_PARTS_PER_MILLION
+from homeassistant.const import UnitOfRatio
 from homeassistant.const import LIGHT_LUX
 from homeassistant.const import PERCENTAGE
 from homeassistant.const import UnitOfEnergy
@@ -351,7 +351,7 @@ class MyGekkoRoomTempsHumiditySensor(MyGekkoEntity, SensorEntity):
 class MyGekkoRoomTempsAirQualitySensor(MyGekkoEntity, SensorEntity):
     """mygekko AirQuality Sensor class."""
 
-    _attr_native_unit_of_measurement = CONCENTRATION_PARTS_PER_MILLION
+    _attr_native_unit_of_measurement = UnitOfRatio.PARTS_PER_MILLION
 
     def __init__(self, coordinator, room_temp: RoomTemp):
         """Initialize a MyGekko RoomTemp air quality sensor."""
@@ -442,7 +442,7 @@ class MyGekkoVentAirQualitySensor(MyGekkoEntity, SensorEntity):
 class MyGekkoVentCo2Sensor(MyGekkoEntity, SensorEntity):
     """mygekko Vent CO2 Sensor class."""
 
-    _attr_native_unit_of_measurement = CONCENTRATION_PARTS_PER_MILLION
+    _attr_native_unit_of_measurement = UnitOfRatio.PARTS_PER_MILLION
 
     def __init__(self, coordinator, vent: Vent):
         """Initialize a MyGekko vent co2 sensor."""
