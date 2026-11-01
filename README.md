@@ -13,6 +13,7 @@ MyGekko integration for Home Assistant. It talks to the MyGekko REST API directl
 [![hacs][hacsbadge]][hacs]
 [![Discord][discord-shield]][discord]
 [![Community Forum][forum-shield]][forum]
+[![Buy Me A Coffee][bmc-shield]][bmc]
 
 **This integration sets up the following platforms.**
 
@@ -128,6 +129,12 @@ The GitHub workflow `Tests` runs this on every pull request with the Home Assist
 - execute `scripts/develop` to start HomeAssistant
 - `tests/test_api.py` tests the API layer against a fake MyGekko server; the layer itself has no Home Assistant dependency
 
+## Support
+
+If this integration is useful to you, you can support its maintenance with a coffee. Donations are voluntary and do not entitle to support or features.
+
+[![Buy Me A Coffee][bmc-shield]][bmc]
+
 ## Credits
 
 This integration is a fork of [StephanU/MyGekko](https://github.com/StephanU/MyGekko) by Stephan Uhle (MIT License), maintained at [merlin2533/MyGekko](https://github.com/merlin2533/MyGekko).
@@ -157,3 +164,5 @@ Code template was mainly taken from [@Ludeeus](https://github.com/ludeeus)'s [in
 [releases-shield]: https://img.shields.io/github/release/merlin2533/MyGekko.svg?style=for-the-badge
 [releases]: https://github.com/merlin2533/MyGekko/releases
 [user_profile]: https://github.com/merlin2533
+[bmc]: https://buymeacoffee.com/merlin2533
+[bmc-shield]: https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-FFDD00.svg?style=for-the-badge&logo=buymeacoffee&logoColor=black

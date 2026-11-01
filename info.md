@@ -11,6 +11,7 @@
 
 [![Discord][discord-shield]][discord]
 [![Community Forum][forum-shield]][forum]
+[![Buy Me A Coffee][bmc-shield]][bmc]
 
 **This integration sets up the following platforms.**
 
@@ -81,3 +82,5 @@ Code template was mainly taken from [@Ludeeus](https://github.com/ludeeus)'s [in
 [releases-shield]: https://img.shields.io/github/release/merlin2533/MyGekko.svg?style=for-the-badge
 [releases]: https://github.com/merlin2533/MyGekko/releases
 [user_profile]: https://github.com/merlin2533
+[bmc]: https://buymeacoffee.com/merlin2533
+[bmc-shield]: https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-FFDD00.svg?style=for-the-badge&logo=buymeacoffee&logoColor=black
