@@ -42,7 +42,8 @@
       "auth_local": "Username/Password/IP address is wrong. Please see the logs for details."
     },
     "abort": {
-      "single_instance_allowed": "Only a single instance is allowed."
+      "single_instance_allowed": "Only a single instance is allowed.",
+      "reconfigure_successful": "Reconfiguration was successful"
     }
   },
   "entity": {

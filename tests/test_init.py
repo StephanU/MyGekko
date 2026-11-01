@@ -1,9 +1,6 @@
 """Test MyGekko setup process."""
 import pytest
 from custom_components.mygekko import (
-    async_reload_entry,
-)
-from custom_components.mygekko import (
     async_setup_entry,
 )
 from custom_components.mygekko import (
@@ -29,7 +26,7 @@ from .const import MOCK_CONFIG
 
 
 @pytest.mark.asyncio
-async def test_setup_unload_and_reload_entry(hass, bypass_get_data):
+async def test_setup_and_unload_entry(hass, bypass_get_data):
     """Test entry setup and unload."""
     # Create a mock entry so we don't have to go through config flow
     config_entry = MockConfigEntry(domain=DOMAIN, data=MOCK_CONFIG, entry_id="test")
@@ -38,13 +35,6 @@ async def test_setup_unload_and_reload_entry(hass, bypass_get_data):
     # them to be. Because we have patched the MyGekkoDataUpdateCoordinator.async_get_data
     # call, no code from custom_components/mygekko/api.py actually runs.
     assert await async_setup_entry(hass, config_entry)
-    assert DOMAIN in hass.data and config_entry.entry_id in hass.data[DOMAIN]
-    assert isinstance(
-        hass.data[DOMAIN][config_entry.entry_id], MyGekkoDataUpdateCoordinator
-    )
-
-    # Reload the entry and assert that the data from above is still there
-    assert await async_reload_entry(hass, config_entry) is None
     assert DOMAIN in hass.data and config_entry.entry_id in hass.data[DOMAIN]
     assert isinstance(
         hass.data[DOMAIN][config_entry.entry_id], MyGekkoDataUpdateCoordinator
