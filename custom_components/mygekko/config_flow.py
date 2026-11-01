@@ -78,6 +78,13 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         return await self.async_step_connection_selection(user_input)
 
+    async def async_step_reconfigure(self, user_input=None):
+        """Handle a flow initialized by reconfiguring an existing entry."""
+        self._errors = {}
+        _LOGGER.debug("Config flow async_step_reconfigure %s", user_input)
+
+        return await self.async_step_connection_selection(user_input)
+
     async def async_step_connection_selection(self, user_input):
         """Show the configuration form to edit location data."""
         _LOGGER.debug("Config flow async_step_connection_selection %s", user_input)
@@ -92,13 +99,16 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 return await self.async_step_connection_local(user_input)
 
             if connection_type == CONF_CONNECTION_DEMO_MODE:
+                if self._is_reconfigure:
+                    return self._async_update_entry(user_input)
+
                 return self.async_create_entry(
                     title=CONF_CONNECTION_DEMO_MODE_LABEL, data=user_input
                 )
 
         return self.async_show_form(
             step_id="connection_selection",
-            data_schema=CONNECTION_SCHEMA,
+            data_schema=self._with_current_values(CONNECTION_SCHEMA, user_input),
             errors=self._errors,
             last_step=False,
         )
@@ -113,22 +123,27 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 and CONF_API_KEY in user_input
                 and CONF_GEKKOID in user_input
             ):
-                valid = await self._test_credentials_cloud_mygekko(
+                client = await self._test_credentials_cloud_mygekko(
                     user_input[CONF_USERNAME],
                     user_input[CONF_API_KEY],
                     user_input[CONF_GEKKOID],
                 )
-                if valid:
+                if client is not None:
                     user_input[CONF_CONNECTION_TYPE] = CONF_CONNECTION_MY_GEKKO_CLOUD
+                    if self._is_reconfigure:
+                        return self._async_update_entry(user_input)
+
+                    gekko_name = await self._read_gekko_name(client)
                     return self.async_create_entry(
-                        title=user_input[CONF_USERNAME], data=user_input
+                        title=gekko_name or user_input[CONF_GEKKOID],
+                        data=user_input,
                     )
                 else:
                     self._errors["base"] = "auth_cloud"
 
         return self.async_show_form(
             step_id="connection_mygekko_cloud",
-            data_schema=CLOUD_CONNECTION_SCHEMA,
+            data_schema=self._with_current_values(CLOUD_CONNECTION_SCHEMA, user_input),
             errors=self._errors,
         )
 
@@ -142,48 +157,96 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 and CONF_USERNAME in user_input
                 and CONF_PASSWORD in user_input
             ):
-                valid = await self._test_credentials_local_mygekko(
+                client = await self._test_credentials_local_mygekko(
                     user_input[CONF_IP_ADDRESS],
                     user_input[CONF_USERNAME],
                     user_input[CONF_PASSWORD],
                 )
-                if valid:
+                if client is not None:
                     user_input[CONF_CONNECTION_TYPE] = CONF_CONNECTION_LOCAL
+                    if self._is_reconfigure:
+                        return self._async_update_entry(user_input)
+
+                    gekko_name = await self._read_gekko_name(client)
                     return self.async_create_entry(
-                        title=user_input[CONF_USERNAME], data=user_input
+                        title=gekko_name or user_input[CONF_IP_ADDRESS],
+                        data=user_input,
                     )
                 else:
                     self._errors["base"] = "auth_local"
 
         return self.async_show_form(
             step_id="connection_local",
-            data_schema=LOCAL_CONNECTION_SCHEMA,
+            data_schema=self._with_current_values(LOCAL_CONNECTION_SCHEMA, user_input),
             errors=self._errors,
         )
 
+    @property
+    def _is_reconfigure(self):
+        """Return whether an existing entry is being reconfigured."""
+        return self.source == config_entries.SOURCE_RECONFIGURE
+
+    def _with_current_values(self, schema, user_input=None):
+        """Prefill a form with the data of the entry that is being reconfigured.
+
+        What the user just submitted takes precedence over what is stored, so a
+        form redisplayed after a validation error keeps their input instead of
+        resetting it to the values they are trying to replace.
+        """
+        if not self._is_reconfigure:
+            return schema
+
+        return self.add_suggested_values_to_schema(
+            schema, {**self._get_reconfigure_entry().data, **(user_input or {})}
+        )
+
+    def _async_update_entry(self, data):
+        """Update the entry that is being reconfigured and finish the flow."""
+        # Replace the data instead of merging it, so switching the connection
+        # type does not leave the credentials of the previous one behind. The
+        # title is left untouched, the user may have renamed the entry.
+        return self.async_update_reload_and_abort(
+            self._get_reconfigure_entry(), data=data
+        )
+
     async def _test_credentials_cloud_mygekko(self, username, apikey, gekkoid):
-        """Return true if credentials is valid."""
+        """Return the client if the credentials are valid, None otherwise."""
         try:
             session = async_create_clientsession(self.hass)
             client = MyGekkoQueryApiClient(username, apikey, gekkoid, session)
             await client.try_connect()
-            return True
+            return client
         except ClientConnectorError:
             _LOGGER.exception("ClientConnectorError")
         except MyGekkoError:
             _LOGGER.exception("MyGekkoError")
-        return False
+        return None
 
     async def _test_credentials_local_mygekko(self, ip_address, username, password):
-        """Return true if credentials is valid."""
+        """Return the client if the credentials are valid, None otherwise."""
         try:
             session = async_create_clientsession(self.hass, verify_ssl=False)
             client = MyGekkoLocalApiClient(username, password, session, ip_address)
             await client.try_connect()
-            return True
+            return client
         except ClientConnectorError:
             _LOGGER.exception("ClientConnectorError")
         except MyGekkoError:
             _LOGGER.exception("MyGekkoError")
 
-        return False
+        return None
+
+    async def _read_gekko_name(self, client):
+        """Read the gekko friendly name, None if it cannot be determined."""
+        try:
+            await client.read_data()
+            globals_network = client.get_globals_network()
+            if globals_network:
+                return globals_network.get("gekkoname")
+        except Exception:  # noqa: BLE001
+            # The name is only used as the entry title and has a fallback, so no
+            # failure here may abort a flow whose credentials already validated.
+            # get_globals_network() indexes the payload without guarding, which
+            # raises KeyError on an unexpected response.
+            _LOGGER.debug("Could not determine the gekko name", exc_info=True)
+        return None
