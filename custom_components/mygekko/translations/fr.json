@@ -42,7 +42,8 @@
       "auth_local": "Nom d'utilisateur ou le mot de passe ou l'adresse IP erroné. Veuillez consulter les journaux pour plus de détails."
     },
     "abort": {
-      "single_instance_allowed": "Une seule instance est autorisée."
+      "single_instance_allowed": "Une seule instance est autorisée.",
+      "reconfigure_successful": "La reconfiguration a réussi"
     }
   },
   "entity": {
