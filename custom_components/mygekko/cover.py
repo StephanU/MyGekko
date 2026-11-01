@@ -98,38 +98,45 @@ class MyGekkoCover(MyGekkoEntity, CoverEntity):
     @property
     def is_closing(self) -> bool:
         """Check whether the cover is closing."""
-        return (
-            self._blind.state == BlindState.DOWN
-            or self._blind.state == BlindState.HOLD_DOWN
-        )
+        state = self._get_optimistic("state", self._blind.state)
+        return state == BlindState.DOWN or state == BlindState.HOLD_DOWN
 
     @property
     def is_opening(self) -> bool:
         """Check whether the cover is opening."""
-        return (
-            self._blind.state == BlindState.UP
-            or self._blind.state == BlindState.HOLD_UP
-        )
+        state = self._get_optimistic("state", self._blind.state)
+        return state == BlindState.UP or state == BlindState.HOLD_UP
 
     async def async_open_cover(self, **kwargs: Any):
         """Open the cover."""
         await self._blind.set_state(BlindState.HOLD_UP)
+        self._set_optimistic("state", BlindState.HOLD_UP, self._blind.state)
         await self.coordinator.async_request_refresh()
 
     async def async_close_cover(self, **kwargs: Any):
         """Close cover."""
         await self._blind.set_state(BlindState.HOLD_DOWN)
+        self._set_optimistic("state", BlindState.HOLD_DOWN, self._blind.state)
         await self.coordinator.async_request_refresh()
 
     async def async_stop_cover(self, **kwargs: Any):
         """Stop the cover."""
         await self._blind.set_state(BlindState.STOP)
+        self._set_optimistic("state", BlindState.STOP, self._blind.state)
         await self.coordinator.async_request_refresh()
 
     async def async_set_cover_position(self, **kwargs: Any) -> None:
         """Set the cover position."""
         # myGekko blinds are closed on 100 and open on 0
-        await self._blind.set_position(100.0 - float(kwargs[ATTR_POSITION]))
+        position = 100.0 - float(kwargs[ATTR_POSITION])
+        await self._blind.set_position(position)
+        if self._blind.position is not None and position != self._blind.position:
+            direction = (
+                BlindState.DOWN
+                if position > self._blind.position
+                else BlindState.UP
+            )
+            self._set_optimistic("state", direction, self._blind.state)
         await self.coordinator.async_request_refresh()
 
     async def async_open_cover_tilt(self, **kwargs: Any):
@@ -145,6 +152,7 @@ class MyGekkoCover(MyGekkoEntity, CoverEntity):
     async def async_stop_cover_tilt(self, **kwargs: Any):
         """Stop the cover."""
         await self._blind.set_state(BlindState.STOP)
+        self._set_optimistic("state", BlindState.STOP, self._blind.state)
         await self.coordinator.async_request_refresh()
 
     async def async_set_cover_tilt_position(self, **kwargs: Any) -> None:

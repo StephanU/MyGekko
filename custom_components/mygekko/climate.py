@@ -67,30 +67,36 @@ class MyGekkoRoomTempClimate(MyGekkoEntity, ClimateEntity):
     @property
     def target_temperature(self) -> float | None:
         """Return the temperature we try to reach."""
-        return self._room_temp.target_temperature
+        return self._get_optimistic(
+            "target_temperature", self._room_temp.target_temperature
+        )
 
     async def async_set_temperature(self, **kwargs) -> None:
         """Set new target temperature."""
-        await self._room_temp.set_target_temperature(float(kwargs[ATTR_TEMPERATURE]))
+        target_temperature = float(kwargs[ATTR_TEMPERATURE])
+        await self._room_temp.set_target_temperature(target_temperature)
+        self._set_optimistic(
+            "target_temperature",
+            target_temperature,
+            self._room_temp.target_temperature,
+        )
         await self.coordinator.async_request_refresh()
 
     @property
     def preset_mode(self) -> str | None:
         """Return preset mode."""
-        _LOGGER.debug(
-            "The mode of %s is %s", self._room_temp.name, self._room_temp.working_mode
+        working_mode = self._get_optimistic(
+            "working_mode", self._room_temp.working_mode
         )
+        _LOGGER.debug("The mode of %s is %s", self._room_temp.name, working_mode)
 
-        return (
-            str(self._room_temp.working_mode)
-            if self._room_temp.working_mode is not None
-            else None
-        )
+        return str(working_mode) if working_mode is not None else None
 
     async def async_set_preset_mode(self, preset_mode) -> None:
         """Set new preset mode."""
 
         await self._room_temp.set_working_mode(preset_mode)
+        self._set_optimistic("working_mode", preset_mode, self._room_temp.working_mode)
         await self.coordinator.async_request_refresh()
 
     @property

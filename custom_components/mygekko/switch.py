@@ -34,17 +34,17 @@ class MyGekkoSwitch(MyGekkoEntity, SwitchEntity):
     @property
     def is_on(self) -> bool | None:
         """Check wether the swich is on."""
-        return (
-            self._load.state == LoadState.ON_PERMANENT
-            or self._load.state == LoadState.ON_IMPULSE
-        )
+        state = self._get_optimistic("state", self._load.state)
+        return state == LoadState.ON_PERMANENT or state == LoadState.ON_IMPULSE
 
     async def async_turn_off(self, **kwargs):
         """Turn off the switch."""
         await self._load.set_state(LoadState.OFF)
+        self._set_optimistic("state", LoadState.OFF, self._load.state)
         await self.coordinator.async_request_refresh()
 
     async def async_turn_on(self, **kwargs):
         """Turn on the switch."""
         await self._load.set_state(LoadState.ON_PERMANENT)
+        self._set_optimistic("state", LoadState.ON_PERMANENT, self._load.state)
         await self.coordinator.async_request_refresh()
