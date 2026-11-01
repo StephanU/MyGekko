@@ -19,6 +19,16 @@ _LOGGER: logging.Logger = logging.getLogger(__name__)
 OPTIMISTIC_VALUE_TIMEOUT = 60.0
 
 
+def scoped_id(entry_id: str, resource_id: str) -> str:
+    """Scope a MyGekko resource id to a config entry.
+
+    The ids reported by a MyGekko controller (e.g. "lightsitem13") are only unique
+    within that controller, so they have to be namespaced to keep multiple
+    controllers from clashing in the entity and device registry.
+    """
+    return f"{entry_id}_{resource_id}"
+
+
 class MyGekkoEntity(CoordinatorEntity):
     """Base Class for MyGekko entities."""
 
@@ -32,7 +42,9 @@ class MyGekkoEntity(CoordinatorEntity):
 
         self._optimistic_values: dict[str, tuple[Any, Any, float]] = {}
 
-        device_id = f"{entity_prefix}{entity.entity_id}"
+        device_id = scoped_id(
+            coordinator.config_entry.entry_id, f"{entity_prefix}{entity.entity_id}"
+        )
         device_name = entity.name
 
         self._attr_unique_id = f"{device_id}{entity_suffix}"
@@ -82,7 +94,10 @@ class MyGekkoControllerEntity(CoordinatorEntity):
         """Initialize a MyGekko controller entity."""
         super().__init__(coordinator)
 
-        device_id = f"mygekko_controller_{globals_network['gekkoname']}"
+        device_id = scoped_id(
+            coordinator.config_entry.entry_id,
+            f"mygekko_controller_{globals_network['gekkoname']}",
+        )
         device_name = globals_network["gekkoname"]
 
         self._attr_unique_id = f"{device_id}{entity_prefix}{entity.entity_id}"
