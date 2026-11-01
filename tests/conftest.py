@@ -2,8 +2,16 @@
 from unittest.mock import patch
 
 import pytest
+from PyMyGekko.data_provider import MyGekkoError
 
 pytest_plugins = "pytest_homeassistant_custom_component"
+
+# The integration talks to one of these two clients depending on the configured
+# connection type. Demo mode needs no patching at all, it ships its own data.
+API_CLIENTS = (
+    "PyMyGekko.MyGekkoQueryApiClient",
+    "PyMyGekko.MyGekkoLocalApiClient",
+)
 
 
 # This fixture is used to prevent HomeAssistant from attempting to create and dismiss persistent
@@ -18,31 +26,39 @@ def skip_notifications_fixture():
         yield
 
 
-# This fixture, when used, will result in calls to get_data to return None. To have the call
-# return a value, we would add the `return_value=<VALUE_TO_RETURN>` parameter to the patch call.
+@pytest.fixture(name="auto_enable_custom_integrations", autouse=True)
+def auto_enable_custom_integrations_fixture(enable_custom_integrations):
+    """Load the custom integration in every test."""
+    yield
+
+
 @pytest.fixture(name="bypass_get_data")
 def bypass_get_data_fixture():
-    """Skip calls to get data from API."""
-    with patch("custom_components.mygekko.MyGekkoApiClient.get_data"):
+    """Skip calls to get data from the API."""
+    with patch(f"{API_CLIENTS[0]}.read_data"), patch(f"{API_CLIENTS[1]}.read_data"):
         yield
 
 
-# This fixture, when used, will result in calls to try_connect to return None. To have the call
-# return a value, we would add the `return_value=<VALUE_TO_RETURN>` parameter to the patch call.
 @pytest.fixture(name="bypass_try_connect")
 def bypass_try_connect_fixture():
-    """Skip calls to get data from API."""
-    with patch("custom_components.mygekko.MyGekkoApiClient.try_connect"):
+    """Skip calls to connect to the API."""
+    with patch(f"{API_CLIENTS[0]}.try_connect"), patch(f"{API_CLIENTS[1]}.try_connect"):
         yield
 
 
-# In this fixture, we are forcing calls to try_connect to raise an Exception. This is useful
-# for exception handling.
 @pytest.fixture(name="error_on_try_connect")
-def error_try_connect_fixture():
-    """Simulate error when retrieving data from API."""
+def error_on_try_connect_fixture():
+    """Simulate an error while connecting to the API."""
     with patch(
-        "custom_components.mygekko.MyGekkoApiClient.try_connect",
-        side_effect=Exception,
+        f"{API_CLIENTS[0]}.try_connect", side_effect=MyGekkoError
+    ), patch(f"{API_CLIENTS[1]}.try_connect", side_effect=MyGekkoError):
+        yield
+
+
+@pytest.fixture(name="error_on_get_data")
+def error_on_get_data_fixture():
+    """Simulate an error while retrieving data from the API."""
+    with patch(f"{API_CLIENTS[0]}.read_data", side_effect=MyGekkoError), patch(
+        f"{API_CLIENTS[1]}.read_data", side_effect=MyGekkoError
     ):
         yield
