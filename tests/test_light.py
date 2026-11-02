@@ -17,8 +17,8 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 from .const import MOCK_DEMO_ENTRY_DATA
 
 # Entities provided by the PyMyGekko demo data.
-LIGHT_ON = "light.buro_decke"
-LIGHT_OFF = "light.bad"
+LIGHT_ON = "light.living_room"
+LIGHT_OFF = "light.bedroom"
 
 
 @pytest.fixture(name="demo_entry")
@@ -41,7 +41,7 @@ async def test_light_state(hass, demo_entry):
 
 async def test_light_name(hass, demo_entry):
     """Test that the light is named after the controller resource."""
-    assert hass.states.get(LIGHT_ON).attributes["friendly_name"] == "Büro Decke"
+    assert hass.states.get(LIGHT_ON).attributes["friendly_name"] == "Living Room"
 
 
 async def test_light_turn_on(hass, demo_entry):

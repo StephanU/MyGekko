@@ -39,6 +39,16 @@ def bypass_get_data_fixture():
         yield
 
 
+@pytest.fixture(name="gekko_name")
+def gekko_name_fixture():
+    """Report a gekko name, which the config flow uses as the entry title."""
+    network = {"gekkoname": "Test Gekko"}
+    with patch(
+        f"{API_CLIENTS[0]}.get_globals_network", return_value=network
+    ), patch(f"{API_CLIENTS[1]}.get_globals_network", return_value=network):
+        yield
+
+
 @pytest.fixture(name="bypass_try_connect")
 def bypass_try_connect_fixture():
     """Skip calls to connect to the API."""

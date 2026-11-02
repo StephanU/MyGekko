@@ -61,7 +61,7 @@ async def _start_flow(hass, connection_type):
     )
 
 
-async def test_cloud_config_flow(hass, bypass_try_connect):
+async def test_cloud_config_flow(hass, bypass_try_connect, bypass_get_data, gekko_name):
     """Test a successful config flow via the MyGekko Plus Query API."""
     result = await _start_flow(hass, CONF_CONNECTION_MY_GEKKO_CLOUD)
 
@@ -73,13 +73,13 @@ async def test_cloud_config_flow(hass, bypass_try_connect):
     )
 
     assert result["type"] is data_entry_flow.FlowResultType.CREATE_ENTRY
-    assert result["title"] == "test_username"
+    assert result["title"] == "Test Gekko"
     # The flow stores the selected connection type alongside the credentials.
     assert result["data"] == MOCK_CLOUD_ENTRY_DATA
-    assert result["result"].version == 3
+    assert result["result"].version == 4
 
 
-async def test_local_config_flow(hass, bypass_try_connect):
+async def test_local_config_flow(hass, bypass_try_connect, bypass_get_data, gekko_name):
     """Test a successful config flow via a local connection."""
     result = await _start_flow(hass, CONF_CONNECTION_LOCAL)
 
@@ -91,8 +91,28 @@ async def test_local_config_flow(hass, bypass_try_connect):
     )
 
     assert result["type"] is data_entry_flow.FlowResultType.CREATE_ENTRY
-    assert result["title"] == "test_username"
+    assert result["title"] == "Test Gekko"
     assert result["data"] == MOCK_LOCAL_ENTRY_DATA
+
+
+@pytest.mark.parametrize(
+    ("connection_type", "user_input", "title"),
+    [
+        (CONF_CONNECTION_MY_GEKKO_CLOUD, MOCK_CONFIG, "test_gekkoid"),
+        (CONF_CONNECTION_LOCAL, MOCK_LOCAL_CONFIG, "192.168.1.2"),
+    ],
+)
+async def test_config_flow_title_without_gekko_name(
+    hass, bypass_try_connect, bypass_get_data, connection_type, user_input, title
+):
+    """Test that the entry falls back to the gekko id or IP address as title."""
+    result = await _start_flow(hass, connection_type)
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], user_input=user_input
+    )
+
+    assert result["type"] is data_entry_flow.FlowResultType.CREATE_ENTRY
+    assert result["title"] == title
 
 
 async def test_demo_mode_config_flow(hass):
