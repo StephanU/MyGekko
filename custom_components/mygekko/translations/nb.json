@@ -42,7 +42,8 @@
       "auth_local": "Brukernavn/Wachtwoord/IP-adres er feil. Raadpleeg de logboeken voor meer informatie."
     },
     "abort": {
-      "single_instance_allowed": "Denne integrasjonen kan kun konfigureres en gang."
+      "single_instance_allowed": "Denne integrasjonen kan kun konfigureres en gang.",
+      "reconfigure_successful": "Rekonfigurering var vellykket"
     }
   },
   "entity": {
