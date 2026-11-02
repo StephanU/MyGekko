@@ -72,12 +72,20 @@ class MyGekkoEntity(CoordinatorEntity):
         )
         self.async_write_ha_state()
 
-    def _get_optimistic(self, key: str, polled_value):
-        """Return the optimistic value for key while it is valid."""
+    def _get_optimistic(self, key: str, polled_value, reference=None):
+        """Return the optimistic value for key while it is valid.
+
+        By default polled_value is compared with the value passed to
+        _set_optimistic. A value that returns to its initial state on its own
+        (a blind that stops after a short movement) passes a reference that
+        holds more than that value, and _set_optimistic gets the same kind.
+        """
         if key not in self._optimistic_values:
             return polled_value
+        if reference is None:
+            reference = polled_value
         optimistic_value, initial_value, valid_until = self._optimistic_values[key]
-        if polled_value != initial_value or time.monotonic() >= valid_until:
+        if reference != initial_value or time.monotonic() >= valid_until:
             del self._optimistic_values[key]
             return polled_value
         return optimistic_value
