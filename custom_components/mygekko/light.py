@@ -61,15 +61,15 @@ class MyGekkoLight(MyGekkoEntity, LightEntity):
     @property
     def is_on(self) -> bool | None:
         """Check whether the light is on."""
-        _LOGGER.debug(
-            "The light state of %s is %d", self._light.name, self._light.state
-        )
-        return self._light.state == LightState.ON
+        state = self._get_optimistic("state", self._light.state)
+        _LOGGER.debug("The light state of %s is %d", self._light.name, state)
+        return state == LightState.ON
 
     async def async_turn_off(self, **kwargs):
         """Turn off the light."""
         _LOGGER.debug("Switch off light %s", self._light.name)
         await self._light.set_state(LightState.OFF)
+        self._set_optimistic("state", LightState.OFF, self._light.state)
         await self.coordinator.async_request_refresh()
 
     async def async_turn_on(self, **kwargs):
@@ -77,22 +77,28 @@ class MyGekkoLight(MyGekkoEntity, LightEntity):
         _LOGGER.debug("Switch on light %s", self._light.name)
         if ATTR_RGB_COLOR in kwargs and kwargs[ATTR_RGB_COLOR]:
             await self._light.set_rgb_color(kwargs[ATTR_RGB_COLOR])
+            self._set_optimistic(
+                "rgb_color", kwargs[ATTR_RGB_COLOR], self._light.rgb_color
+            )
         elif ATTR_BRIGHTNESS in kwargs and kwargs[ATTR_BRIGHTNESS]:
-            await self._light.set_brightness(round(kwargs[ATTR_BRIGHTNESS] / 255 * 100))
+            brightness = round(kwargs[ATTR_BRIGHTNESS] / 255 * 100)
+            await self._light.set_brightness(brightness)
+            self._set_optimistic("brightness", brightness, self._light.brightness)
         else:
             await self._light.set_state(LightState.ON)
+            # Only claimed for a real state command: writing a color or a
+            # brightness does not switch the myGekko light on, so reporting it
+            # as on would be a lie that outlives the next poll.
+            self._set_optimistic("state", LightState.ON, self._light.state)
         await self.coordinator.async_request_refresh()
 
     @property
     def brightness(self) -> int | None:
         """Return the brightness of this light between 0..255."""
-        return (
-            round(255 * self._light.brightness / 100)
-            if self._light.brightness is not None
-            else None
-        )
+        brightness = self._get_optimistic("brightness", self._light.brightness)
+        return round(255 * brightness / 100) if brightness is not None else None
 
     @property
     def rgb_color(self) -> tuple[int, int, int] | None:
         """Return the rgb color value [int, int, int]."""
-        return self._light.rgb_color
+        return self._get_optimistic("rgb_color", self._light.rgb_color)

@@ -60,29 +60,42 @@ class MyGekkoWaterHeater(MyGekkoEntity, WaterHeaterEntity):
         """Turn off the water heater."""
         _LOGGER.debug("Switch off water heater %s", self._hotwater_system.name)
         await self._hotwater_system.set_state(HotWaterSystemState.OFF)
+        self._set_optimistic(
+            "state", HotWaterSystemState.OFF, self._hotwater_system.state
+        )
         await self.coordinator.async_request_refresh()
 
     async def async_turn_on(self, **kwargs):
         """Turn on the water heater."""
         _LOGGER.debug("Switch on water heater %s", self._hotwater_system.name)
         await self._hotwater_system.set_state(HotWaterSystemState.ON)
+        self._set_optimistic(
+            "state", HotWaterSystemState.ON, self._hotwater_system.state
+        )
         await self.coordinator.async_request_refresh()
 
     @property
     def target_temperature(self) -> float | None:
         """Return the target temperature of the water heater."""
+        target_temperature = self._get_optimistic(
+            "target_temperature", self._hotwater_system.target_temperature
+        )
         _LOGGER.debug(
             "The water heaters %s current target temperature is %s",
             self._hotwater_system.name,
-            self._hotwater_system.target_temperature,
+            target_temperature,
         )
 
-        return self._hotwater_system.target_temperature
+        return target_temperature
 
     async def async_set_temperature(self, **kwargs: Any) -> None:
         """Set new target temperature."""
-        await self._hotwater_system.set_target_temperature(
-            float(kwargs[ATTR_TEMPERATURE])
+        target_temperature = float(kwargs[ATTR_TEMPERATURE])
+        await self._hotwater_system.set_target_temperature(target_temperature)
+        self._set_optimistic(
+            "target_temperature",
+            target_temperature,
+            self._hotwater_system.target_temperature,
         )
         await self.coordinator.async_request_refresh()
 
@@ -100,7 +113,8 @@ class MyGekkoWaterHeater(MyGekkoEntity, WaterHeaterEntity):
     @property
     def current_operation(self) -> str | None:
         """Return current operation ie. eco, electric, performance, ..."""
-        if self._hotwater_system.state == HotWaterSystemState.OFF:
+        state = self._get_optimistic("state", self._hotwater_system.state)
+        if state == HotWaterSystemState.OFF:
             return STATE_OFF
         else:
             return STATE_ON
