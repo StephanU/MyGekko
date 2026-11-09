@@ -72,6 +72,11 @@ class MyGekkoEntity(CoordinatorEntity):
         )
         self.async_write_ha_state()
 
+    def _clear_optimistic(self, key: str) -> None:
+        """Drop the optimistic value of commands a newer one has superseded."""
+        if self._optimistic_values.pop(key, None) is not None:
+            self.async_write_ha_state()
+
     def _get_optimistic(self, key: str, polled_value, reference=None):
         """Return the optimistic value for key while it is valid.
 

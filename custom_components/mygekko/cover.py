@@ -127,12 +127,17 @@ class MyGekkoCover(MyGekkoEntity, CoverEntity):
         return state, position
 
     def _set_optimistic_movement(
-        self, state: BlindState, target_reached: bool | None
+        self, state: BlindState | None, target_reached: bool | None
     ) -> None:
-        """Show the blind moving until a poll shows the command was processed."""
-        # A blind at rest at its target does not move, so no poll would ever
-        # end the optimistic state.
-        if target_reached and self._blind.state == BlindState.STOP:
+        """Show the blind moving until a poll shows the command was processed.
+
+        Without a known direction (state None), or for a blind at rest at its
+        target, the polled state is shown: a blind at rest at its target does
+        not move, so no poll would ever end the optimistic state. Either way,
+        the movement of an earlier command no longer applies.
+        """
+        if state is None or (target_reached and self._blind.state == BlindState.STOP):
+            self._clear_optimistic("state")
             return
         self._set_optimistic("state", state, self._movement_reference())
 
@@ -161,14 +166,13 @@ class MyGekkoCover(MyGekkoEntity, CoverEntity):
         # myGekko blinds are closed on 100 and open on 0
         position = 100.0 - float(kwargs[ATTR_POSITION])
         await self._blind.set_position(position)
-        if self._blind.position is not None:
-            direction = (
-                BlindState.DOWN
-                if position > self._blind.position
-                else BlindState.UP
-            )
+        polled_position = self._blind.position
+        if polled_position is None:
+            self._set_optimistic_movement(None, None)
+        else:
             self._set_optimistic_movement(
-                direction, position == self._blind.position
+                BlindState.DOWN if position > polled_position else BlindState.UP,
+                position == polled_position,
             )
         await self.coordinator.async_request_refresh()
 
