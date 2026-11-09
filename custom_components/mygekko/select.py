@@ -54,7 +54,7 @@ class MyGekkoVentBypassSelect(MyGekkoEntity, SelectEntity):
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""
         await self._vent.set_bypass_state(option)
-        self._set_optimistic("bypass_state", option, self._vent.bypass_state)
+        self._set_optimistic("bypass_state", int(option), self._vent.bypass_state)
         await self.coordinator.async_request_refresh()
 
 
@@ -85,7 +85,7 @@ class MyGekkoVentWorkingModeSelect(MyGekkoEntity, SelectEntity):
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""
         await self._vent.set_working_mode(option)
-        self._set_optimistic("working_mode", option, self._vent.working_mode)
+        self._set_optimistic("working_mode", int(option), self._vent.working_mode)
         await self.coordinator.async_request_refresh()
 
 
@@ -117,5 +117,5 @@ class MyGekkoVentWorkingLevelSelect(MyGekkoEntity, SelectEntity):
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""
         await self._vent.set_working_level(option)
-        self._set_optimistic("working_level", option, self._vent.working_level)
+        self._set_optimistic("working_level", int(option), self._vent.working_level)
         await self.coordinator.async_request_refresh()

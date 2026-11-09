@@ -96,7 +96,9 @@ class MyGekkoRoomTempClimate(MyGekkoEntity, ClimateEntity):
         """Set new preset mode."""
 
         await self._room_temp.set_working_mode(preset_mode)
-        self._set_optimistic("working_mode", preset_mode, self._room_temp.working_mode)
+        self._set_optimistic(
+            "working_mode", int(preset_mode), self._room_temp.working_mode
+        )
         await self.coordinator.async_request_refresh()
 
     @property
