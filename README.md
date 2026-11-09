@@ -79,6 +79,7 @@ If you want to contribute to this please read the [Contribution guidelines](CONT
 - Start in VsCode in with the DevContainer extension
 - execute `scripts/setup` to install dependencies
 - execute `scripts/develop` to start HomeAssistant
+- execute `python3 -m pytest tests` to run the tests
 - to use PyMyGekko from git instead of PyPi add the following to the .devcontainer
 ```
   "mounts": [
