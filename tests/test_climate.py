@@ -1,4 +1,5 @@
 """Test the optimistic target temperature of MyGekko climate entities."""
+import asyncio
 from unittest.mock import AsyncMock
 from unittest.mock import patch
 from unittest.mock import PropertyMock
@@ -106,3 +107,30 @@ async def test_poll_of_earlier_command_drops_older_values(hass, polled):
     polled["target_temperature"] = 20.0
     await coordinator.async_refresh()
     assert _target_temperature(hass, entity_id) == 20.0
+
+
+async def test_concurrent_commands_keep_call_order(hass, polled):
+    """A command whose write returns late must not replace a later command."""
+    coordinator, entity_id = await _setup_climate(hass)
+    release = asyncio.Event()
+
+    async def write(temperature):
+        if temperature == 21.0:
+            await release.wait()
+
+    RoomTemp.set_target_temperature.side_effect = write
+
+    first = hass.async_create_task(_set_temperature(hass, entity_id, 21.0))
+    while not RoomTemp.set_target_temperature.await_count:
+        await asyncio.sleep(0)
+    second = hass.async_create_task(_set_temperature(hass, entity_id, 22.0))
+    for _ in range(10):
+        await asyncio.sleep(0)
+    release.set()
+    await first
+    await second
+    assert _target_temperature(hass, entity_id) == 22.0
+
+    polled["target_temperature"] = 22.0
+    await coordinator.async_refresh()
+    assert _target_temperature(hass, entity_id) == 22.0

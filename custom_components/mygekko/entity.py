@@ -1,4 +1,5 @@
 """MyGekkoEntity class."""
+import asyncio
 import logging
 import time
 from dataclasses import dataclass
@@ -54,6 +55,10 @@ class MyGekkoEntity(CoordinatorEntity):
         super().__init__(coordinator)
 
         self._optimistic_values: dict[str, OptimisticValue] = {}
+        # Held while a command is sent and its optimistic value is set.
+        # Service calls run concurrently, so without it a later command could
+        # reach the myGekko first, or be recorded before an earlier one.
+        self._command_lock = asyncio.Lock()
 
         device_id = scoped_id(
             coordinator.config_entry.entry_id, f"{entity_prefix}{entity.entity_id}"

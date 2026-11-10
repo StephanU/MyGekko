@@ -73,13 +73,14 @@ class MyGekkoRoomTempClimate(MyGekkoEntity, ClimateEntity):
 
     async def async_set_temperature(self, **kwargs) -> None:
         """Set new target temperature."""
-        target_temperature = float(kwargs[ATTR_TEMPERATURE])
-        await self._room_temp.set_target_temperature(target_temperature)
-        self._set_optimistic(
-            "target_temperature",
-            target_temperature,
-            self._room_temp.target_temperature,
-        )
+        async with self._command_lock:
+            target_temperature = float(kwargs[ATTR_TEMPERATURE])
+            await self._room_temp.set_target_temperature(target_temperature)
+            self._set_optimistic(
+                "target_temperature",
+                target_temperature,
+                self._room_temp.target_temperature,
+            )
         await self.coordinator.async_request_refresh()
 
     @property
@@ -95,10 +96,11 @@ class MyGekkoRoomTempClimate(MyGekkoEntity, ClimateEntity):
     async def async_set_preset_mode(self, preset_mode) -> None:
         """Set new preset mode."""
 
-        await self._room_temp.set_working_mode(preset_mode)
-        self._set_optimistic(
-            "working_mode", int(preset_mode), self._room_temp.working_mode
-        )
+        async with self._command_lock:
+            await self._room_temp.set_working_mode(preset_mode)
+            self._set_optimistic(
+                "working_mode", int(preset_mode), self._room_temp.working_mode
+            )
         await self.coordinator.async_request_refresh()
 
     @property
