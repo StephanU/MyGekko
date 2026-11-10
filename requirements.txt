@@ -7,4 +7,4 @@ pytest-homeassistant-custom-component==0.13.375
 PyMyGekko==1.7.0
 # Requirement of homeassistant.components.camera, which camera.py imports. Home
 # Assistant installs it at runtime, the test environment has to bring it along.
-PyTurboJPEG==2.5.0
+PyTurboJPEG==2.6.1
