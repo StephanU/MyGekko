@@ -11,6 +11,8 @@ ISSUE_URL = "https://github.com/stephanu/mygekko/issues"
 
 
 # Platforms
+ALARM_CONTROL_PANEL = "alarm_control_panel"
+BINARY_SENSOR = "binary_sensor"
 SENSOR = "sensor"
 COVER = "cover"
 LIGHT = "light"
@@ -23,6 +25,8 @@ SELECT = "select"
 CAMERA = "camera"
 NUMBER = "number"
 PLATFORMS = [
+    ALARM_CONTROL_PANEL,
+    BINARY_SENSOR,
     COVER,
     LIGHT,
     CLIMATE,
@@ -47,6 +51,12 @@ CONF_CONNECTION_LOCAL = "local"
 CONF_CONNECTION_LOCAL_LABEL = "Local"
 CONF_CONNECTION_DEMO_MODE = "demo_mode"
 CONF_CONNECTION_DEMO_MODE_LABEL = "Demo Mode"
+CONF_ALARM_SYSTEM_READ_ONLY = "alarm_system_read_only"
+
+# Config subentries
+SUBENTRY_TYPE_INPUT_GROUP = "input_group"
+CONF_INPUT_GROUP_INDEX = "index"
+CONF_SECURITY_AREA = "security_area"
 
 # Defaults
 DEFAULT_NAME = DOMAIN

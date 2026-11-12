@@ -35,6 +35,16 @@
           "username": "Der Benutzername eines Benutzers der lokalen Query API.",
           "password": "Das Passwort des Benutzers."
         }
+      },
+      "alarm_system": {
+        "title": "Alarmanlage",
+        "description": "An diesem myGEKKO ist eine Alarmanlage angeschlossen. Jeder Sicherungsbereich wird als Alarmzentrale hinzugefügt.",
+        "data": {
+          "alarm_system_read_only": "Nur lesen"
+        },
+        "data_description": {
+          "alarm_system_read_only": "Nur den Scharfzustand anzeigen. Home Assistant kann die Sicherungsbereiche nicht scharf schalten."
+        }
       }
     },
     "error": {
@@ -381,6 +391,22 @@
       },
       "mygekko_emobil_charge_user_index": {
         "name": "Ladebenutzer-Index"
+      },
+      "mygekko_alarm_panel_state": {
+        "name": "Zustand der Zentrale",
+        "state": {
+          "ok": "OK",
+          "alarm": "Alarm",
+          "fault": "Störung"
+        }
+      },
+      "mygekko_alarm_panel_active_input_groups": {
+        "name": "Aktive Meldebereiche",
+        "state_attributes": {
+          "active_input_groups": {
+            "name": "Aktive Meldebereiche"
+          }
+        }
       }
     },
     "button": {
@@ -400,6 +426,94 @@
       "mygekko_emobil_charging_power_setpoint": {
         "name": "Ladeleistungs-Sollwert"
       }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Alarmanlage",
+        "description": "An diesem myGEKKO ist eine Alarmanlage angeschlossen. Jeder Sicherungsbereich wird als Alarmzentrale hinzugefügt.",
+        "data": {
+          "alarm_system_read_only": "Nur lesen"
+        },
+        "data_description": {
+          "alarm_system_read_only": "Nur den Scharfzustand anzeigen. Home Assistant kann die Sicherungsbereiche nicht scharf schalten."
+        }
+      }
+    },
+    "abort": {
+      "no_options": "Dieser myGEKKO hat keine Optionen."
+    }
+  },
+  "config_subentries": {
+    "input_group": {
+      "initiate_flow": {
+        "user": "Meldebereich hinzufügen"
+      },
+      "entry_type": "Meldebereich",
+      "step": {
+        "user": {
+          "title": "Meldebereich hinzufügen",
+          "description": "Fügt einen Meldebereich der Alarmanlage als Binärsensor hinzu.",
+          "data": {
+            "index": "Index",
+            "name": "Name",
+            "device_class": "Typ",
+            "security_area": "Sicherungsbereich"
+          },
+          "data_description": {
+            "index": "Index des Meldebereichs, wie ihn das Attribut des Sensors „Aktive Meldebereiche“ anzeigt, während der Melder aktiv ist.",
+            "security_area": "Der Sicherungsbereich, bei dem der Binärsensor angezeigt wird."
+          }
+        },
+        "reconfigure": {
+          "title": "Meldebereich ändern",
+          "data": {
+            "index": "Index",
+            "name": "Name",
+            "device_class": "Typ",
+            "security_area": "Sicherungsbereich"
+          },
+          "data_description": {
+            "index": "Index des Meldebereichs, wie ihn das Attribut des Sensors „Aktive Meldebereiche“ anzeigt, während der Melder aktiv ist.",
+            "security_area": "Der Sicherungsbereich, bei dem der Binärsensor angezeigt wird."
+          }
+        }
+      },
+      "error": {
+        "input_group_already_configured": "Dieser Meldebereich wurde bereits hinzugefügt."
+      },
+      "abort": {
+        "no_alarm_system": "Dieser myGEKKO hat keine Alarmanlage, oder sie ist nicht geladen.",
+        "reconfigure_successful": "Die Neukonfiguration war erfolgreich"
+      }
+    }
+  },
+  "selector": {
+    "input_group_device_class": {
+      "options": {
+        "window": "Fenster",
+        "door": "Tür",
+        "garage_door": "Garagentor",
+        "opening": "Öffnung",
+        "motion": "Bewegung",
+        "vibration": "Erschütterung",
+        "tamper": "Sabotage",
+        "safety": "Sicherheit"
+      }
+    }
+  },
+  "device": {
+    "alarm_panel": {
+      "name": "Alarmzentrale"
+    }
+  },
+  "exceptions": {
+    "alarm_system_read_only": {
+      "message": "{name} ist nur lesbar. Zum Scharfschalten in den Optionen der Integration „Nur lesen“ abschalten."
+    },
+    "alarm_system_command_not_supported": {
+      "message": "myGEKKO nimmt diesen Befehl für {name} nicht an."
     }
   }
 }

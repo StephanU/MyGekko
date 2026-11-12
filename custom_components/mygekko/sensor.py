@@ -6,6 +6,8 @@ from datetime import timedelta
 import re
 from typing import Any
 
+from custom_components.mygekko.alarm_system import get_alarm_systems
+from custom_components.mygekko.alarm_system import MyGekkoAlarmPanelEntity
 from custom_components.mygekko.entity import MyGekkoControllerEntity
 from custom_components.mygekko.entity import MyGekkoEntity
 from homeassistant.components.sensor import SensorDeviceClass
@@ -24,6 +26,8 @@ from homeassistant.const import UnitOfTemperature
 from homeassistant.const import UnitOfVolumeFlowRate
 from homeassistant.util import dt as dt_util
 from PyMyGekko.resources.AlarmsLogics import AlarmsLogic
+from PyMyGekko.resources.AlarmSystems import AlarmSystem
+from PyMyGekko.resources.AlarmSystems import AlarmSystemDeviceState
 from PyMyGekko.resources.DoorInterComs import DoorInterCom
 from PyMyGekko.resources.EMobils import EMobil
 from PyMyGekko.resources.EMobils import EMobilChargeRequestState
@@ -768,6 +772,65 @@ async def async_setup_entry(hass, entry, async_add_devices):
             MyGekkoValueSensor(coordinator, emobil, "emobils", description)
             for description in EMOBIL_SENSORS
         )
+
+    # The panel values are identical in all security areas, so the first one
+    # stands for the whole panel.
+    if alarm_systems := get_alarm_systems(coordinator):
+        async_add_devices(
+            [
+                MyGekkoAlarmPanelStateSensor(coordinator, alarm_systems[0]),
+                MyGekkoAlarmPanelActiveInputGroupsSensor(
+                    coordinator, alarm_systems[0]
+                ),
+            ]
+        )
+
+
+class MyGekkoAlarmPanelStateSensor(MyGekkoAlarmPanelEntity, SensorEntity):
+    """State of the alarm panel itself: ok, alarm or fault (e.g. battery)."""
+
+    _attr_translation_key = "mygekko_alarm_panel_state"
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options = _enum_options(AlarmSystemDeviceState)
+
+    def __init__(self, coordinator, alarm_system: AlarmSystem):
+        """Initialize the alarm panel state sensor."""
+        super().__init__(coordinator, alarm_system, "state")
+
+    @property
+    def native_value(self):
+        """Return the state of the alarm panel."""
+        return _enum_option(self._alarm_system.device_state)
+
+
+class MyGekkoAlarmPanelActiveInputGroupsSensor(MyGekkoAlarmPanelEntity, SensorEntity):
+    """Number of active input groups, their indexes as attribute.
+
+    The indexes are the ones to enter when adding an input group as binary
+    sensor. Motion detectors change them every few seconds during the day, so
+    the sensor is disabled by default and the list is kept out of the recorder.
+    """
+
+    _attr_translation_key = "mygekko_alarm_panel_active_input_groups"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_entity_registry_enabled_default = False
+    _unrecorded_attributes = frozenset({"active_input_groups"})
+
+    def __init__(self, coordinator, alarm_system: AlarmSystem):
+        """Initialize the active input groups sensor."""
+        super().__init__(coordinator, alarm_system, "active_input_groups")
+
+    @property
+    def native_value(self):
+        """Return the number of active input groups."""
+        active = self._alarm_system.active_input_groups
+        return len(active) if active is not None else None
+
+    @property
+    def extra_state_attributes(self):
+        """Return the indexes of the active input groups."""
+        return {"active_input_groups": self._alarm_system.active_input_groups or []}
 
 
 class MyGekkoAlarmsLogicsSensor(MyGekkoControllerEntity, SensorEntity):

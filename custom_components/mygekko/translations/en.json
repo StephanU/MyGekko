@@ -35,6 +35,16 @@
           "username": "The user name of a user of the local query API.",
           "password": "The user's password."
         }
+      },
+      "alarm_system": {
+        "title": "Alarm system",
+        "description": "This myGEKKO is connected to an alarm system. Each security area is added as an alarm panel.",
+        "data": {
+          "alarm_system_read_only": "Read only"
+        },
+        "data_description": {
+          "alarm_system_read_only": "Show the arming state only. Home Assistant cannot arm the security areas."
+        }
       }
     },
     "error": {
@@ -380,6 +390,22 @@
       },
       "mygekko_emobil_charge_user_index": {
         "name": "Charge User Index"
+      },
+      "mygekko_alarm_panel_state": {
+        "name": "Panel state",
+        "state": {
+          "ok": "OK",
+          "alarm": "Alarm",
+          "fault": "Fault"
+        }
+      },
+      "mygekko_alarm_panel_active_input_groups": {
+        "name": "Active input groups",
+        "state_attributes": {
+          "active_input_groups": {
+            "name": "Active input groups"
+          }
+        }
       }
     },
     "button": {
@@ -399,6 +425,94 @@
       "mygekko_emobil_charging_power_setpoint": {
         "name": "Charge Power Setpoint"
       }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Alarm system",
+        "description": "This myGEKKO is connected to an alarm system. Each security area is added as an alarm panel.",
+        "data": {
+          "alarm_system_read_only": "Read only"
+        },
+        "data_description": {
+          "alarm_system_read_only": "Show the arming state only. Home Assistant cannot arm the security areas."
+        }
+      }
+    },
+    "abort": {
+      "no_options": "This myGEKKO has no options."
+    }
+  },
+  "config_subentries": {
+    "input_group": {
+      "initiate_flow": {
+        "user": "Add input group"
+      },
+      "entry_type": "Input group",
+      "step": {
+        "user": {
+          "title": "Add input group",
+          "description": "Adds an input group (\"Meldebereich\") of the alarm panel as binary sensor.",
+          "data": {
+            "index": "Index",
+            "name": "Name",
+            "device_class": "Type",
+            "security_area": "Security area"
+          },
+          "data_description": {
+            "index": "Index of the input group, as listed in the attribute of the sensor \"Active input groups\" while the detector is active.",
+            "security_area": "The security area the binary sensor is shown with."
+          }
+        },
+        "reconfigure": {
+          "title": "Change input group",
+          "data": {
+            "index": "Index",
+            "name": "Name",
+            "device_class": "Type",
+            "security_area": "Security area"
+          },
+          "data_description": {
+            "index": "Index of the input group, as listed in the attribute of the sensor \"Active input groups\" while the detector is active.",
+            "security_area": "The security area the binary sensor is shown with."
+          }
+        }
+      },
+      "error": {
+        "input_group_already_configured": "This input group has already been added."
+      },
+      "abort": {
+        "no_alarm_system": "This myGEKKO has no alarm system, or it is not loaded.",
+        "reconfigure_successful": "Reconfiguration was successful"
+      }
+    }
+  },
+  "selector": {
+    "input_group_device_class": {
+      "options": {
+        "window": "Window",
+        "door": "Door",
+        "garage_door": "Garage door",
+        "opening": "Opening",
+        "motion": "Motion",
+        "vibration": "Vibration",
+        "tamper": "Tamper",
+        "safety": "Safety"
+      }
+    }
+  },
+  "device": {
+    "alarm_panel": {
+      "name": "Alarm panel"
+    }
+  },
+  "exceptions": {
+    "alarm_system_read_only": {
+      "message": "{name} is read only. Disable \"Read only\" in the options of the integration to arm it."
+    },
+    "alarm_system_command_not_supported": {
+      "message": "myGEKKO does not accept this command for {name}."
     }
   }
 }
