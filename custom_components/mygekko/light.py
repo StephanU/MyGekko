@@ -67,29 +67,31 @@ class MyGekkoLight(MyGekkoEntity, LightEntity):
 
     async def async_turn_off(self, **kwargs):
         """Turn off the light."""
-        _LOGGER.debug("Switch off light %s", self._light.name)
-        await self._light.set_state(LightState.OFF)
-        self._set_optimistic("state", LightState.OFF, self._light.state)
+        async with self._command_lock:
+            _LOGGER.debug("Switch off light %s", self._light.name)
+            await self._light.set_state(LightState.OFF)
+            self._set_optimistic("state", LightState.OFF, self._light.state)
         await self.coordinator.async_request_refresh()
 
     async def async_turn_on(self, **kwargs):
         """Turn on the light."""
-        _LOGGER.debug("Switch on light %s", self._light.name)
-        if ATTR_RGB_COLOR in kwargs and kwargs[ATTR_RGB_COLOR]:
-            await self._light.set_rgb_color(kwargs[ATTR_RGB_COLOR])
-            self._set_optimistic(
-                "rgb_color", kwargs[ATTR_RGB_COLOR], self._light.rgb_color
-            )
-        elif ATTR_BRIGHTNESS in kwargs and kwargs[ATTR_BRIGHTNESS]:
-            brightness = round(kwargs[ATTR_BRIGHTNESS] / 255 * 100)
-            await self._light.set_brightness(brightness)
-            self._set_optimistic("brightness", brightness, self._light.brightness)
-        else:
-            await self._light.set_state(LightState.ON)
-            # Only claimed for a real state command: writing a color or a
-            # brightness does not switch the myGekko light on, so reporting it
-            # as on would be a lie that outlives the next poll.
-            self._set_optimistic("state", LightState.ON, self._light.state)
+        async with self._command_lock:
+            _LOGGER.debug("Switch on light %s", self._light.name)
+            if ATTR_RGB_COLOR in kwargs and kwargs[ATTR_RGB_COLOR]:
+                await self._light.set_rgb_color(kwargs[ATTR_RGB_COLOR])
+                self._set_optimistic(
+                    "rgb_color", kwargs[ATTR_RGB_COLOR], self._light.rgb_color
+                )
+            elif ATTR_BRIGHTNESS in kwargs and kwargs[ATTR_BRIGHTNESS]:
+                brightness = round(kwargs[ATTR_BRIGHTNESS] / 255 * 100)
+                await self._light.set_brightness(brightness)
+                self._set_optimistic("brightness", brightness, self._light.brightness)
+            else:
+                await self._light.set_state(LightState.ON)
+                # Only claimed for a real state command: writing a color or a
+                # brightness does not switch the myGekko light on, so reporting it
+                # as on would be a lie that outlives the next poll.
+                self._set_optimistic("state", LightState.ON, self._light.state)
         await self.coordinator.async_request_refresh()
 
     @property

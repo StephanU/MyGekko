@@ -9,7 +9,7 @@ MyGekko integration for HomeAssistant using the [PyMyGekko](https://github.com/S
 ![Project Maintenance][maintenance-shield]
 [![BuyMeCoffee][buymecoffeebadge]][buymecoffee]
 
-[![hacs][hacsbadge]][hacs]
+[![Marketplace][marketplacebadge]][marketplace]
 [![Discord][discord-shield]][discord]
 [![Community Forum][forum-shield]][forum]
 
@@ -18,60 +18,56 @@ MyGekko integration for HomeAssistant using the [PyMyGekko](https://github.com/S
 | Platform       | Description                                                        |
 | -------------- | ------------------------------------------------------------------ |
 | `button`       | For light groups in MyGekko                                        |
+| `camera`       | Cameras and door intercoms (called cams and door_intercom in MyGekko) |
 | `climate`      | Thermostats (called roomtemps in MyGekko)                          |
 | `cover`        | Covers (called blinds in MyGekko)                                  |
 | `light`        | Lights                                                             |
 | `switch`       | Switches (called loads in MyGekko) and charging station start/stop (emobils) |
 | `water_heater` | Water Heater (called hotwater_systems in MyGekko)                  |
-| `sensor`       | Metrics for energy_cost, alarms_logics, energymanager (PV/grid/battery), heatingcircuits and emobils (charging stations) |
+| `sensor`       | MyGekko energy_cost metrics, alarms_logics, room humidity and air quality, hot water temperatures, vent readings, weather station (meteo), door intercom status, energymanager (PV/grid/battery), heatingcircuits and emobils (charging stations) |
 | `scene`        | MyGekko actions are added as scenes                                |
-| `select`       | Vent modes and clocks (schedule timers: off/on/onCoincidence)      |
+| `select`       | Vent bypass, working mode and working level (called vents in MyGekko) and clocks (schedule timers: off/on/onCoincidence) |
 | `number`       | Charging station charge power setpoint (emobils)                   |
 
 ![Dashboard Screenshot][dashboard-screenshot]
 
 ## Installation
 
-### Via HACS
+### Via the Marketplace (Home Assistant 2026.11 and newer)
 
-1. Install [HACS](https://hacs.xyz/docs/setup/:requisites)
-2. Add 'https://github.com/StephanU/MyGekko' as a [Custom Repository](https://hacs.xyz/docs/faq/custom_repositories)
-3. Restart Home Assistant
-4. In the HA UI go to "Configuration" -> "Integrations" click "+" and search for "MyGekko"
+1. Go to "Settings" -> "Marketplace" and select "Add from link".
+2. Enter `StephanU/MyGekko` under "GitHub link" and select "Add".
+3. Open MyGekko and select "Install".
+4. Set up the integration on the page that opens, or later under "Settings" -> "Devices & services" -> "Add integration" -> "MyGekko".
+
+- Adding a repository by link requires a GitHub account connected to the Marketplace.
+
+### Via HACS (Home Assistant 2026.10 and older)
+
+1. Install [HACS](https://www.hacs.xyz/docs/use/).
+2. Add `https://github.com/StephanU/MyGekko` as a [custom repository](https://www.hacs.xyz/docs/faq/custom_repositories/) of type "Integration".
+3. Download MyGekko and restart Home Assistant.
+4. Go to "Settings" -> "Devices & services" -> "Add integration" and search for "MyGekko".
 
 ### Manually
 
-1. Using the tool of choice open the directory (folder) for your HA configuration (where you find `configuration.yaml`).
-2. If you do not have a `custom_components` directory (folder) there, you need to create it.
-3. In the `custom_components` directory (folder) create a new folder called `mygekko`.
-4. Download _all_ the files from the `custom_components/mygekko/` directory (folder) in this repository.
-5. Place the files you downloaded in the new directory (folder) you created.
-6. Restart Home Assistant
-7. In the HA UI go to "Configuration" -> "Integrations" click "+" and search for "MyGekko"
-
-Using your HA configuration directory (folder) as a starting point you should now also have something like this:
-
-```text
-custom_components/mygekko/translations/en.json
-custom_components/mygekko/translations/fr.json
-custom_components/mygekko/translations/nb.json
-custom_components/mygekko/translations/sensor.en.json
-custom_components/mygekko/translations/sensor.fr.json
-custom_components/mygekko/translations/sensor.nb.json
-custom_components/mygekko/translations/sensor.nb.json
-custom_components/mygekko/__init__.py
-custom_components/mygekko/api.py
-custom_components/mygekko/binary_sensor.py
-custom_components/mygekko/config_flow.py
-custom_components/mygekko/const.py
-custom_components/mygekko/manifest.json
-custom_components/mygekko/sensor.py
-custom_components/mygekko/switch.py
-```
+1. Download `mygekko_integration.zip` from the [latest release][releases].
+2. Extract it into `custom_components/mygekko/` in your Home Assistant configuration directory (where `configuration.yaml` is). Afterwards `custom_components/mygekko/manifest.json` exists.
+3. Restart Home Assistant.
+4. Go to "Settings" -> "Devices & services" -> "Add integration" and search for "MyGekko".
 
 ## Configuration is done in the UI
 
-The integration supports access via the MyGekko Query Api (you need a MyGekko Plus subscription) or by connecting to your MyGekko locally.
+When adding the integration, choose a connection type:
+
+| Connection type          | Fields                         |
+| ------------------------ | ------------------------------ |
+| `MyGekko Plus Query API` | Username, Api Key, Gekko ID    |
+| `Local`                  | IP Address, Username, Password |
+| `Demo Mode`              | –                              |
+
+- The MyGekko Plus Query API requires a MyGekko Plus subscription.
+- Demo mode loads static data for all supported devices without connecting to a MyGekko.
 
 To change the settings of an existing entry — IP address, credentials or even the connection type itself — open "Settings" -> "Devices & services" -> "MyGekko" and pick "Reconfigure" from the entry's menu.
 
@@ -84,6 +80,7 @@ If you want to contribute to this please read the [Contribution guidelines](CONT
 - Start in VsCode in with the DevContainer extension
 - execute `scripts/setup` to install dependencies
 - execute `scripts/develop` to start HomeAssistant
+- execute `python3 -m pytest tests` to run the tests
 - to use PyMyGekko from git instead of PyPi add the following to the .devcontainer
 ```
   "mounts": [
@@ -104,14 +101,12 @@ Code template was mainly taken from [@Ludeeus](https://github.com/ludeeus)'s [in
 ---
 
 [integration_blueprint]: https://github.com/custom-components/integration_blueprint
-[black]: https://github.com/psf/black
-[black-shield]: https://img.shields.io/badge/code%20style-black-000000.svg?style=for-the-badge
 [buymecoffee]: https://www.buymeacoffee.com/stephanu
 [buymecoffeebadge]: https://img.shields.io/badge/buy%20me%20a%20coffee-donate-yellow.svg?style=for-the-badge
 [commits-shield]: https://img.shields.io/github/commit-activity/y/stephanu/mygekko.svg?style=for-the-badge
 [commits]: https://github.com/stephanu/mygekko/commits/main
-[hacs]: https://hacs.xyz
-[hacsbadge]: https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge
+[marketplace]: https://www.home-assistant.io/integrations/marketplace/
+[marketplacebadge]: https://img.shields.io/badge/Marketplace-Custom-orange.svg?style=for-the-badge
 [dashboard-screenshot]: DashboardScreenshot.png
 [discord]: https://discord.gg/Qa5fW2R
 [discord-shield]: https://img.shields.io/discord/330944238910963714.svg?style=for-the-badge
