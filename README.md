@@ -17,16 +17,19 @@ MyGekko integration for HomeAssistant using the [PyMyGekko](https://github.com/S
 
 | Platform       | Description                                                        |
 | -------------- | ------------------------------------------------------------------ |
+| `alarm_control_panel` | Arming state of each security area of the alarm system (alarmsystem in MyGekko, e.g. TELENOT) |
+| `binary_sensor` | Input groups of the alarm system, added per input group in the integration settings |
 | `button`       | For light groups in MyGekko                                        |
 | `camera`       | Cameras and door intercoms (called cams and door_intercom in MyGekko) |
 | `climate`      | Thermostats (called roomtemps in MyGekko)                          |
 | `cover`        | Covers (called blinds in MyGekko)                                  |
 | `light`        | Lights                                                             |
-| `switch`       | Switches (called loads in MyGekko)                                 |
+| `switch`       | Switches (called loads in MyGekko) and charging station start/stop (emobils) |
 | `water_heater` | Water Heater (called hotwater_systems in MyGekko)                  |
-| `sensor`       | MyGekko energy_cost metrics, alarms_logics, room humidity and air quality, hot water temperatures, vent readings, weather station (meteo) and door intercom status |
+| `sensor`       | MyGekko energy_cost metrics, alarms_logics, room humidity and air quality, hot water temperatures, vent readings, weather station (meteo), door intercom status, energymanager (PV/grid/battery), heatingcircuits, emobils (charging stations) and the alarm system panel state |
 | `scene`        | MyGekko actions are added as scenes                                |
-| `select`       | Vent bypass, working mode and working level (called vents in MyGekko) |
+| `select`       | Vent bypass, working mode and working level (called vents in MyGekko) and clocks (schedule timers: off/on/onCoincidence) |
+| `number`       | Charging station charge power setpoint (emobils)                   |
 
 ![Dashboard Screenshot][dashboard-screenshot]
 

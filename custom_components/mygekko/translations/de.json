@@ -35,6 +35,16 @@
           "username": "Der Benutzername eines Benutzers der lokalen Query API.",
           "password": "Das Passwort des Benutzers."
         }
+      },
+      "alarm_system": {
+        "title": "Alarmanlage",
+        "description": "An diesem myGEKKO ist eine Alarmanlage angeschlossen. Jeder Sicherungsbereich wird als Alarmzentrale hinzugefügt.",
+        "data": {
+          "alarm_system_read_only": "Nur lesen"
+        },
+        "data_description": {
+          "alarm_system_read_only": "Nur den Scharfzustand anzeigen. Home Assistant kann die Sicherungsbereiche nicht scharf schalten."
+        }
       }
     },
     "error": {
@@ -89,6 +99,13 @@
           "1": "Manuell",
           "2": "Pluggit Auto",
           "3": "Pluggit Woche"
+        }
+      },
+      "mygekko_clock": {
+        "state": {
+          "0": "Aus",
+          "1": "Ein",
+          "2": "Ein (Koinzidenz)"
         }
       }
     },
@@ -182,6 +199,214 @@
       },
       "mygekko_meteo_temperature": {
         "name": "Temperatur"
+      },
+      "mygekko_energymanager_grid_power": {
+        "name": "Netzleistung"
+      },
+      "mygekko_energymanager_power_exported_to_grid": {
+        "name": "Einspeiseleistung"
+      },
+      "mygekko_energymanager_solar_power": {
+        "name": "Solarleistung"
+      },
+      "mygekko_energymanager_battery_power": {
+        "name": "Batterieleistung"
+      },
+      "mygekko_energymanager_battery_charging_power": {
+        "name": "Batterieladeleistung"
+      },
+      "mygekko_energymanager_home_power_consumption": {
+        "name": "Hausverbrauch"
+      },
+      "mygekko_energymanager_alternative_power_consumption": {
+        "name": "Alternativer Verbrauch"
+      },
+      "mygekko_energymanager_daily_energy_imported_from_grid": {
+        "name": "Netzbezug heute"
+      },
+      "mygekko_energymanager_daily_energy_exported_to_grid": {
+        "name": "Einspeisung heute"
+      },
+      "mygekko_energymanager_daily_energy_from_solar_panels": {
+        "name": "Solarertrag heute"
+      },
+      "mygekko_energymanager_daily_energy_from_battery": {
+        "name": "Batterieentladung heute"
+      },
+      "mygekko_energymanager_daily_energy_charging_battery": {
+        "name": "Batterieladung heute"
+      },
+      "mygekko_energymanager_daily_home_energy_consumption": {
+        "name": "Hausverbrauch heute"
+      },
+      "mygekko_energymanager_battery_soc": {
+        "name": "Batterieladestand"
+      },
+      "mygekko_energymanager_max_power_consumption_from_grid": {
+        "name": "Maximale Netzbezugsleistung"
+      },
+      "mygekko_energymanager_max_power_export_to_grid": {
+        "name": "Maximale Einspeiseleistung"
+      },
+      "mygekko_energymanager_max_power_solar_panels": {
+        "name": "Maximale Solarleistung"
+      },
+      "mygekko_energymanager_max_power_battery": {
+        "name": "Maximale Batterieleistung"
+      },
+      "mygekko_energymanager_grid_meter_state": {
+        "name": "Netzzähler-Status",
+        "state": {
+          "not_active": "Inaktiv",
+          "active": "Aktiv"
+        }
+      },
+      "mygekko_energymanager_solar_panel_state": {
+        "name": "Solaranlagen-Status",
+        "state": {
+          "not_active": "Inaktiv",
+          "active": "Aktiv"
+        }
+      },
+      "mygekko_energymanager_battery_state": {
+        "name": "Batterie-Status",
+        "state": {
+          "not_active": "Inaktiv",
+          "active": "Aktiv"
+        }
+      },
+      "mygekko_energymanager_load_shedding_state": {
+        "name": "Lastabwurf",
+        "state": {
+          "off": "Aus",
+          "on": "Ein"
+        }
+      },
+      "mygekko_energymanager_ems_state": {
+        "name": "Energiemanagement-Status",
+        "state": {
+          "off": "Aus",
+          "on": "Ein"
+        }
+      },
+      "mygekko_energymanager_ems_enabled": {
+        "name": "Energiemanagement aktiviert",
+        "state": {
+          "disabled": "Deaktiviert",
+          "enabled": "Aktiviert"
+        }
+      },
+      "mygekko_energymanager_battery_model": {
+        "name": "Batteriemodell",
+        "state": {
+          "unavailable": "Nicht verfügbar",
+          "e3dc_s10": "E3/DC S10",
+          "byd": "BYD",
+          "varta_storage": "VARTA storage",
+          "individual": "Individuell",
+          "by_sun_spec_inverters": "SunSpec-Wechselrichter"
+        }
+      },
+      "mygekko_heatingcircuit_flow_temperature": {
+        "name": "Vorlauftemperatur"
+      },
+      "mygekko_heatingcircuit_return_flow_temperature": {
+        "name": "Rücklauftemperatur"
+      },
+      "mygekko_heatingcircuit_dew_point": {
+        "name": "Taupunkt"
+      },
+      "mygekko_heatingcircuit_flow_temperature_setpoint": {
+        "name": "Vorlauf-Solltemperatur"
+      },
+      "mygekko_heatingcircuit_pump_working_level": {
+        "name": "Pumpenleistung"
+      },
+      "mygekko_heatingcircuit_valve_opening_level": {
+        "name": "Ventilöffnung"
+      },
+      "mygekko_heatingcircuit_cooling_mode_state": {
+        "name": "Kühlmodus",
+        "state": {
+          "off": "Aus",
+          "on": "Ein"
+        }
+      },
+      "mygekko_heatingcircuit_state": {
+        "name": "Status",
+        "state": {
+          "off": "Aus",
+          "on": "Ein",
+          "auto": "Auto"
+        }
+      },
+      "mygekko_heatingcircuit_device_model": {
+        "name": "Gerätemodell",
+        "state": {
+          "individual": "Individuell",
+          "buderus": "Buderus",
+          "stiebel": "Stiebel",
+          "vaillant": "Vaillant"
+        }
+      },
+      "mygekko_emobil_charging_power": {
+        "name": "Ladeleistung"
+      },
+      "mygekko_emobil_charging_energy": {
+        "name": "Lademenge"
+      },
+      "mygekko_emobil_charging_current_setpoint": {
+        "name": "Ladestrom"
+      },
+      "mygekko_emobil_maximum_charging_power": {
+        "name": "Maximale Ladeleistung"
+      },
+      "mygekko_emobil_plugged_state": {
+        "name": "Steckerstatus",
+        "state": {
+          "not_plugged": "Nicht eingesteckt",
+          "plugged": "Eingesteckt"
+        }
+      },
+      "mygekko_emobil_charge_state": {
+        "name": "Ladestatus",
+        "state": {
+          "off": "Aus",
+          "on": "Ein",
+          "paused": "Pausiert"
+        }
+      },
+      "mygekko_emobil_charge_request_state": {
+        "name": "Ladeanforderung",
+        "state": {
+          "off": "Aus",
+          "on": "Ein"
+        }
+      },
+      "mygekko_emobil_charge_start_time": {
+        "name": "Ladebeginn"
+      },
+      "mygekko_emobil_charge_user": {
+        "name": "Ladebenutzer"
+      },
+      "mygekko_emobil_charge_user_index": {
+        "name": "Ladebenutzer-Index"
+      },
+      "mygekko_alarm_panel_state": {
+        "name": "Zustand der Zentrale",
+        "state": {
+          "ok": "OK",
+          "alarm": "Alarm",
+          "fault": "Störung"
+        }
+      },
+      "mygekko_alarm_panel_active_input_groups": {
+        "name": "Aktive Meldebereiche",
+        "state_attributes": {
+          "active_input_groups": {
+            "name": "Aktive Meldebereiche"
+          }
+        }
       }
     },
     "button": {
@@ -191,6 +416,139 @@
       "mygekko_light_group_off": {
         "name": "Auschalten"
       }
+    },
+    "switch": {
+      "mygekko_emobil_charge": {
+        "name": "Laden"
+      }
+    },
+    "number": {
+      "mygekko_emobil_charging_power_setpoint": {
+        "name": "Ladeleistungs-Sollwert"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Alarmanlage",
+        "description": "An diesem myGEKKO ist eine Alarmanlage angeschlossen. Jeder Sicherungsbereich wird als Alarmzentrale hinzugefügt.",
+        "data": {
+          "alarm_system_read_only": "Nur lesen"
+        },
+        "data_description": {
+          "alarm_system_read_only": "Nur den Scharfzustand anzeigen. Home Assistant kann die Sicherungsbereiche nicht scharf schalten."
+        }
+      }
+    },
+    "abort": {
+      "no_options": "Dieser myGEKKO hat keine Optionen."
+    }
+  },
+  "config_subentries": {
+    "input_group": {
+      "initiate_flow": {
+        "user": "Meldebereich hinzufügen"
+      },
+      "entry_type": "Meldebereich",
+      "step": {
+        "user": {
+          "title": "Meldebereich hinzufügen",
+          "menu_options": {
+            "learn": "Anlernen (Melder auslösen)",
+            "manual": "Index selbst eingeben"
+          }
+        },
+        "manual": {
+          "title": "Meldebereich hinzufügen",
+          "description": "Fügt einen Meldebereich der Alarmanlage als Binärsensor hinzu.",
+          "data": {
+            "index": "Index",
+            "name": "Name",
+            "device_class": "Typ",
+            "security_area": "Sicherungsbereich"
+          },
+          "data_description": {
+            "index": "Index des Meldebereichs, wie ihn das Attribut des Sensors „Aktive Meldebereiche“ anzeigt, während der Melder aktiv ist.",
+            "security_area": "Der Sicherungsbereich, bei dem der Binärsensor angezeigt wird."
+          }
+        },
+        "learn": {
+          "title": "Anlernen: Ausgangszustand",
+          "description": "Lass den Melder geschlossen und klicke auf Absenden. Die Integration merkt sich etwa 30 Sekunden lang, welche Meldebereiche gerade aktiv sind."
+        },
+        "learn_trigger": {
+          "title": "Anlernen: Melder auslösen",
+          "description": "Öffne jetzt das Fenster bzw. löse den Melder aus und klicke auf Absenden. Lass es offen, bis die Suche fertig ist."
+        },
+        "learned": {
+          "title": "Meldebereich hinzufügen",
+          "description": "Gefunden: Index {index}. Ergänze Name, Typ und Sicherungsbereich.",
+          "data": {
+            "index": "Index",
+            "name": "Name",
+            "device_class": "Typ",
+            "security_area": "Sicherungsbereich"
+          },
+          "data_description": {
+            "index": "Index des Meldebereichs, wie ihn das Attribut des Sensors „Aktive Meldebereiche“ anzeigt, während der Melder aktiv ist.",
+            "security_area": "Der Sicherungsbereich, bei dem der Binärsensor angezeigt wird."
+          }
+        },
+        "reconfigure": {
+          "title": "Meldebereich ändern",
+          "data": {
+            "index": "Index",
+            "name": "Name",
+            "device_class": "Typ",
+            "security_area": "Sicherungsbereich"
+          },
+          "data_description": {
+            "index": "Index des Meldebereichs, wie ihn das Attribut des Sensors „Aktive Meldebereiche“ anzeigt, während der Melder aktiv ist.",
+            "security_area": "Der Sicherungsbereich, bei dem der Binärsensor angezeigt wird."
+          }
+        }
+      },
+      "error": {
+        "input_group_already_configured": "Dieser Meldebereich wurde bereits hinzugefügt.",
+        "no_input_group_found": "Kein neuer Meldebereich gefunden. War der Melder ausgelöst? Versuche es erneut oder gib den Index selbst ein.",
+        "multiple_input_groups_found": "Mehrere neue Meldebereiche gefunden: {indexes}. Gib den richtigen Index selbst ein oder versuche es erneut."
+      },
+      "abort": {
+        "no_alarm_system": "Dieser myGEKKO hat keine Alarmanlage, oder sie ist nicht geladen.",
+        "reconfigure_successful": "Die Neukonfiguration war erfolgreich"
+      },
+      "progress": {
+        "learn_baseline": "Ausgangszustand wird erfasst (etwa 30 Sekunden).",
+        "learn_detect": "Meldebereich wird gesucht (höchstens 60 Sekunden)."
+      }
+    }
+  },
+  "selector": {
+    "input_group_device_class": {
+      "options": {
+        "window": "Fenster",
+        "door": "Tür",
+        "garage_door": "Garagentor",
+        "opening": "Öffnung",
+        "motion": "Bewegung",
+        "vibration": "Erschütterung",
+        "tamper": "Sabotage",
+        "safety": "Sicherheit"
+      }
+    }
+  },
+  "device": {
+    "alarm_panel": {
+      "name": "Alarmzentrale"
+    }
+  },
+  "exceptions": {
+    "alarm_system_read_only": {
+      "message": "{name} ist nur lesbar. Zum Scharfschalten in den Optionen der Integration „Nur lesen“ abschalten."
+    },
+    "alarm_system_command_not_supported": {
+      "message": "myGEKKO nimmt diesen Befehl für {name} nicht an."
     }
   }
 }

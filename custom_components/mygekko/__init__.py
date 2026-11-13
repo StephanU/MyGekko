@@ -14,6 +14,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 
+from .alarm_system import async_register_alarm_system_devices
 from .const import CONF_CONNECTION_MY_GEKKO_CLOUD
 from .const import CONF_CONNECTION_TYPE
 from .const import DOMAIN
@@ -43,9 +44,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     hass.data[DOMAIN][entry.entry_id] = coordinator
 
+    async_register_alarm_system_devices(hass, entry, coordinator)
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
+    # Options, subentries (alarm input groups) and reconfiguration change which
+    # entities exist, so every update of the entry reloads it.
+    entry.async_on_unload(entry.add_update_listener(_async_reload_entry))
+
     return True
+
+
+async def _async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Reload the entry after it was updated."""
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def _async_scope_registries_to_entry(
