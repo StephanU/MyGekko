@@ -1,7 +1,9 @@
 """Test MyGekko config flow."""
+import logging
 from unittest.mock import patch
 
 import pytest
+from aiohttp import ConnectionTimeoutError
 from custom_components.mygekko.const import (
     CONF_CONNECTION_DEMO_MODE,
 )
@@ -22,12 +24,14 @@ from custom_components.mygekko.const import (
 )
 from homeassistant import config_entries
 from homeassistant import data_entry_flow
+from homeassistant.const import CONF_PASSWORD
 
 from .const import MOCK_CLOUD_ENTRY_DATA
 from .const import MOCK_CONFIG
 from .const import MOCK_DEMO_ENTRY_DATA
 from .const import MOCK_LOCAL_CONFIG
 from .const import MOCK_LOCAL_ENTRY_DATA
+from .const import MOCK_LOCAL_TIMEOUT_MESSAGE
 
 
 # This fixture bypasses the actual setup of the integration
@@ -155,3 +159,21 @@ async def test_multiple_entries_allowed(hass, bypass_try_connect):
         assert result["type"] is data_entry_flow.FlowResultType.CREATE_ENTRY
 
     assert len(hass.config_entries.async_entries(DOMAIN)) == 2
+
+
+async def test_local_config_flow_timeout_does_not_log_credentials(hass, caplog):
+    """Test that a timeout while connecting keeps the credentials out of the log."""
+    caplog.set_level(logging.DEBUG)
+    result = await _start_flow(hass, CONF_CONNECTION_LOCAL)
+    with patch(
+        "PyMyGekko.MyGekkoLocalApiClient.try_connect",
+        side_effect=ConnectionTimeoutError(MOCK_LOCAL_TIMEOUT_MESSAGE),
+    ):
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], user_input=MOCK_LOCAL_CONFIG
+        )
+
+    assert result["type"] is data_entry_flow.FlowResultType.FORM
+    assert result["errors"] == {"base": "auth_local"}
+    assert "Connecting to myGEKKO failed: ConnectionTimeoutError" in caplog.text
+    assert MOCK_LOCAL_CONFIG[CONF_PASSWORD] not in caplog.text

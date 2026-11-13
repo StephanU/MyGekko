@@ -45,3 +45,11 @@ MOCK_LOCAL_ENTRY_DATA = {
     CONF_CONNECTION_TYPE: CONF_CONNECTION_LOCAL,
 }
 MOCK_DEMO_ENTRY_DATA = {CONF_CONNECTION_TYPE: CONF_CONNECTION_DEMO_MODE}
+
+# aiohttp puts the full request URL into the message of some errors, so this is
+# what a timed-out request of the local connection reports.
+MOCK_LOCAL_TIMEOUT_MESSAGE = (
+    f"Connection timeout to host https://{MOCK_LOCAL_CONFIG[CONF_IP_ADDRESS]}"
+    f"/api/v1/var/status?username={MOCK_LOCAL_CONFIG[CONF_USERNAME]}"
+    f"&password={MOCK_LOCAL_CONFIG[CONF_PASSWORD]}"
+)
