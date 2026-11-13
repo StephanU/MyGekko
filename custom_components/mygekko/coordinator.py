@@ -2,6 +2,7 @@
 import logging
 from datetime import timedelta
 
+from aiohttp import ClientError
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_API_KEY
 from homeassistant.const import CONF_IP_ADDRESS
@@ -15,6 +16,7 @@ from homeassistant.helpers.update_coordinator import UpdateFailed
 from PyMyGekko import MyGekkoDemoModeClient
 from PyMyGekko import MyGekkoLocalApiClient
 from PyMyGekko import MyGekkoQueryApiClient
+from PyMyGekko.data_provider import MyGekkoError
 
 from .const import CONF_CONNECTION_DEMO_MODE
 from .const import CONF_CONNECTION_LOCAL
@@ -80,6 +82,14 @@ class MyGekkoDataUpdateCoordinator(DataUpdateCoordinator):
         _LOGGER.debug("_async_update_data ")
         try:
             return await self.api.read_data()
+        except (ClientError, TimeoutError) as exception:
+            # Some aiohttp errors carry the request URL in their message, and
+            # its query string holds the credentials. Neither the message nor
+            # the exception itself may reach the log.
+            raise UpdateFailed(type(exception).__name__) from None
+        except MyGekkoError as exception:
+            # PyMyGekko keeps the credentials out of its error messages.
+            raise UpdateFailed(str(exception) or type(exception).__name__) from None
         except Exception as exception:
             _LOGGER.exception("_async_update_data failed")
             raise UpdateFailed() from exception

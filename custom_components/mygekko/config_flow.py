@@ -3,7 +3,7 @@ import logging
 
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
-from aiohttp import ClientConnectorError
+from aiohttp import ClientError
 from homeassistant import config_entries
 from homeassistant.const import CONF_API_KEY
 from homeassistant.const import CONF_IP_ADDRESS
@@ -216,8 +216,9 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             client = MyGekkoQueryApiClient(username, apikey, gekkoid, session)
             await client.try_connect()
             return client
-        except ClientConnectorError:
-            _LOGGER.exception("ClientConnectorError")
+        except (ClientError, TimeoutError) as exception:
+            # The message may contain the request URL including the credentials.
+            _LOGGER.error("Connecting to myGEKKO failed: %s", type(exception).__name__)
         except MyGekkoError:
             _LOGGER.exception("MyGekkoError")
         return None
@@ -229,8 +230,9 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             client = MyGekkoLocalApiClient(username, password, session, ip_address)
             await client.try_connect()
             return client
-        except ClientConnectorError:
-            _LOGGER.exception("ClientConnectorError")
+        except (ClientError, TimeoutError) as exception:
+            # The message may contain the request URL including the credentials.
+            _LOGGER.error("Connecting to myGEKKO failed: %s", type(exception).__name__)
         except MyGekkoError:
             _LOGGER.exception("MyGekkoError")
 
