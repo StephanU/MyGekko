@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock
 from unittest.mock import patch
 
 import pytest
+from custom_components.mygekko.alarm_system import stable_new_input_groups
 from custom_components.mygekko.const import CONF_ALARM_SYSTEM_READ_ONLY
 from custom_components.mygekko.const import CONF_INPUT_GROUP_INDEX
 from custom_components.mygekko.const import CONF_SECURITY_AREA
@@ -60,6 +61,8 @@ class FakeAlarmSystem:
         self.active_input_groups = [379]
         self.device_state = 0
         self.enabled = True
+        # Active input groups of the next polls, one list per poll.
+        self.polls: list[list[int]] = []
 
     def resources(self):
         """Return the alarmsystem node of /api/v1/var."""
@@ -100,6 +103,8 @@ def alarm_fixture():
         )
         resources.pop("alarmsystem", None)
         status.pop("alarmsystem", None)
+        if alarm.polls:
+            alarm.active_input_groups = alarm.polls.pop(0)
         if alarm.enabled:
             resources["alarmsystem"] = alarm.resources()
             status["alarmsystem"] = alarm.status()
@@ -344,14 +349,24 @@ async def test_input_group_binary_sensor(hass, alarm):
     assert area.config_subentry_id is None
 
 
+async def _start_input_group_flow(hass, entry, menu_choice):
+    """Start adding an input group and pick learning or manual entry."""
+    result = await hass.config_entries.subentries.async_init(
+        (entry.entry_id, SUBENTRY_TYPE_INPUT_GROUP), context={"source": "user"}
+    )
+    assert result["type"] is FlowResultType.MENU
+    return await hass.config_entries.subentries.async_configure(
+        result["flow_id"], {"next_step_id": menu_choice}
+    )
+
+
 async def test_add_and_change_input_group(hass, alarm):
     """Input groups are added and changed through the subentry flow."""
     entry = await _setup(hass)
 
-    result = await hass.config_entries.subentries.async_init(
-        (entry.entry_id, SUBENTRY_TYPE_INPUT_GROUP), context={"source": "user"}
-    )
+    result = await _start_input_group_flow(hass, entry, "manual")
     assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "manual"
     result = await hass.config_entries.subentries.async_configure(
         result["flow_id"],
         {CONF_INPUT_GROUP_INDEX: 379, CONF_NAME: "Main entrance", CONF_DEVICE_CLASS: "door"},
@@ -364,9 +379,7 @@ async def test_add_and_change_input_group(hass, alarm):
     assert hass.states.get(entity_id).state == "on"
 
     # The same input group cannot be added twice.
-    result = await hass.config_entries.subentries.async_init(
-        (entry.entry_id, SUBENTRY_TYPE_INPUT_GROUP), context={"source": "user"}
-    )
+    result = await _start_input_group_flow(hass, entry, "manual")
     result = await hass.config_entries.subentries.async_configure(
         result["flow_id"], {CONF_INPUT_GROUP_INDEX: 379, CONF_NAME: "Again"}
     )
@@ -423,3 +436,95 @@ async def test_without_alarm_system(hass, alarm):
     )
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "no_alarm_system"
+
+
+def test_stable_new_input_groups():
+    """Only input groups new since the baseline and active in a row count."""
+    baseline = {1, 2, 3}
+    assert stable_new_input_groups(baseline, [{1, 212}], 2) == set()
+    assert stable_new_input_groups(baseline, [{1, 212}, {2, 212}], 2) == {212}
+    # Flickering between polls is not stable.
+    assert stable_new_input_groups(baseline, [{212}, {213}], 2) == set()
+    # Only the last polls count.
+    assert stable_new_input_groups(baseline, [{5}, {5, 212}, {212}], 2) == {212}
+
+
+async def _run_learning(hass, alarm, baseline_polls, detect_polls):
+    """Add an input group by learning, return the step after the detection."""
+    entry = await _setup(hass)
+    alarm.polls = [*baseline_polls, *detect_polls]
+
+    result = await _start_input_group_flow(hass, entry, "learn")
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "learn"
+
+    result = await hass.config_entries.subentries.async_configure(result["flow_id"], {})
+    assert result["type"] is FlowResultType.SHOW_PROGRESS
+    assert result["progress_action"] == "learn_baseline"
+    await hass.async_block_till_done()
+
+    result = await hass.config_entries.subentries.async_configure(result["flow_id"])
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "learn_trigger"
+
+    result = await hass.config_entries.subentries.async_configure(result["flow_id"], {})
+    assert result["type"] is FlowResultType.SHOW_PROGRESS
+    assert result["progress_action"] == "learn_detect"
+    await hass.async_block_till_done()
+
+    return entry, await hass.config_entries.subentries.async_configure(
+        result["flow_id"]
+    )
+
+
+# Motion detectors 120 and 166 flicker while the baseline is recorded.
+BASELINE_POLLS = [[120], [120, 166], [], [166], [120], []]
+
+
+@pytest.fixture(name="fast_learning")
+def fast_learning_fixture():
+    """Learn without waiting between the polls."""
+    with patch("custom_components.mygekko.alarm_system.LEARN_POLL_INTERVAL", 0):
+        yield
+
+
+async def test_learn_input_group(hass, alarm, fast_learning):
+    """A triggered input group is found despite flickering motion detectors."""
+    entry, result = await _run_learning(
+        hass, alarm, BASELINE_POLLS, [[120, 212], [166, 212]]
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "learned"
+    assert result["description_placeholders"] == {"index": "212"}
+    # The polls stop as soon as one input group is found.
+    assert alarm.polls == []
+
+    result = await hass.config_entries.subentries.async_configure(
+        result["flow_id"],
+        {CONF_INPUT_GROUP_INDEX: 212, CONF_NAME: "Window", CONF_DEVICE_CLASS: "window"},
+    )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    (subentry,) = entry.subentries.values()
+    assert subentry.data[CONF_INPUT_GROUP_INDEX] == 212
+    assert subentry.title == "Window"
+
+
+async def test_learn_input_group_found_none(hass, alarm, fast_learning):
+    """Without a new stable input group the index is entered by hand."""
+    _, result = await _run_learning(
+        hass, alarm, BASELINE_POLLS, [[120], [166, 212], [120, 213]] + [[]] * 9
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "manual"
+    assert result["errors"] == {"base": "no_input_group_found"}
+
+
+async def test_learn_input_group_found_several(hass, alarm, fast_learning):
+    """Several new stable input groups are listed for manual entry."""
+    _, result = await _run_learning(
+        hass, alarm, BASELINE_POLLS, [[212, 213]] * 12
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "manual"
+    assert result["errors"] == {"base": "multiple_input_groups_found"}
+    assert result["description_placeholders"] == {"indexes": "212, 213"}

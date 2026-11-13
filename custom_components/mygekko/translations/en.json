@@ -453,7 +453,36 @@
       "step": {
         "user": {
           "title": "Add input group",
+          "menu_options": {
+            "learn": "Learn (trigger the detector)",
+            "manual": "Enter the index"
+          }
+        },
+        "manual": {
+          "title": "Add input group",
           "description": "Adds an input group (\"Meldebereich\") of the alarm panel as binary sensor.",
+          "data": {
+            "index": "Index",
+            "name": "Name",
+            "device_class": "Type",
+            "security_area": "Security area"
+          },
+          "data_description": {
+            "index": "Index of the input group, as listed in the attribute of the sensor \"Active input groups\" while the detector is active.",
+            "security_area": "The security area the binary sensor is shown with."
+          }
+        },
+        "learn": {
+          "title": "Learn: baseline",
+          "description": "Keep the detector closed and select Submit. The integration records for about 30 seconds which input groups are active right now."
+        },
+        "learn_trigger": {
+          "title": "Learn: trigger the detector",
+          "description": "Now open the window or trigger the detector and select Submit. Keep it open until the search has finished."
+        },
+        "learned": {
+          "title": "Add input group",
+          "description": "Found: index {index}. Add name, type and security area.",
           "data": {
             "index": "Index",
             "name": "Name",
@@ -480,11 +509,17 @@
         }
       },
       "error": {
-        "input_group_already_configured": "This input group has already been added."
+        "input_group_already_configured": "This input group has already been added.",
+        "no_input_group_found": "No new input group found. Was the detector triggered? Try again or enter the index.",
+        "multiple_input_groups_found": "Several new input groups found: {indexes}. Enter the right index or try again."
       },
       "abort": {
         "no_alarm_system": "This myGEKKO has no alarm system, or it is not loaded.",
         "reconfigure_successful": "Reconfiguration was successful"
+      },
+      "progress": {
+        "learn_baseline": "Recording the baseline (about 30 seconds).",
+        "learn_detect": "Looking for the input group (at most 60 seconds)."
       }
     }
   },

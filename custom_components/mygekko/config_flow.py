@@ -21,6 +21,7 @@ from PyMyGekko import MyGekkoLocalApiClient
 from PyMyGekko import MyGekkoQueryApiClient
 from PyMyGekko.data_provider import MyGekkoError
 
+from .alarm_system import InputGroupLearner
 from .const import CONF_ALARM_SYSTEM_READ_ONLY
 from .const import CONF_CONNECTION_DEMO_MODE
 from .const import CONF_CONNECTION_DEMO_MODE_LABEL
@@ -359,28 +360,125 @@ class MyGekkoOptionsFlow(OptionsFlow):
 class InputGroupSubentryFlow(ConfigSubentryFlow):
     """Add or change an input group of the alarm panel as binary sensor.
 
-    myGEKKO reports which input groups are active but not what they are, so
-    the user enters the index (as listed by the "active input groups" sensor),
+    myGEKKO reports which input groups are active but not what they are. The
+    index is either learned (the user triggers the detector while the flow
+    watches for a new, stable input group) or entered by hand. The user adds
     a name, the kind of detector and optionally the security area.
     """
 
+    def __init__(self) -> None:
+        """Initialize the flow."""
+        self._learner: InputGroupLearner | None = None
+        self._learn_task = None
+        # Sorted candidates of a learning run without a single result, shown
+        # as error on the manual form. None when there is nothing to report.
+        self._candidates: list[int] | None = None
+        self._learned_index: int | None = None
+
     async def async_step_user(self, user_input=None):
-        """Add an input group."""
-        return await self._async_step_input_group(user_input, None)
+        """Choose whether to learn the index or to enter it."""
+        if not _get_alarm_systems(self.hass, self._get_entry()):
+            return self.async_abort(reason="no_alarm_system")
+        return self.async_show_menu(step_id="user", menu_options=["learn", "manual"])
+
+    async def async_step_manual(self, user_input=None):
+        """Add an input group by its index."""
+        errors = {}
+        placeholders = {}
+        if user_input is None and self._candidates is not None:
+            # Learning ended without exactly one candidate.
+            if self._candidates:
+                errors["base"] = "multiple_input_groups_found"
+                placeholders["indexes"] = ", ".join(map(str, self._candidates))
+            else:
+                errors["base"] = "no_input_group_found"
+            self._candidates = None
+        return await self._async_step_input_group(
+            user_input, None, "manual", errors=errors, placeholders=placeholders
+        )
+
+    async def async_step_learn(self, user_input=None):
+        """Explain the baseline, start recording it once confirmed."""
+        if user_input is None:
+            return self.async_show_form(step_id="learn")
+        coordinator = self.hass.data[DOMAIN][self._get_entry().entry_id]
+        self._learner = InputGroupLearner(coordinator)
+        return await self.async_step_learn_baseline()
+
+    async def async_step_learn_baseline(self, user_input=None):
+        """Record the input groups active while nothing is triggered."""
+        if self._learn_task is None:
+            self._learn_task = self.hass.async_create_task(
+                self._learner.async_record_baseline()
+            )
+        if not self._learn_task.done():
+            return self.async_show_progress(
+                step_id="learn_baseline",
+                progress_action="learn_baseline",
+                progress_task=self._learn_task,
+            )
+        self._learn_task = None
+        return self.async_show_progress_done(next_step_id="learn_trigger")
+
+    async def async_step_learn_trigger(self, user_input=None):
+        """Ask to trigger the detector, start looking for it once confirmed."""
+        if user_input is None:
+            return self.async_show_form(step_id="learn_trigger")
+        return await self.async_step_learn_detect()
+
+    async def async_step_learn_detect(self, user_input=None):
+        """Look for the input group the user triggered."""
+        if self._learn_task is None:
+            self._learn_task = self.hass.async_create_task(
+                self._learner.async_detect()
+            )
+        if not self._learn_task.done():
+            return self.async_show_progress(
+                step_id="learn_detect",
+                progress_action="learn_detect",
+                progress_task=self._learn_task,
+            )
+        candidates = self._learn_task.result()
+        self._learn_task = None
+        if len(candidates) == 1:
+            self._learned_index = candidates[0]
+            return self.async_show_progress_done(next_step_id="learned")
+        self._candidates = candidates
+        return self.async_show_progress_done(next_step_id="manual")
+
+    async def async_step_learned(self, user_input=None):
+        """Add the learned input group."""
+        index = self._learned_index
+        return await self._async_step_input_group(
+            user_input,
+            None,
+            "learned",
+            suggested={CONF_INPUT_GROUP_INDEX: index},
+            placeholders={"index": str(index)},
+        )
 
     async def async_step_reconfigure(self, user_input=None):
         """Change an input group."""
         return await self._async_step_input_group(
-            user_input, self._get_reconfigure_subentry()
+            user_input, self._get_reconfigure_subentry(), "reconfigure"
         )
 
-    async def _async_step_input_group(self, user_input, subentry):
+    async def _async_step_input_group(
+        self,
+        user_input,
+        subentry,
+        step_id,
+        *,
+        errors=None,
+        suggested=None,
+        placeholders=None,
+    ):
         entry = self._get_entry()
         alarm_systems = _get_alarm_systems(self.hass, entry)
         if not alarm_systems:
             return self.async_abort(reason="no_alarm_system")
 
-        errors = {}
+        errors = dict(errors or {})
         if user_input is not None:
             index = int(user_input[CONF_INPUT_GROUP_INDEX])
             taken = {
@@ -410,8 +508,9 @@ class InputGroupSubentryFlow(ConfigSubentryFlow):
                     unique_id=str(index),
                 )
 
-        suggested = user_input
-        if suggested is None and subentry is not None:
+        if user_input is not None:
+            suggested = user_input
+        elif subentry is not None:
             suggested = {**subentry.data, CONF_NAME: subentry.title}
 
         input_group_count = alarm_systems[0].input_group_count or 512
@@ -448,7 +547,8 @@ class InputGroupSubentryFlow(ConfigSubentryFlow):
         )
 
         return self.async_show_form(
-            step_id="user" if subentry is None else "reconfigure",
+            step_id=step_id,
             data_schema=self.add_suggested_values_to_schema(schema, suggested or {}),
             errors=errors,
+            description_placeholders=placeholders or {},
         )

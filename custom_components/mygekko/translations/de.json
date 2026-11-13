@@ -454,7 +454,36 @@
       "step": {
         "user": {
           "title": "Meldebereich hinzufügen",
+          "menu_options": {
+            "learn": "Anlernen (Melder auslösen)",
+            "manual": "Index selbst eingeben"
+          }
+        },
+        "manual": {
+          "title": "Meldebereich hinzufügen",
           "description": "Fügt einen Meldebereich der Alarmanlage als Binärsensor hinzu.",
+          "data": {
+            "index": "Index",
+            "name": "Name",
+            "device_class": "Typ",
+            "security_area": "Sicherungsbereich"
+          },
+          "data_description": {
+            "index": "Index des Meldebereichs, wie ihn das Attribut des Sensors „Aktive Meldebereiche“ anzeigt, während der Melder aktiv ist.",
+            "security_area": "Der Sicherungsbereich, bei dem der Binärsensor angezeigt wird."
+          }
+        },
+        "learn": {
+          "title": "Anlernen: Ausgangszustand",
+          "description": "Lass den Melder geschlossen und klicke auf Absenden. Die Integration merkt sich etwa 30 Sekunden lang, welche Meldebereiche gerade aktiv sind."
+        },
+        "learn_trigger": {
+          "title": "Anlernen: Melder auslösen",
+          "description": "Öffne jetzt das Fenster bzw. löse den Melder aus und klicke auf Absenden. Lass es offen, bis die Suche fertig ist."
+        },
+        "learned": {
+          "title": "Meldebereich hinzufügen",
+          "description": "Gefunden: Index {index}. Ergänze Name, Typ und Sicherungsbereich.",
           "data": {
             "index": "Index",
             "name": "Name",
@@ -481,11 +510,17 @@
         }
       },
       "error": {
-        "input_group_already_configured": "Dieser Meldebereich wurde bereits hinzugefügt."
+        "input_group_already_configured": "Dieser Meldebereich wurde bereits hinzugefügt.",
+        "no_input_group_found": "Kein neuer Meldebereich gefunden. War der Melder ausgelöst? Versuche es erneut oder gib den Index selbst ein.",
+        "multiple_input_groups_found": "Mehrere neue Meldebereiche gefunden: {indexes}. Gib den richtigen Index selbst ein oder versuche es erneut."
       },
       "abort": {
         "no_alarm_system": "Dieser myGEKKO hat keine Alarmanlage, oder sie ist nicht geladen.",
         "reconfigure_successful": "Die Neukonfiguration war erfolgreich"
+      },
+      "progress": {
+        "learn_baseline": "Ausgangszustand wird erfasst (etwa 30 Sekunden).",
+        "learn_detect": "Meldebereich wird gesucht (höchstens 60 Sekunden)."
       }
     }
   },

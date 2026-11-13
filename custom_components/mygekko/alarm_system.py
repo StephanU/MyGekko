@@ -7,6 +7,8 @@ identical in all items. The entities therefore get two kinds of devices: one
 per security area and one for the panel, which reads the panel values from the
 first item.
 """
+import asyncio
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import callback
 from homeassistant.core import HomeAssistant
@@ -24,6 +26,13 @@ from .entity import MyGekkoEntity
 from .entity import scoped_id
 
 ALARM_SYSTEM_ENTITY_PREFIX = "alarm_system"
+
+# Learning an input group polls the controller itself, so it takes the same
+# number of polls whatever update interval the entry uses.
+LEARN_POLL_INTERVAL = 5
+LEARN_BASELINE_POLLS = 6
+LEARN_DETECT_POLLS = 12
+LEARN_STABLE_POLLS = 2
 
 # All device models myGEKKO reports are TELENOT panels.
 _DEVICE_MODELS = {
@@ -138,3 +147,67 @@ class MyGekkoAlarmPanelEntity(CoordinatorEntity):
         self._alarm_system = alarm_system
         self._attr_unique_id = f"{panel_device_id(coordinator)}_{key}"
         self._attr_device_info = panel_device_info(coordinator, alarm_system)
+
+
+def stable_new_input_groups(
+    baseline: set[int], recent: list[set[int]], stable_polls: int
+) -> set[int]:
+    """Return the input groups active in each of the last polls but never before.
+
+    Motion detectors switch every few seconds, so an input group only counts
+    as triggered by the user when it was never active while recording the
+    baseline and stays active for stable_polls polls in a row.
+    """
+    if len(recent) < stable_polls:
+        return set()
+    return set.intersection(*recent[-stable_polls:]) - baseline
+
+
+class InputGroupLearner:
+    """Find the index of the input group the user triggers, e.g. a window."""
+
+    def __init__(self, coordinator) -> None:
+        """Initialize the learner for the controller of the coordinator."""
+        self._coordinator = coordinator
+        self._baseline: set[int] = set()
+
+    async def async_record_baseline(self) -> None:
+        """Remember every input group active while nothing is triggered."""
+        self._baseline = set()
+        for poll in range(LEARN_BASELINE_POLLS):
+            if poll:
+                await asyncio.sleep(LEARN_POLL_INTERVAL)
+            if (active := await self._async_poll()) is not None:
+                self._baseline |= active
+
+    async def async_detect(self) -> list[int]:
+        """Return the candidates for the triggered input group, sorted.
+
+        Ends as soon as exactly one candidate is stable, else after
+        LEARN_DETECT_POLLS polls with whatever candidates are stable then.
+        """
+        recent: list[set[int]] = []
+        candidates: set[int] = set()
+        for poll in range(LEARN_DETECT_POLLS):
+            if poll:
+                await asyncio.sleep(LEARN_POLL_INTERVAL)
+            if (active := await self._async_poll()) is None:
+                continue
+            recent.append(active)
+            candidates = stable_new_input_groups(
+                self._baseline, recent, LEARN_STABLE_POLLS
+            )
+            if len(candidates) == 1:
+                break
+        return sorted(candidates)
+
+    async def _async_poll(self) -> set[int] | None:
+        """Read the active input groups now, None if the poll failed."""
+        await self._coordinator.async_refresh()
+        if not self._coordinator.last_update_success:
+            return None
+        alarm_systems = get_alarm_systems(self._coordinator)
+        if not alarm_systems:
+            return None
+        active = alarm_systems[0].active_input_groups
+        return set(active) if active is not None else None
