@@ -24,6 +24,8 @@ from custom_components.mygekko.const import (
 )
 from homeassistant import config_entries
 from homeassistant import data_entry_flow
+from homeassistant.const import CONF_API_KEY
+from homeassistant.const import CONF_IP_ADDRESS
 from homeassistant.const import CONF_PASSWORD
 
 from .const import MOCK_CLOUD_ENTRY_DATA
@@ -176,4 +178,39 @@ async def test_local_config_flow_timeout_does_not_log_credentials(hass, caplog):
     assert result["type"] is data_entry_flow.FlowResultType.FORM
     assert result["errors"] == {"base": "auth_local"}
     assert "Connecting to myGEKKO failed: ConnectionTimeoutError" in caplog.text
+    assert MOCK_LOCAL_CONFIG[CONF_PASSWORD] not in caplog.text
+
+
+async def test_cloud_config_flow_does_not_log_api_key(
+    hass, caplog, bypass_try_connect, bypass_get_data, gekko_name
+):
+    """Test that submitting the cloud credentials keeps the API key out of the log."""
+    caplog.set_level(logging.DEBUG)
+    result = await _start_flow(hass, CONF_CONNECTION_MY_GEKKO_CLOUD)
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], user_input=MOCK_CONFIG
+    )
+
+    assert result["type"] is data_entry_flow.FlowResultType.CREATE_ENTRY
+    assert MOCK_CONFIG[CONF_API_KEY] not in caplog.text
+
+
+async def test_local_config_flow_name_timeout_does_not_log_credentials(
+    hass, caplog, bypass_try_connect
+):
+    """Test that a timeout reading the gekko name keeps the credentials out of the log."""
+    caplog.set_level(logging.DEBUG)
+    result = await _start_flow(hass, CONF_CONNECTION_LOCAL)
+    with patch(
+        "PyMyGekko.MyGekkoLocalApiClient.read_data",
+        side_effect=ConnectionTimeoutError(MOCK_LOCAL_TIMEOUT_MESSAGE),
+    ):
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], user_input=MOCK_LOCAL_CONFIG
+        )
+
+    # The credentials are valid, so the entry is created with the IP as title.
+    assert result["type"] is data_entry_flow.FlowResultType.CREATE_ENTRY
+    assert result["title"] == MOCK_LOCAL_CONFIG[CONF_IP_ADDRESS]
+    assert "Could not determine the gekko name: ConnectionTimeoutError" in caplog.text
     assert MOCK_LOCAL_CONFIG[CONF_PASSWORD] not in caplog.text
