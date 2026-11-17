@@ -6,6 +6,8 @@ from unittest.mock import PropertyMock
 from custom_components.mygekko.const import DOMAIN
 from homeassistant.const import ATTR_ENTITY_ID
 from homeassistant.helpers import entity_registry as er
+from PyMyGekko.resources.Clocks import Clock
+from PyMyGekko.resources.Clocks import ClockState
 from PyMyGekko.resources.Vents import Vent
 from PyMyGekko.resources.Vents import VentWorkingLevel
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -46,3 +48,38 @@ async def test_earlier_option_does_not_end_latest(hass):
         polled["working_level"] = VentWorkingLevel.LEVEL_2
         await coordinator.async_refresh()
         assert hass.states.get(entity_id).state == str(VentWorkingLevel.LEVEL_3)
+
+
+async def test_earlier_clock_option_does_not_end_latest(hass):
+    """A poll showing an earlier selected clock state must keep the latest one."""
+    config_entry = MockConfigEntry(
+        domain=DOMAIN, data=MOCK_DEMO_ENTRY_DATA, entry_id="clock_test", version=4
+    )
+    polled = {"state": ClockState.OFF}
+    with patch.object(
+        Clock,
+        "state",
+        new_callable=PropertyMock,
+        side_effect=lambda: polled["state"],
+    ), patch.object(Clock, "set_state", new_callable=AsyncMock):
+        config_entry.add_to_hass(hass)
+        assert await hass.config_entries.async_setup(config_entry.entry_id)
+        await hass.async_block_till_done()
+        coordinator = hass.data[DOMAIN][config_entry.entry_id]
+        entity_id = er.async_get(hass).async_get_entity_id(
+            "select", DOMAIN, "clock_test_clocksitem0"
+        )
+
+        for state in (ClockState.ON, ClockState.ON_COINCIDENCE):
+            await hass.services.async_call(
+                "select",
+                "select_option",
+                {ATTR_ENTITY_ID: entity_id, "option": str(state)},
+                blocking=True,
+            )
+        assert hass.states.get(entity_id).state == str(ClockState.ON_COINCIDENCE)
+
+        # The myGekko has processed the first command, but not the second yet.
+        polled["state"] = ClockState.ON
+        await coordinator.async_refresh()
+        assert hass.states.get(entity_id).state == str(ClockState.ON_COINCIDENCE)

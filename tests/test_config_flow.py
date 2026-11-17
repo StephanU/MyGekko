@@ -17,12 +17,19 @@ from custom_components.mygekko.const import (
 from custom_components.mygekko.const import (
     CONF_CONNECTION_TYPE,
 )
+from custom_components.mygekko.const import CONF_DATE_ORDER
+from custom_components.mygekko.const import DATE_ORDER_MONTH_FIRST
 from custom_components.mygekko.const import (
     DOMAIN,
 )
+from custom_components.mygekko.const import (
+    CONF_ALARM_SYSTEM_READ_ONLY,
+)
 from homeassistant import config_entries
 from homeassistant import data_entry_flow
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+from .conftest import API_CLIENTS
 from .const import MOCK_CLOUD_ENTRY_DATA
 from .const import MOCK_CONFIG
 from .const import MOCK_DEMO_ENTRY_DATA
@@ -155,3 +162,67 @@ async def test_multiple_entries_allowed(hass, bypass_try_connect):
         assert result["type"] is data_entry_flow.FlowResultType.CREATE_ENTRY
 
     assert len(hass.config_entries.async_entries(DOMAIN)) == 2
+
+
+async def test_options_flow_sets_date_order(hass):
+    """The options flow stores how ambiguous dates are read."""
+    config_entry = MockConfigEntry(domain=DOMAIN, data=MOCK_DEMO_ENTRY_DATA, version=4)
+    config_entry.add_to_hass(hass)
+
+    result = await hass.config_entries.options.async_init(config_entry.entry_id)
+    assert result["type"] is data_entry_flow.FlowResultType.FORM
+    assert result["step_id"] == "init"
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={CONF_DATE_ORDER: DATE_ORDER_MONTH_FIRST}
+    )
+    assert result["type"] is data_entry_flow.FlowResultType.CREATE_ENTRY
+    assert config_entry.options == {CONF_DATE_ORDER: DATE_ORDER_MONTH_FIRST}
+
+
+async def test_config_flow_asks_about_alarm_system(
+    hass, bypass_try_connect, bypass_get_data, gekko_name
+):
+    """A controller with alarm system asks whether it is read only."""
+    with patch(f"{API_CLIENTS[0]}.get_alarm_systems", return_value=[object()]):
+        result = await _start_flow(hass, CONF_CONNECTION_MY_GEKKO_CLOUD)
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], user_input=MOCK_CONFIG
+        )
+
+    assert result["type"] is data_entry_flow.FlowResultType.FORM
+    assert result["step_id"] == "alarm_system"
+
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], user_input={CONF_ALARM_SYSTEM_READ_ONLY: True}
+    )
+
+    assert result["type"] is data_entry_flow.FlowResultType.CREATE_ENTRY
+    assert result["title"] == "Test Gekko"
+    assert result["data"] == MOCK_CLOUD_ENTRY_DATA
+    assert result["options"] == {CONF_ALARM_SYSTEM_READ_ONLY: True}
+
+
+async def test_reconfigure_replaces_data_and_reloads(hass, bypass_try_connect):
+    """Reconfiguring replaces the connection data and reloads the entry."""
+    entry = MockConfigEntry(
+        domain=DOMAIN, data=MOCK_CLOUD_ENTRY_DATA, title="Office", version=4
+    )
+    entry.add_to_hass(hass)
+
+    with patch.object(
+        hass.config_entries, "async_schedule_reload"
+    ) as schedule_reload:
+        result = await entry.start_reconfigure_flow(hass)
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], user_input={CONF_CONNECTION_TYPE: CONF_CONNECTION_LOCAL}
+        )
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], user_input=MOCK_LOCAL_CONFIG
+        )
+
+    assert result["type"] is data_entry_flow.FlowResultType.ABORT
+    assert result["reason"] == "reconfigure_successful"
+    assert dict(entry.data) == MOCK_LOCAL_ENTRY_DATA
+    assert entry.title == "Office"
+    schedule_reload.assert_called_once_with(entry.entry_id)

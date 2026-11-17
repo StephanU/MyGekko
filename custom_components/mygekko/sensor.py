@@ -1,4 +1,11 @@
 """Sensor platform for MyGekko."""
+from collections.abc import Callable
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any
+
+from custom_components.mygekko.alarm_system import get_alarm_systems
+from custom_components.mygekko.alarm_system import MyGekkoAlarmPanelEntity
 from custom_components.mygekko.entity import MyGekkoControllerEntity
 from custom_components.mygekko.entity import MyGekkoEntity
 from homeassistant.components.sensor import SensorDeviceClass
@@ -6,16 +13,34 @@ from homeassistant.components.sensor import SensorEntity
 from homeassistant.components.sensor import SensorEntityDescription
 from homeassistant.components.sensor import SensorStateClass
 from homeassistant.const import UnitOfRatio
+from homeassistant.const import EntityCategory
 from homeassistant.const import LIGHT_LUX
 from homeassistant.const import PERCENTAGE
+from homeassistant.const import UnitOfElectricCurrent
 from homeassistant.const import UnitOfEnergy
 from homeassistant.const import UnitOfPower
 from homeassistant.const import UnitOfSpeed
 from homeassistant.const import UnitOfTemperature
 from homeassistant.const import UnitOfVolumeFlowRate
+from homeassistant.util import dt as dt_util
 from PyMyGekko.resources.AlarmsLogics import AlarmsLogic
+from PyMyGekko.resources.AlarmSystems import AlarmSystem
+from PyMyGekko.resources.AlarmSystems import AlarmSystemDeviceState
 from PyMyGekko.resources.DoorInterComs import DoorInterCom
+from PyMyGekko.resources.EMobils import EMobil
+from PyMyGekko.resources.EMobils import EMobilChargeRequestState
+from PyMyGekko.resources.EMobils import EMobilChargeState
+from PyMyGekko.resources.EMobils import EMobilPluggedState
 from PyMyGekko.resources.EnergyCosts import EnergyCost
+from PyMyGekko.resources.EnergyManagers import EnergyManager
+from PyMyGekko.resources.EnergyManagers import EnergyManagerBatteryModel
+from PyMyGekko.resources.EnergyManagers import EnergyManagerComponentState
+from PyMyGekko.resources.EnergyManagers import EnergyManagerEmsEnabled
+from PyMyGekko.resources.EnergyManagers import EnergyManagerState
+from PyMyGekko.resources.HeatingCircuits import HeatingCircuit
+from PyMyGekko.resources.HeatingCircuits import HeatingCircuitCoolingModeState
+from PyMyGekko.resources.HeatingCircuits import HeatingCircuitDeviceModel
+from PyMyGekko.resources.HeatingCircuits import HeatingCircuitState
 from PyMyGekko.resources.HotWaterSystems import HotWaterSystem
 from PyMyGekko.resources.HotWaterSystems import HotWaterSystemFeature
 from PyMyGekko.resources.RoomTemps import RoomTemp
@@ -24,6 +49,10 @@ from PyMyGekko.resources.Vents import Vent
 from PyMyGekko.resources.Vents import VentFeature
 from PyMyGekko.resources.Meteo import Meteo
 
+from .const import CONF_DATE_ORDER
+from .const import DATE_ORDER_DAY_FIRST
+from .const import DATE_ORDER_MONTH_FIRST
+from .const import DEFAULT_DATE_ORDER
 from .const import DOMAIN
 
 SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
@@ -176,6 +205,429 @@ SENSOR_UNIT_MAPPING = {
 }
 
 
+def _enum_option(value):
+    """Return the lowercase enum member name as option string, or None."""
+    return value.name.lower() if value is not None else None
+
+
+def _enum_options(enum_cls) -> list[str]:
+    """Return the lowercase enum member names to use as sensor options."""
+    return [member.name.lower() for member in enum_cls]
+
+
+@dataclass(frozen=True, kw_only=True)
+class MyGekkoValueSensorDescription(SensorEntityDescription):
+    """Describes a MyGekko value sensor backed by a resource property."""
+
+    value_fn: Callable[[Any], Any]
+
+
+ENERGY_MANAGER_SENSORS: tuple[MyGekkoValueSensorDescription, ...] = (
+    MyGekkoValueSensorDescription(
+        key="grid_power",
+        translation_key="mygekko_energymanager_grid_power",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfPower.WATT,
+        value_fn=lambda em: em.grid_meter_power,
+    ),
+    MyGekkoValueSensorDescription(
+        key="power_exported_to_grid",
+        translation_key="mygekko_energymanager_power_exported_to_grid",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfPower.WATT,
+        value_fn=lambda em: em.power_exported_to_grid,
+    ),
+    MyGekkoValueSensorDescription(
+        key="solar_power",
+        translation_key="mygekko_energymanager_solar_power",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfPower.WATT,
+        value_fn=lambda em: em.power_from_solar_panels,
+    ),
+    MyGekkoValueSensorDescription(
+        key="battery_power",
+        translation_key="mygekko_energymanager_battery_power",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfPower.WATT,
+        value_fn=lambda em: em.power_from_battery,
+    ),
+    MyGekkoValueSensorDescription(
+        key="battery_charging_power",
+        translation_key="mygekko_energymanager_battery_charging_power",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfPower.WATT,
+        value_fn=lambda em: em.power_charging_battery,
+    ),
+    MyGekkoValueSensorDescription(
+        key="home_power_consumption",
+        translation_key="mygekko_energymanager_home_power_consumption",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfPower.WATT,
+        value_fn=lambda em: em.home_power_consumption,
+    ),
+    MyGekkoValueSensorDescription(
+        key="alternative_power_consumption",
+        translation_key="mygekko_energymanager_alternative_power_consumption",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfPower.WATT,
+        value_fn=lambda em: em.alternative_power_consumption,
+    ),
+    MyGekkoValueSensorDescription(
+        key="daily_energy_imported_from_grid",
+        translation_key="mygekko_energymanager_daily_energy_imported_from_grid",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+        value_fn=lambda em: em.daily_energy_imported_from_grid,
+    ),
+    MyGekkoValueSensorDescription(
+        key="daily_energy_exported_to_grid",
+        translation_key="mygekko_energymanager_daily_energy_exported_to_grid",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+        value_fn=lambda em: em.daily_energy_exported_to_grid,
+    ),
+    MyGekkoValueSensorDescription(
+        key="daily_energy_from_solar_panels",
+        translation_key="mygekko_energymanager_daily_energy_from_solar_panels",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+        value_fn=lambda em: em.daily_energy_from_solar_panels,
+    ),
+    MyGekkoValueSensorDescription(
+        key="daily_energy_from_battery",
+        translation_key="mygekko_energymanager_daily_energy_from_battery",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+        value_fn=lambda em: em.daily_energy_from_battery,
+    ),
+    MyGekkoValueSensorDescription(
+        key="daily_energy_charging_battery",
+        translation_key="mygekko_energymanager_daily_energy_charging_battery",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+        value_fn=lambda em: em.daily_energy_charging_battery,
+    ),
+    MyGekkoValueSensorDescription(
+        key="daily_home_energy_consumption",
+        translation_key="mygekko_energymanager_daily_home_energy_consumption",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
+        value_fn=lambda em: em.daily_home_energy_consumption,
+    ),
+    MyGekkoValueSensorDescription(
+        key="battery_soc",
+        translation_key="mygekko_energymanager_battery_soc",
+        device_class=SensorDeviceClass.BATTERY,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=PERCENTAGE,
+        value_fn=lambda em: em.battery_soc,
+    ),
+    MyGekkoValueSensorDescription(
+        key="max_power_consumption_from_grid",
+        translation_key="mygekko_energymanager_max_power_consumption_from_grid",
+        device_class=SensorDeviceClass.POWER,
+        native_unit_of_measurement=UnitOfPower.KILO_WATT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda em: em.max_power_consumption_from_grid,
+    ),
+    MyGekkoValueSensorDescription(
+        key="max_power_export_to_grid",
+        translation_key="mygekko_energymanager_max_power_export_to_grid",
+        device_class=SensorDeviceClass.POWER,
+        native_unit_of_measurement=UnitOfPower.KILO_WATT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda em: em.max_power_export_to_grid,
+    ),
+    MyGekkoValueSensorDescription(
+        key="max_power_solar_panels",
+        translation_key="mygekko_energymanager_max_power_solar_panels",
+        device_class=SensorDeviceClass.POWER,
+        native_unit_of_measurement=UnitOfPower.KILO_WATT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda em: em.max_power_solar_panels,
+    ),
+    MyGekkoValueSensorDescription(
+        key="max_power_battery",
+        translation_key="mygekko_energymanager_max_power_battery",
+        device_class=SensorDeviceClass.POWER,
+        native_unit_of_measurement=UnitOfPower.KILO_WATT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda em: em.max_power_battery,
+    ),
+    MyGekkoValueSensorDescription(
+        key="grid_meter_state",
+        translation_key="mygekko_energymanager_grid_meter_state",
+        device_class=SensorDeviceClass.ENUM,
+        options=_enum_options(EnergyManagerComponentState),
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda em: _enum_option(em.grid_meter_state),
+    ),
+    MyGekkoValueSensorDescription(
+        key="solar_panel_state",
+        translation_key="mygekko_energymanager_solar_panel_state",
+        device_class=SensorDeviceClass.ENUM,
+        options=_enum_options(EnergyManagerComponentState),
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda em: _enum_option(em.solar_panel_state),
+    ),
+    MyGekkoValueSensorDescription(
+        key="battery_state",
+        translation_key="mygekko_energymanager_battery_state",
+        device_class=SensorDeviceClass.ENUM,
+        options=_enum_options(EnergyManagerComponentState),
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda em: _enum_option(em.battery_state),
+    ),
+    MyGekkoValueSensorDescription(
+        key="load_shedding_state",
+        translation_key="mygekko_energymanager_load_shedding_state",
+        device_class=SensorDeviceClass.ENUM,
+        options=_enum_options(EnergyManagerState),
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda em: _enum_option(em.load_shedding_state),
+    ),
+    MyGekkoValueSensorDescription(
+        key="ems_state",
+        translation_key="mygekko_energymanager_ems_state",
+        device_class=SensorDeviceClass.ENUM,
+        options=_enum_options(EnergyManagerState),
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda em: _enum_option(em.ems_state),
+    ),
+    MyGekkoValueSensorDescription(
+        key="ems_enabled",
+        translation_key="mygekko_energymanager_ems_enabled",
+        device_class=SensorDeviceClass.ENUM,
+        options=_enum_options(EnergyManagerEmsEnabled),
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda em: _enum_option(em.ems_enabled),
+    ),
+    MyGekkoValueSensorDescription(
+        key="battery_model",
+        translation_key="mygekko_energymanager_battery_model",
+        device_class=SensorDeviceClass.ENUM,
+        options=_enum_options(EnergyManagerBatteryModel),
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda em: _enum_option(em.battery_model),
+    ),
+)
+
+
+HEATING_CIRCUIT_SENSORS: tuple[MyGekkoValueSensorDescription, ...] = (
+    MyGekkoValueSensorDescription(
+        key="flow_temperature",
+        translation_key="mygekko_heatingcircuit_flow_temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        value_fn=lambda hc: hc.flow_temperature,
+    ),
+    MyGekkoValueSensorDescription(
+        key="return_flow_temperature",
+        translation_key="mygekko_heatingcircuit_return_flow_temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        value_fn=lambda hc: hc.return_flow_temperature,
+    ),
+    MyGekkoValueSensorDescription(
+        key="dew_point",
+        translation_key="mygekko_heatingcircuit_dew_point",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        value_fn=lambda hc: hc.dew_point,
+    ),
+    MyGekkoValueSensorDescription(
+        key="flow_temperature_setpoint",
+        translation_key="mygekko_heatingcircuit_flow_temperature_setpoint",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        value_fn=lambda hc: hc.flow_temperature_setpoint,
+    ),
+    MyGekkoValueSensorDescription(
+        key="pump_working_level",
+        translation_key="mygekko_heatingcircuit_pump_working_level",
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=PERCENTAGE,
+        icon="mdi:gauge",
+        value_fn=lambda hc: hc.pump_working_level,
+    ),
+    MyGekkoValueSensorDescription(
+        key="valve_opening_level",
+        translation_key="mygekko_heatingcircuit_valve_opening_level",
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=PERCENTAGE,
+        icon="mdi:valve",
+        value_fn=lambda hc: hc.valve_opening_level,
+    ),
+    MyGekkoValueSensorDescription(
+        key="cooling_mode_state",
+        translation_key="mygekko_heatingcircuit_cooling_mode_state",
+        device_class=SensorDeviceClass.ENUM,
+        options=_enum_options(HeatingCircuitCoolingModeState),
+        value_fn=lambda hc: _enum_option(hc.cooling_mode_state),
+    ),
+    MyGekkoValueSensorDescription(
+        key="state",
+        translation_key="mygekko_heatingcircuit_state",
+        device_class=SensorDeviceClass.ENUM,
+        options=_enum_options(HeatingCircuitState),
+        value_fn=lambda hc: _enum_option(hc.state),
+    ),
+    MyGekkoValueSensorDescription(
+        key="device_model",
+        translation_key="mygekko_heatingcircuit_device_model",
+        device_class=SensorDeviceClass.ENUM,
+        options=_enum_options(HeatingCircuitDeviceModel),
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda hc: _enum_option(hc.device_model),
+    ),
+)
+
+
+# myGekko pre-formats date values into a localized, human-readable string whose
+# separators and field order depend on the controller's configured language
+# (e.g. German "23.07.2026 14:47:23"). Dotted and ISO-like layouts are
+# unambiguous. With "/" or "-" separators, day and month can be swapped, so the
+# date order option decides which reading wins when both are valid dates.
+_UNAMBIGUOUS_DATE_FORMATS = (
+    "%d.%m.%Y %H:%M:%S",
+    "%Y-%m-%d %H:%M:%S",
+)
+_SWAPPABLE_DATE_FORMATS = {
+    DATE_ORDER_DAY_FIRST: ("%d/%m/%Y %H:%M:%S", "%d-%m-%Y %H:%M:%S"),
+    DATE_ORDER_MONTH_FIRST: ("%m/%d/%Y %H:%M:%S", "%m-%d-%Y %H:%M:%S"),
+}
+
+
+def parse_mygekko_datetime(value: str | None, date_order: str) -> datetime | None:
+    """Parse a localized myGekko date and time into a timezone-aware datetime.
+
+    A value that fits only one layout is read that way. When day and month
+    could be swapped (e.g. "05/07/2026"), date_order decides which comes first,
+    so the same value always yields the same date. myGekko reports local time,
+    which is taken to be the Home Assistant time zone. Returns None when no
+    layout fits, so the sensor reads "unknown" instead of raising.
+    """
+    if not value:
+        return None
+    value = value.strip()
+
+    formats = [
+        *_UNAMBIGUOUS_DATE_FORMATS,
+        *_SWAPPABLE_DATE_FORMATS[date_order],
+        *(
+            date_format
+            for order, date_formats in _SWAPPABLE_DATE_FORMATS.items()
+            if order != date_order
+            for date_format in date_formats
+        ),
+    ]
+    for date_format in formats:
+        try:
+            parsed = datetime.strptime(value, date_format)
+        except ValueError:
+            continue
+        return parsed.replace(tzinfo=dt_util.DEFAULT_TIME_ZONE)
+    return None
+
+
+EMOBIL_SENSORS: tuple[MyGekkoValueSensorDescription, ...] = (
+    MyGekkoValueSensorDescription(
+        key="charging_power",
+        translation_key="mygekko_emobil_charging_power",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfPower.KILO_WATT,
+        value_fn=lambda ev: ev.current_charging_power,
+    ),
+    MyGekkoValueSensorDescription(
+        key="charging_energy",
+        translation_key="mygekko_emobil_charging_energy",
+        device_class=SensorDeviceClass.ENERGY,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
+        value_fn=lambda ev: ev.current_charging_energy,
+    ),
+    MyGekkoValueSensorDescription(
+        key="charging_current_setpoint",
+        translation_key="mygekko_emobil_charging_current_setpoint",
+        device_class=SensorDeviceClass.CURRENT,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
+        value_fn=lambda ev: ev.electric_current_setpoint,
+    ),
+    MyGekkoValueSensorDescription(
+        key="maximum_charging_power",
+        translation_key="mygekko_emobil_maximum_charging_power",
+        device_class=SensorDeviceClass.POWER,
+        native_unit_of_measurement=UnitOfPower.KILO_WATT,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda ev: ev.maximum_charging_power,
+    ),
+    MyGekkoValueSensorDescription(
+        key="plugged_state",
+        translation_key="mygekko_emobil_plugged_state",
+        device_class=SensorDeviceClass.ENUM,
+        options=_enum_options(EMobilPluggedState),
+        value_fn=lambda ev: _enum_option(ev.plugged_state),
+    ),
+    MyGekkoValueSensorDescription(
+        key="charge_state",
+        translation_key="mygekko_emobil_charge_state",
+        device_class=SensorDeviceClass.ENUM,
+        options=_enum_options(EMobilChargeState),
+        value_fn=lambda ev: _enum_option(ev.charge_state),
+    ),
+    MyGekkoValueSensorDescription(
+        key="charge_request_state",
+        translation_key="mygekko_emobil_charge_request_state",
+        device_class=SensorDeviceClass.ENUM,
+        options=_enum_options(EMobilChargeRequestState),
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda ev: _enum_option(ev.charge_request_state),
+    ),
+    MyGekkoValueSensorDescription(
+        key="charge_user",
+        translation_key="mygekko_emobil_charge_user",
+        icon="mdi:account",
+        value_fn=lambda ev: ev.charge_user_name,
+    ),
+    MyGekkoValueSensorDescription(
+        key="charge_user_index",
+        translation_key="mygekko_emobil_charge_user_index",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda ev: ev.charge_user_index,
+    ),
+)
+
+# Values myGekko reports as localized date strings, see parse_mygekko_datetime.
+EMOBIL_DATE_TIME_SENSORS: tuple[MyGekkoValueSensorDescription, ...] = (
+    MyGekkoValueSensorDescription(
+        key="charge_start_time",
+        translation_key="mygekko_emobil_charge_start_time",
+        device_class=SensorDeviceClass.TIMESTAMP,
+        icon="mdi:clock-start",
+        value_fn=lambda ev: ev.charge_start_time,
+    ),
+)
+
+
 async def async_setup_entry(hass, entry, async_add_devices):
     """Set up sensor platform."""
     coordinator = hass.data[DOMAIN][entry.entry_id]
@@ -278,9 +730,102 @@ async def async_setup_entry(hass, entry, async_add_devices):
             ]
         )
 
+    energy_managers: list[EnergyManager] = coordinator.api.get_energy_managers()
+    for energy_manager in energy_managers:
+        async_add_devices(
+            MyGekkoValueSensor(
+                coordinator, energy_manager, "energy_manager", description
+            )
+            for description in ENERGY_MANAGER_SENSORS
+        )
+
+    heating_circuits: list[HeatingCircuit] = coordinator.api.get_heating_circuits()
+    for heating_circuit in heating_circuits:
+        async_add_devices(
+            MyGekkoValueSensor(
+                coordinator, heating_circuit, "heating_circuits", description
+            )
+            for description in HEATING_CIRCUIT_SENSORS
+        )
+
+    emobils: list[EMobil] = coordinator.api.get_emobils()
+    for emobil in emobils:
+        async_add_devices(
+            MyGekkoValueSensor(coordinator, emobil, "emobils", description)
+            for description in EMOBIL_SENSORS
+        )
+        async_add_devices(
+            MyGekkoDateTimeSensor(coordinator, emobil, "emobils", description)
+            for description in EMOBIL_DATE_TIME_SENSORS
+        )
+
+    # The panel values are identical in all security areas, so the first one
+    # stands for the whole panel.
+    if alarm_systems := get_alarm_systems(coordinator):
+        async_add_devices(
+            [
+                MyGekkoAlarmPanelStateSensor(coordinator, alarm_systems[0]),
+                MyGekkoAlarmPanelActiveInputGroupsSensor(
+                    coordinator, alarm_systems[0]
+                ),
+            ]
+        )
+
+
+class MyGekkoAlarmPanelStateSensor(MyGekkoAlarmPanelEntity, SensorEntity):
+    """State of the alarm panel itself: ok, alarm or fault (e.g. battery)."""
+
+    _attr_translation_key = "mygekko_alarm_panel_state"
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options = _enum_options(AlarmSystemDeviceState)
+
+    def __init__(self, coordinator, alarm_system: AlarmSystem):
+        """Initialize the alarm panel state sensor."""
+        super().__init__(coordinator, alarm_system, "state")
+
+    @property
+    def native_value(self):
+        """Return the state of the alarm panel."""
+        return _enum_option(self._alarm_system.device_state)
+
+
+class MyGekkoAlarmPanelActiveInputGroupsSensor(MyGekkoAlarmPanelEntity, SensorEntity):
+    """Number of active input groups, their indexes as attribute.
+
+    The indexes are the ones to enter when adding an input group as binary
+    sensor. Motion detectors change them every few seconds during the day, so
+    the sensor is disabled by default and the list is kept out of the recorder.
+    """
+
+    _attr_translation_key = "mygekko_alarm_panel_active_input_groups"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_entity_registry_enabled_default = False
+    _unrecorded_attributes = frozenset({"active_input_groups"})
+
+    def __init__(self, coordinator, alarm_system: AlarmSystem):
+        """Initialize the active input groups sensor."""
+        super().__init__(coordinator, alarm_system, "active_input_groups")
+
+    @property
+    def native_value(self):
+        """Return the number of active input groups."""
+        active = self._alarm_system.active_input_groups
+        return len(active) if active is not None else None
+
+    @property
+    def extra_state_attributes(self):
+        """Return the indexes of the active input groups."""
+        return {"active_input_groups": self._alarm_system.active_input_groups or []}
+
 
 class MyGekkoAlarmsLogicsSensor(MyGekkoControllerEntity, SensorEntity):
     """mygekko AlarmsLogics Sensor class."""
+
+    # AlarmsLogic values are always numeric (see PyMyGekko AlarmsLogic.value).
+    # Marking them as a measurement makes them proper numeric sensors and keeps
+    # their frequent value changes out of the logbook.
+    _attr_state_class = SensorStateClass.MEASUREMENT
 
     def __init__(self, coordinator, alarms_logic: AlarmsLogic, globals_network):
         """Initialize a MyGekko AlarmsLogics sensor."""
@@ -803,3 +1348,43 @@ class MyGekkoDoorInterComMissedCalls(MyGekkoEntity, SensorEntity):
     def native_value(self):
         """Return the state of the sensor."""
         return self._door_inter_com.missed_calls
+
+
+class MyGekkoValueSensor(MyGekkoEntity, SensorEntity):
+    """mygekko sensor backed by a resource property via the description value_fn."""
+
+    entity_description: MyGekkoValueSensorDescription
+
+    def __init__(
+        self,
+        coordinator,
+        resource,
+        entity_prefix: str,
+        description: MyGekkoValueSensorDescription,
+    ):
+        """Initialize a MyGekko value sensor."""
+        super().__init__(coordinator, resource, entity_prefix, description.key)
+        self._resource = resource
+        self.entity_description = description
+
+    @property
+    def native_value(self):
+        """Return the state of the sensor."""
+        return self.entity_description.value_fn(self._resource)
+
+
+class MyGekkoDateTimeSensor(MyGekkoValueSensor):
+    """mygekko timestamp sensor for a value myGekko reports as a localized date.
+
+    The description's value_fn returns the date string as myGekko reports it.
+    """
+
+    @property
+    def native_value(self) -> datetime | None:
+        """Return the reported date and time."""
+        return parse_mygekko_datetime(
+            super().native_value,
+            self.coordinator.config_entry.options.get(
+                CONF_DATE_ORDER, DEFAULT_DATE_ORDER
+            ),
+        )
