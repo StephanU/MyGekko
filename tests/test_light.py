@@ -1,6 +1,8 @@
 """Test MyGekko light."""
+from unittest.mock import AsyncMock
 from unittest.mock import call
 from unittest.mock import patch
+from unittest.mock import PropertyMock
 
 import pytest
 from custom_components.mygekko.const import DOMAIN
@@ -68,3 +70,34 @@ async def test_light_turn_off(hass, demo_entry):
         )
 
     assert set_state.call_args == call(LightState.OFF)
+
+
+async def test_turn_off_survives_poll_of_earlier_turn_on(hass, demo_entry):
+    """Switching a light on and right off again must not show it on again."""
+    coordinator = hass.data[DOMAIN][demo_entry.entry_id]
+    polled = {"state": LightState.OFF}
+    with patch.object(
+        Light, "state", new_callable=PropertyMock, side_effect=lambda: polled["state"]
+    ), patch.object(Light, "set_state", new_callable=AsyncMock):
+        for service in (SERVICE_TURN_ON, SERVICE_TURN_OFF):
+            await hass.services.async_call(
+                LIGHT_DOMAIN,
+                service,
+                service_data={ATTR_ENTITY_ID: LIGHT_OFF},
+                blocking=True,
+            )
+        assert hass.states.get(LIGHT_OFF).state == STATE_OFF
+
+        # The myGekko has processed the turn on, but not the turn off yet.
+        polled["state"] = LightState.ON
+        await coordinator.async_refresh()
+        assert hass.states.get(LIGHT_OFF).state == STATE_OFF
+
+        polled["state"] = LightState.OFF
+        await coordinator.async_refresh()
+        assert hass.states.get(LIGHT_OFF).state == STATE_OFF
+
+        # Switched on at the wall afterwards.
+        polled["state"] = LightState.ON
+        await coordinator.async_refresh()
+        assert hass.states.get(LIGHT_OFF).state == STATE_ON
