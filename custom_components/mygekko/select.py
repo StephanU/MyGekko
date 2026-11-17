@@ -157,6 +157,7 @@ class MyGekkoClockSelect(MyGekkoEntity, SelectEntity):
 
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""
-        await self._clock.set_state(option)
-        self._set_optimistic("state", option, self._clock.state)
+        async with self._command_lock:
+            await self._clock.set_state(option)
+            self._set_optimistic("state", int(option), self._clock.state)
         await self.coordinator.async_request_refresh()
