@@ -3,7 +3,7 @@ import logging
 
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
-from aiohttp import ClientConnectorError
+from aiohttp import ClientError
 from homeassistant import config_entries
 from homeassistant.const import CONF_API_KEY
 from homeassistant.const import CONF_IP_ADDRESS
@@ -115,7 +115,8 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_connection_mygekko_cloud(self, user_input):
         """Show the configuration form to edit location data."""
-        _LOGGER.debug("Config flow async_step_connection_mygekko_cloud %s", user_input)
+        # user_input holds the API key once the form is submitted.
+        _LOGGER.debug("Config flow async_step_connection_mygekko_cloud")
 
         if user_input is not None:
             if (
@@ -216,8 +217,9 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             client = MyGekkoQueryApiClient(username, apikey, gekkoid, session)
             await client.try_connect()
             return client
-        except ClientConnectorError:
-            _LOGGER.exception("ClientConnectorError")
+        except (ClientError, TimeoutError) as exception:
+            # The message may contain the request URL including the credentials.
+            _LOGGER.error("Connecting to myGEKKO failed: %s", type(exception).__name__)
         except MyGekkoError:
             _LOGGER.exception("MyGekkoError")
         return None
@@ -229,8 +231,9 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             client = MyGekkoLocalApiClient(username, password, session, ip_address)
             await client.try_connect()
             return client
-        except ClientConnectorError:
-            _LOGGER.exception("ClientConnectorError")
+        except (ClientError, TimeoutError) as exception:
+            # The message may contain the request URL including the credentials.
+            _LOGGER.error("Connecting to myGEKKO failed: %s", type(exception).__name__)
         except MyGekkoError:
             _LOGGER.exception("MyGekkoError")
 
@@ -243,6 +246,11 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             globals_network = client.get_globals_network()
             if globals_network:
                 return globals_network.get("gekkoname")
+        except (ClientError, TimeoutError) as exception:
+            # The message may contain the request URL including the credentials.
+            _LOGGER.debug(
+                "Could not determine the gekko name: %s", type(exception).__name__
+            )
         except Exception:  # noqa: BLE001
             # The name is only used as the entry title and has a fallback, so no
             # failure here may abort a flow whose credentials already validated.
