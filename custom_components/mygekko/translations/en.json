@@ -56,6 +56,48 @@
       "reconfigure_successful": "Reconfiguration was successful"
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "date_order": "Ambiguous dates"
+        },
+        "data_description": {
+          "date_order": "Applies to dates from myGEKKO where day and month could be swapped, such as 05/07/2026."
+        }
+      },
+      "alarm_system": {
+        "title": "Alarm system",
+        "description": "This myGEKKO is connected to an alarm system. Each security area is added as an alarm panel.",
+        "data": {
+          "alarm_system_read_only": "Read only"
+        },
+        "data_description": {
+          "alarm_system_read_only": "Show the arming state only. Home Assistant cannot arm the security areas."
+        }
+      }
+    }
+  },
+  "selector": {
+    "date_order": {
+      "options": {
+        "day_first": "Day first (5 July)",
+        "month_first": "Month first (7 May)"
+      }
+    },
+    "input_group_device_class": {
+      "options": {
+        "window": "Window",
+        "door": "Door",
+        "garage_door": "Garage door",
+        "opening": "Opening",
+        "motion": "Motion",
+        "vibration": "Vibration",
+        "tamper": "Tamper",
+        "safety": "Safety"
+      }
+    }
+  },
   "entity": {
     "climate": {
       "mygekko_roomtemp": {
@@ -427,23 +469,6 @@
       }
     }
   },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Alarm system",
-        "description": "This myGEKKO is connected to an alarm system. Each security area is added as an alarm panel.",
-        "data": {
-          "alarm_system_read_only": "Read only"
-        },
-        "data_description": {
-          "alarm_system_read_only": "Show the arming state only. Home Assistant cannot arm the security areas."
-        }
-      }
-    },
-    "abort": {
-      "no_options": "This myGEKKO has no options."
-    }
-  },
   "config_subentries": {
     "input_group": {
       "initiate_flow": {
@@ -520,20 +545,6 @@
       "progress": {
         "learn_baseline": "Recording the baseline (about 30 seconds).",
         "learn_detect": "Looking for the input group (at most 60 seconds)."
-      }
-    }
-  },
-  "selector": {
-    "input_group_device_class": {
-      "options": {
-        "window": "Window",
-        "door": "Door",
-        "garage_door": "Garage door",
-        "opening": "Opening",
-        "motion": "Motion",
-        "vibration": "Vibration",
-        "tamper": "Tamper",
-        "safety": "Safety"
       }
     }
   },

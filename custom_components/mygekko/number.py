@@ -52,6 +52,9 @@ class MyGekkoEMobilChargingPowerNumber(MyGekkoEntity, NumberEntity):
 
     async def async_set_native_value(self, value: float) -> None:
         """Set a new charge power setpoint."""
-        await self._emobil.set_charging_power_setpoint(value)
-        self._set_optimistic("setpoint", value, self._emobil.charging_power_setpoint)
+        async with self._command_lock:
+            await self._emobil.set_charging_power_setpoint(value)
+            self._set_optimistic(
+                "setpoint", value, self._emobil.charging_power_setpoint
+            )
         await self.coordinator.async_request_refresh()

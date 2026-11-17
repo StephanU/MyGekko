@@ -30,9 +30,13 @@ from .const import CONF_CONNECTION_LOCAL_LABEL
 from .const import CONF_CONNECTION_MY_GEKKO_CLOUD
 from .const import CONF_CONNECTION_MY_GEKKO_CLOUD_LABEL
 from .const import CONF_CONNECTION_TYPE
+from .const import CONF_DATE_ORDER
 from .const import CONF_GEKKOID
 from .const import CONF_INPUT_GROUP_INDEX
 from .const import CONF_SECURITY_AREA
+from .const import DATE_ORDER_DAY_FIRST
+from .const import DATE_ORDER_MONTH_FIRST
+from .const import DEFAULT_DATE_ORDER
 from .const import DOMAIN
 from .const import SUBENTRY_TYPE_INPUT_GROUP
 
@@ -65,6 +69,19 @@ LOCAL_CONNECTION_SCHEMA = vol.Schema(
         vol.Required(CONF_IP_ADDRESS): cv.string,
         vol.Required(CONF_USERNAME): cv.string,
         vol.Required(CONF_PASSWORD): cv.string,
+    }
+)
+
+OPTIONS_SCHEMA = vol.Schema(
+    {
+        vol.Required(
+            CONF_DATE_ORDER, default=DEFAULT_DATE_ORDER
+        ): selector.SelectSelector(
+            selector.SelectSelectorConfig(
+                options=[DATE_ORDER_DAY_FIRST, DATE_ORDER_MONTH_FIRST],
+                translation_key=CONF_DATE_ORDER,
+            )
+        ),
     }
 )
 
@@ -339,18 +356,39 @@ def _get_alarm_systems(hass, entry):
 
 
 class MyGekkoOptionsFlow(OptionsFlow):
-    """Options of a MyGekko entry. The update listener reloads the entry."""
+    """Options of a MyGekko entry. The update listener reloads the entry.
+
+    Every entry has the date order. An entry whose controller mirrors an alarm
+    system also gets the alarm system step.
+    """
+
+    def __init__(self) -> None:
+        """Initialize the flow."""
+        self._options: dict = {}
 
     async def async_step_init(self, user_input=None):
-        """Manage the options."""
-        if not _get_alarm_systems(self.hass, self.config_entry):
-            return self.async_abort(reason="no_options")
-
+        """Manage the options every entry has."""
         if user_input is not None:
-            return self.async_create_entry(data={**self.config_entry.options, **user_input})
+            self._options = {**self.config_entry.options, **user_input}
+            if _get_alarm_systems(self.hass, self.config_entry):
+                return await self.async_step_alarm_system()
+            return self.async_create_entry(data=self._options)
 
         return self.async_show_form(
             step_id="init",
+            data_schema=self.add_suggested_values_to_schema(
+                OPTIONS_SCHEMA, self.config_entry.options
+            ),
+            last_step=not _get_alarm_systems(self.hass, self.config_entry),
+        )
+
+    async def async_step_alarm_system(self, user_input=None):
+        """Manage the options of the alarm system."""
+        if user_input is not None:
+            return self.async_create_entry(data={**self._options, **user_input})
+
+        return self.async_show_form(
+            step_id="alarm_system",
             data_schema=self.add_suggested_values_to_schema(
                 ALARM_SYSTEM_SCHEMA, self.config_entry.options
             ),

@@ -56,6 +56,48 @@
       "reconfigure_successful": "Die Neukonfiguration war erfolgreich"
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "date_order": "Mehrdeutige Datumsangaben"
+        },
+        "data_description": {
+          "date_order": "Gilt für Datumsangaben des myGEKKO, bei denen Tag und Monat vertauscht sein könnten, z. B. 05/07/2026."
+        }
+      },
+      "alarm_system": {
+        "title": "Alarmanlage",
+        "description": "An diesem myGEKKO ist eine Alarmanlage angeschlossen. Jeder Sicherungsbereich wird als Alarmzentrale hinzugefügt.",
+        "data": {
+          "alarm_system_read_only": "Nur lesen"
+        },
+        "data_description": {
+          "alarm_system_read_only": "Nur den Scharfzustand anzeigen. Home Assistant kann die Sicherungsbereiche nicht scharf schalten."
+        }
+      }
+    }
+  },
+  "selector": {
+    "date_order": {
+      "options": {
+        "day_first": "Tag zuerst (5. Juli)",
+        "month_first": "Monat zuerst (7. Mai)"
+      }
+    },
+    "input_group_device_class": {
+      "options": {
+        "window": "Fenster",
+        "door": "Tür",
+        "garage_door": "Garagentor",
+        "opening": "Öffnung",
+        "motion": "Bewegung",
+        "vibration": "Erschütterung",
+        "tamper": "Sabotage",
+        "safety": "Sicherheit"
+      }
+    }
+  },
   "entity": {
     "climate": {
       "mygekko_roomtemp": {
@@ -428,23 +470,6 @@
       }
     }
   },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Alarmanlage",
-        "description": "An diesem myGEKKO ist eine Alarmanlage angeschlossen. Jeder Sicherungsbereich wird als Alarmzentrale hinzugefügt.",
-        "data": {
-          "alarm_system_read_only": "Nur lesen"
-        },
-        "data_description": {
-          "alarm_system_read_only": "Nur den Scharfzustand anzeigen. Home Assistant kann die Sicherungsbereiche nicht scharf schalten."
-        }
-      }
-    },
-    "abort": {
-      "no_options": "Dieser myGEKKO hat keine Optionen."
-    }
-  },
   "config_subentries": {
     "input_group": {
       "initiate_flow": {
@@ -521,20 +546,6 @@
       "progress": {
         "learn_baseline": "Ausgangszustand wird erfasst (etwa 30 Sekunden).",
         "learn_detect": "Meldebereich wird gesucht (höchstens 60 Sekunden)."
-      }
-    }
-  },
-  "selector": {
-    "input_group_device_class": {
-      "options": {
-        "window": "Fenster",
-        "door": "Tür",
-        "garage_door": "Garagentor",
-        "opening": "Öffnung",
-        "motion": "Bewegung",
-        "vibration": "Erschütterung",
-        "tamper": "Sabotage",
-        "safety": "Sicherheit"
       }
     }
   },

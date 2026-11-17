@@ -7,8 +7,10 @@ from unittest.mock import patch
 import pytest
 from custom_components.mygekko.alarm_system import stable_new_input_groups
 from custom_components.mygekko.const import CONF_ALARM_SYSTEM_READ_ONLY
+from custom_components.mygekko.const import CONF_DATE_ORDER
 from custom_components.mygekko.const import CONF_INPUT_GROUP_INDEX
 from custom_components.mygekko.const import CONF_SECURITY_AREA
+from custom_components.mygekko.const import DATE_ORDER_DAY_FIRST
 from custom_components.mygekko.const import DOMAIN
 from custom_components.mygekko.const import SUBENTRY_TYPE_INPUT_GROUP
 from homeassistant.components.alarm_control_panel import (
@@ -406,6 +408,12 @@ async def test_options_flow_sets_read_only(hass, alarm):
 
     result = await hass.config_entries.options.async_init(entry.entry_id)
     assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "init"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {CONF_DATE_ORDER: DATE_ORDER_DAY_FIRST}
+    )
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "alarm_system"
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], {CONF_ALARM_SYSTEM_READ_ONLY: True}
     )
@@ -427,9 +435,15 @@ async def test_without_alarm_system(hass, alarm):
         (DOMAIN, f"{ENTRY_ID}_alarm_system_panel"), ENTRY_ID
     )
 
+    # Only the options every entry has, no alarm system step.
     result = await hass.config_entries.options.async_init(entry.entry_id)
-    assert result["type"] is FlowResultType.ABORT
-    assert result["reason"] == "no_options"
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "init"
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {CONF_DATE_ORDER: DATE_ORDER_DAY_FIRST}
+    )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert CONF_ALARM_SYSTEM_READ_ONLY not in entry.options
 
     result = await hass.config_entries.subentries.async_init(
         (entry.entry_id, SUBENTRY_TYPE_INPUT_GROUP), context={"source": "user"}

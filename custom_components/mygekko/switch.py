@@ -83,12 +83,18 @@ class MyGekkoEMobilChargeSwitch(MyGekkoEntity, SwitchEntity):
 
     async def async_turn_off(self, **kwargs):
         """Stop charging."""
-        await self._emobil.stop_charge()
-        self._set_optimistic("state", EMobilChargeState.OFF, self._emobil.charge_state)
+        async with self._command_lock:
+            await self._emobil.stop_charge()
+            self._set_optimistic(
+                "state", EMobilChargeState.OFF, self._emobil.charge_state
+            )
         await self.coordinator.async_request_refresh()
 
     async def async_turn_on(self, **kwargs):
         """Start charging."""
-        await self._emobil.start_charge()
-        self._set_optimistic("state", EMobilChargeState.ON, self._emobil.charge_state)
+        async with self._command_lock:
+            await self._emobil.start_charge()
+            self._set_optimistic(
+                "state", EMobilChargeState.ON, self._emobil.charge_state
+            )
         await self.coordinator.async_request_refresh()
