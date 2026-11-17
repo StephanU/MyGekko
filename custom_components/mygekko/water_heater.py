@@ -58,20 +58,22 @@ class MyGekkoWaterHeater(MyGekkoEntity, WaterHeaterEntity):
 
     async def async_turn_off(self, **kwargs):
         """Turn off the water heater."""
-        _LOGGER.debug("Switch off water heater %s", self._hotwater_system.name)
-        await self._hotwater_system.set_state(HotWaterSystemState.OFF)
-        self._set_optimistic(
-            "state", HotWaterSystemState.OFF, self._hotwater_system.state
-        )
+        async with self._command_lock:
+            _LOGGER.debug("Switch off water heater %s", self._hotwater_system.name)
+            await self._hotwater_system.set_state(HotWaterSystemState.OFF)
+            self._set_optimistic(
+                "state", HotWaterSystemState.OFF, self._hotwater_system.state
+            )
         await self.coordinator.async_request_refresh()
 
     async def async_turn_on(self, **kwargs):
         """Turn on the water heater."""
-        _LOGGER.debug("Switch on water heater %s", self._hotwater_system.name)
-        await self._hotwater_system.set_state(HotWaterSystemState.ON)
-        self._set_optimistic(
-            "state", HotWaterSystemState.ON, self._hotwater_system.state
-        )
+        async with self._command_lock:
+            _LOGGER.debug("Switch on water heater %s", self._hotwater_system.name)
+            await self._hotwater_system.set_state(HotWaterSystemState.ON)
+            self._set_optimistic(
+                "state", HotWaterSystemState.ON, self._hotwater_system.state
+            )
         await self.coordinator.async_request_refresh()
 
     @property
@@ -90,13 +92,14 @@ class MyGekkoWaterHeater(MyGekkoEntity, WaterHeaterEntity):
 
     async def async_set_temperature(self, **kwargs: Any) -> None:
         """Set new target temperature."""
-        target_temperature = float(kwargs[ATTR_TEMPERATURE])
-        await self._hotwater_system.set_target_temperature(target_temperature)
-        self._set_optimistic(
-            "target_temperature",
-            target_temperature,
-            self._hotwater_system.target_temperature,
-        )
+        async with self._command_lock:
+            target_temperature = float(kwargs[ATTR_TEMPERATURE])
+            await self._hotwater_system.set_target_temperature(target_temperature)
+            self._set_optimistic(
+                "target_temperature",
+                target_temperature,
+                self._hotwater_system.target_temperature,
+            )
         await self.coordinator.async_request_refresh()
 
     @property

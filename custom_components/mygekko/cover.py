@@ -127,69 +127,81 @@ class MyGekkoCover(MyGekkoEntity, CoverEntity):
         return state, position
 
     def _set_optimistic_movement(
-        self, state: BlindState, target_reached: bool | None
+        self, state: BlindState | None, target_reached: bool | None
     ) -> None:
-        """Show the blind moving until a poll shows the command was processed."""
-        # A blind at rest at its target does not move, so no poll would ever
-        # end the optimistic state.
-        if target_reached and self._blind.state == BlindState.STOP:
+        """Show the blind moving until a poll shows the command was processed.
+
+        Without a known direction (state None), or for a blind at rest at its
+        target, the polled state is shown: a blind at rest at its target does
+        not move, so no poll would ever end the optimistic state. Either way,
+        the movement of an earlier command no longer applies.
+        """
+        if state is None or (target_reached and self._blind.state == BlindState.STOP):
+            self._clear_optimistic("state")
             return
         self._set_optimistic("state", state, self._movement_reference())
 
     async def async_open_cover(self, **kwargs: Any):
         """Open the cover."""
-        await self._blind.set_state(BlindState.HOLD_UP)
-        self._set_optimistic_movement(
-            BlindState.HOLD_UP, self.current_cover_position == 100
-        )
+        async with self._command_lock:
+            await self._blind.set_state(BlindState.HOLD_UP)
+            self._set_optimistic_movement(
+                BlindState.HOLD_UP, self.current_cover_position == 100
+            )
         await self.coordinator.async_request_refresh()
 
     async def async_close_cover(self, **kwargs: Any):
         """Close cover."""
-        await self._blind.set_state(BlindState.HOLD_DOWN)
-        self._set_optimistic_movement(BlindState.HOLD_DOWN, self.is_closed)
+        async with self._command_lock:
+            await self._blind.set_state(BlindState.HOLD_DOWN)
+            self._set_optimistic_movement(BlindState.HOLD_DOWN, self.is_closed)
         await self.coordinator.async_request_refresh()
 
     async def async_stop_cover(self, **kwargs: Any):
         """Stop the cover."""
-        await self._blind.set_state(BlindState.STOP)
-        self._set_optimistic("state", BlindState.STOP, self._movement_reference())
+        async with self._command_lock:
+            await self._blind.set_state(BlindState.STOP)
+            self._set_optimistic("state", BlindState.STOP, self._movement_reference())
         await self.coordinator.async_request_refresh()
 
     async def async_set_cover_position(self, **kwargs: Any) -> None:
         """Set the cover position."""
-        # myGekko blinds are closed on 100 and open on 0
-        position = 100.0 - float(kwargs[ATTR_POSITION])
-        await self._blind.set_position(position)
-        if self._blind.position is not None:
-            direction = (
-                BlindState.DOWN
-                if position > self._blind.position
-                else BlindState.UP
-            )
-            self._set_optimistic_movement(
-                direction, position == self._blind.position
-            )
+        async with self._command_lock:
+            # myGekko blinds are closed on 100 and open on 0
+            position = 100.0 - float(kwargs[ATTR_POSITION])
+            await self._blind.set_position(position)
+            polled_position = self._blind.position
+            if polled_position is None:
+                self._set_optimistic_movement(None, None)
+            else:
+                self._set_optimistic_movement(
+                    BlindState.DOWN if position > polled_position else BlindState.UP,
+                    position == polled_position,
+                )
         await self.coordinator.async_request_refresh()
 
     async def async_open_cover_tilt(self, **kwargs: Any):
         """Open the cover."""
-        await self._blind.set_tilt_position(0.0)
+        async with self._command_lock:
+            await self._blind.set_tilt_position(0.0)
         await self.coordinator.async_request_refresh()
 
     async def async_close_cover_tilt(self, **kwargs: Any):
         """Close cover."""
-        await self._blind.set_tilt_position(100.0)
+        async with self._command_lock:
+            await self._blind.set_tilt_position(100.0)
         await self.coordinator.async_request_refresh()
 
     async def async_stop_cover_tilt(self, **kwargs: Any):
         """Stop the cover."""
-        await self._blind.set_state(BlindState.STOP)
-        self._set_optimistic("state", BlindState.STOP, self._movement_reference())
+        async with self._command_lock:
+            await self._blind.set_state(BlindState.STOP)
+            self._set_optimistic("state", BlindState.STOP, self._movement_reference())
         await self.coordinator.async_request_refresh()
 
     async def async_set_cover_tilt_position(self, **kwargs: Any) -> None:
         """Move the cover tilt to a specific position."""
-        # myGekko blinds are closed on 100 and open on 0
-        await self._blind.set_tilt_position(100.0 - float(kwargs[ATTR_TILT_POSITION]))
+        async with self._command_lock:
+            # myGekko blinds are closed on 100 and open on 0
+            await self._blind.set_tilt_position(100.0 - float(kwargs[ATTR_TILT_POSITION]))
         await self.coordinator.async_request_refresh()

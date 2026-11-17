@@ -92,6 +92,24 @@ async def test_no_movement_when_already_open(hass, polled):
 
 
 @pytest.mark.asyncio
+async def test_command_to_resting_position_ends_earlier_movement(hass, polled):
+    """Closing right after opening a closed blind must not keep it opening."""
+    polled["position"] = 100.0
+    _, entity_id = await _setup_cover(hass)
+
+    await _call(hass, "open_cover", entity_id)
+    assert hass.states.get(entity_id).state == CoverState.OPENING
+
+    # The myGekko has not processed the open command yet.
+    await _call(hass, "close_cover", entity_id)
+    assert hass.states.get(entity_id).state == CoverState.CLOSED
+
+    Blind.set_state.reset_mock()
+    await _call(hass, "toggle", entity_id)
+    Blind.set_state.assert_awaited_once_with(BlindState.HOLD_UP)
+
+
+@pytest.mark.asyncio
 async def test_stop_survives_stale_poll_of_moving_blind(hass, polled):
     """A stale poll of a moving blind must not undo a stop."""
     polled.update(state=BlindState.DOWN, position=40.0)
