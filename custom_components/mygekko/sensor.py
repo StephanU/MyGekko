@@ -2,8 +2,6 @@
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
-from datetime import timedelta
-import re
 from typing import Any
 
 from custom_components.mygekko.entity import MyGekkoControllerEntity
@@ -47,6 +45,10 @@ from PyMyGekko.resources.Vents import Vent
 from PyMyGekko.resources.Vents import VentFeature
 from PyMyGekko.resources.Meteo import Meteo
 
+from .const import CONF_DATE_ORDER
+from .const import DATE_ORDER_DAY_FIRST
+from .const import DATE_ORDER_MONTH_FIRST
+from .const import DEFAULT_DATE_ORDER
 from .const import DOMAIN
 
 SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
@@ -494,75 +496,51 @@ HEATING_CIRCUIT_SENSORS: tuple[MyGekkoValueSensorDescription, ...] = (
 )
 
 
-# myGekko pre-formats the charge start into a localized, human-readable
-# timestamp whose date order and separators depend on the controller's
-# configured language (e.g. German "23.07.2026 14:47:23", US English
-# "07/23/2026 14:47:23", ISO-like "2026-07-23 14:47:23"). We try the known
-# variants; genuinely ambiguous ones (dd/mm vs mm/dd) are resolved below.
-_CHARGE_START_FORMATS = (
-    "%d.%m.%Y %H:%M:%S",  # de and most of continental Europe
-    "%d/%m/%Y %H:%M:%S",  # it / fr / es / en-GB
-    "%m/%d/%Y %H:%M:%S",  # en-US
-    "%Y-%m-%d %H:%M:%S",  # ISO-like
-    "%d-%m-%Y %H:%M:%S",  # nl
+# myGekko pre-formats date values into a localized, human-readable string whose
+# separators and field order depend on the controller's configured language
+# (e.g. German "23.07.2026 14:47:23"). Dotted and ISO-like layouts are
+# unambiguous. With "/" or "-" separators, day and month can be swapped, so the
+# date order option decides which reading wins when both are valid dates.
+_UNAMBIGUOUS_DATE_FORMATS = (
+    "%d.%m.%Y %H:%M:%S",
+    "%Y-%m-%d %H:%M:%S",
 )
+_SWAPPABLE_DATE_FORMATS = {
+    DATE_ORDER_DAY_FIRST: ("%d/%m/%Y %H:%M:%S", "%d-%m-%Y %H:%M:%S"),
+    DATE_ORDER_MONTH_FIRST: ("%m/%d/%Y %H:%M:%S", "%m-%d-%Y %H:%M:%S"),
+}
 
 
-def _emobil_charge_duration_seconds(value: str | None) -> int | None:
-    """Read the elapsed charge seconds from a myGekko duration string.
+def parse_mygekko_datetime(value: str | None, date_order: str) -> datetime | None:
+    """Parse a localized myGekko date and time into a timezone-aware datetime.
 
-    Handles both "20h 50m 51s" and "20:50:51" style values by taking the
-    numeric groups (locale independent) and reading the last four as days,
-    hours, minutes and seconds. Returns None for missing or zero durations.
+    A value that fits only one layout is read that way. When day and month
+    could be swapped (e.g. "05/07/2026"), date_order decides which comes first,
+    so the same value always yields the same date. myGekko reports local time,
+    which is taken to be the Home Assistant time zone. Returns None when no
+    layout fits, so the sensor reads "unknown" instead of raising.
     """
-    if not value:
-        return None
-    groups = [int(part) for part in re.findall(r"\d+", value)]
-    if not groups:
-        return None
-    days, hours, minutes, seconds = ([0, 0, 0, 0] + groups)[-4:]
-    total = ((days * 24 + hours) * 60 + minutes) * 60 + seconds
-    return total or None
-
-
-def _emobil_charge_start(emobil: EMobil) -> datetime | None:
-    """Parse the myGekko charge start time into a timezone-aware datetime.
-
-    myGekko reports ``chargeStartTime`` as an already-localized timestamp whose
-    layout depends on the controller language. We try the known formats and,
-    when more than one matches (e.g. dd/mm vs mm/dd), disambiguate using the
-    elapsed ``chargeDurationTime`` as a rough anchor. Exposing the result via a
-    SensorDeviceClass.TIMESTAMP sensor lets Home Assistant render the elapsed
-    time natively while the stable value stays out of the logbook. Returns None
-    when nothing parses, so the sensor reads "unknown" instead of raising.
-    """
-    value = emobil.charge_start_time
     if not value:
         return None
     value = value.strip()
 
-    candidates: list[datetime] = []
-    for fmt in _CHARGE_START_FORMATS:
+    formats = [
+        *_UNAMBIGUOUS_DATE_FORMATS,
+        *_SWAPPABLE_DATE_FORMATS[date_order],
+        *(
+            date_format
+            for order, date_formats in _SWAPPABLE_DATE_FORMATS.items()
+            if order != date_order
+            for date_format in date_formats
+        ),
+    ]
+    for date_format in formats:
         try:
-            parsed = datetime.strptime(value, fmt)
-        except (ValueError, TypeError):
+            parsed = datetime.strptime(value, date_format)
+        except ValueError:
             continue
-        if parsed not in candidates:
-            candidates.append(parsed)
-    if not candidates:
-        return None
-
-    if len(candidates) > 1:
-        duration_seconds = _emobil_charge_duration_seconds(
-            emobil.charge_duration_time
-        )
-        if duration_seconds is not None:
-            anchor = (
-                dt_util.now() - timedelta(seconds=duration_seconds)
-            ).replace(tzinfo=None)
-            candidates.sort(key=lambda candidate: abs(candidate - anchor))
-
-    return candidates[0].replace(tzinfo=dt_util.DEFAULT_TIME_ZONE)
+        return parsed.replace(tzinfo=dt_util.DEFAULT_TIME_ZONE)
+    return None
 
 
 EMOBIL_SENSORS: tuple[MyGekkoValueSensorDescription, ...] = (
@@ -621,13 +599,6 @@ EMOBIL_SENSORS: tuple[MyGekkoValueSensorDescription, ...] = (
         value_fn=lambda ev: _enum_option(ev.charge_request_state),
     ),
     MyGekkoValueSensorDescription(
-        key="charge_start_time",
-        translation_key="mygekko_emobil_charge_start_time",
-        device_class=SensorDeviceClass.TIMESTAMP,
-        icon="mdi:clock-start",
-        value_fn=_emobil_charge_start,
-    ),
-    MyGekkoValueSensorDescription(
         key="charge_user",
         translation_key="mygekko_emobil_charge_user",
         icon="mdi:account",
@@ -638,6 +609,17 @@ EMOBIL_SENSORS: tuple[MyGekkoValueSensorDescription, ...] = (
         translation_key="mygekko_emobil_charge_user_index",
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda ev: ev.charge_user_index,
+    ),
+)
+
+# Values myGekko reports as localized date strings, see parse_mygekko_datetime.
+EMOBIL_DATE_TIME_SENSORS: tuple[MyGekkoValueSensorDescription, ...] = (
+    MyGekkoValueSensorDescription(
+        key="charge_start_time",
+        translation_key="mygekko_emobil_charge_start_time",
+        device_class=SensorDeviceClass.TIMESTAMP,
+        icon="mdi:clock-start",
+        value_fn=lambda ev: ev.charge_start_time,
     ),
 )
 
@@ -767,6 +749,10 @@ async def async_setup_entry(hass, entry, async_add_devices):
         async_add_devices(
             MyGekkoValueSensor(coordinator, emobil, "emobils", description)
             for description in EMOBIL_SENSORS
+        )
+        async_add_devices(
+            MyGekkoDateTimeSensor(coordinator, emobil, "emobils", description)
+            for description in EMOBIL_DATE_TIME_SENSORS
         )
 
 
@@ -1322,3 +1308,20 @@ class MyGekkoValueSensor(MyGekkoEntity, SensorEntity):
     def native_value(self):
         """Return the state of the sensor."""
         return self.entity_description.value_fn(self._resource)
+
+
+class MyGekkoDateTimeSensor(MyGekkoValueSensor):
+    """mygekko timestamp sensor for a value myGekko reports as a localized date.
+
+    The description's value_fn returns the date string as myGekko reports it.
+    """
+
+    @property
+    def native_value(self) -> datetime | None:
+        """Return the reported date and time."""
+        return parse_mygekko_datetime(
+            super().native_value,
+            self.coordinator.config_entry.options.get(
+                CONF_DATE_ORDER, DEFAULT_DATE_ORDER
+            ),
+        )

@@ -47,9 +47,14 @@ CONF_CONNECTION_LOCAL = "local"
 CONF_CONNECTION_LOCAL_LABEL = "Local"
 CONF_CONNECTION_DEMO_MODE = "demo_mode"
 CONF_CONNECTION_DEMO_MODE_LABEL = "Demo Mode"
+# How dates whose day and month could be swapped (e.g. "05/07/2026") are read.
+CONF_DATE_ORDER = "date_order"
+DATE_ORDER_DAY_FIRST = "day_first"
+DATE_ORDER_MONTH_FIRST = "month_first"
 
 # Defaults
 DEFAULT_NAME = DOMAIN
+DEFAULT_DATE_ORDER = DATE_ORDER_DAY_FIRST
 
 
 STARTUP_MESSAGE = f"""

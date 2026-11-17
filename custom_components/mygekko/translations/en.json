@@ -46,6 +46,26 @@
       "reconfigure_successful": "Reconfiguration was successful"
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "date_order": "Ambiguous dates"
+        },
+        "data_description": {
+          "date_order": "Applies to dates from myGEKKO where day and month could be swapped, such as 05/07/2026."
+        }
+      }
+    }
+  },
+  "selector": {
+    "date_order": {
+      "options": {
+        "day_first": "Day first (5 July)",
+        "month_first": "Month first (7 May)"
+      }
+    }
+  },
   "entity": {
     "climate": {
       "mygekko_roomtemp": {

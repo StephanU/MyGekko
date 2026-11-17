@@ -46,6 +46,26 @@
       "reconfigure_successful": "Die Neukonfiguration war erfolgreich"
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "date_order": "Mehrdeutige Datumsangaben"
+        },
+        "data_description": {
+          "date_order": "Gilt für Datumsangaben des myGEKKO, bei denen Tag und Monat vertauscht sein könnten, z. B. 05/07/2026."
+        }
+      }
+    }
+  },
+  "selector": {
+    "date_order": {
+      "options": {
+        "day_first": "Tag zuerst (5. Juli)",
+        "month_first": "Monat zuerst (7. Mai)"
+      }
+    }
+  },
   "entity": {
     "climate": {
       "mygekko_roomtemp": {

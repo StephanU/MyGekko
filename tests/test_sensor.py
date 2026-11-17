@@ -1,76 +1,101 @@
-"""Test MyGekko sensor helpers."""
+"""Test MyGekko sensors."""
 from datetime import datetime
-from datetime import timezone
 from unittest.mock import patch
+from unittest.mock import PropertyMock
 
+import pytest
 from custom_components.mygekko import sensor
+from custom_components.mygekko.const import CONF_DATE_ORDER
+from custom_components.mygekko.const import DATE_ORDER_DAY_FIRST
+from custom_components.mygekko.const import DATE_ORDER_MONTH_FIRST
+from custom_components.mygekko.const import DOMAIN
+from homeassistant.helpers import entity_registry as er
+from homeassistant.util import dt as dt_util
+from PyMyGekko.resources.EMobils import EMobil
+from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+from .const import MOCK_DEMO_ENTRY_DATA
+
+BOTH_DATE_ORDERS = pytest.mark.parametrize(
+    "date_order", [DATE_ORDER_DAY_FIRST, DATE_ORDER_MONTH_FIRST]
+)
 
 
-class _FakeEMobil:
-    """Minimal stand-in exposing the charge fields the helper reads."""
-
-    def __init__(self, start, duration=None):
-        """Store the raw MyGekko charge start and duration strings."""
-        self.charge_start_time = start
-        self.charge_duration_time = duration
-
-
-def _expected(year, month, day, hour, minute, second):
-    """Build the expected timezone-aware datetime the helper should return."""
+def _local(year, month, day, hour, minute, second):
+    """Build the timezone-aware local datetime a myGekko date should yield."""
     return datetime(
-        year, month, day, hour, minute, second, tzinfo=sensor.dt_util.DEFAULT_TIME_ZONE
+        year, month, day, hour, minute, second, tzinfo=dt_util.DEFAULT_TIME_ZONE
     )
 
 
-def test_charge_start_parses_german_format():
-    """The German 'dd.mm.YYYY HH:MM:SS' layout is parsed as local time."""
-    result = sensor._emobil_charge_start(_FakeEMobil("23.07.2026 14:47:23"))
-    assert result == _expected(2026, 7, 23, 14, 47, 23)
-    assert result.tzinfo is not None
+@BOTH_DATE_ORDERS
+@pytest.mark.parametrize(
+    "value",
+    [
+        "23.07.2026 14:47:23",
+        "2026-07-23 14:47:23",
+        "23/07/2026 14:47:23",
+        "07/23/2026 14:47:23",
+        "23-07-2026 14:47:23",
+        "07-23-2026 14:47:23",
+    ],
+)
+def test_unambiguous_date_ignores_date_order(value, date_order):
+    """A date with only one valid reading is read that way with either order."""
+    assert sensor.parse_mygekko_datetime(value, date_order) == _local(
+        2026, 7, 23, 14, 47, 23
+    )
 
 
-def test_charge_start_parses_iso_and_us_layouts():
-    """ISO and unambiguous US layouts are parsed to the same instant."""
-    # 23 > 12, so only the US mm/dd reading is valid - no anchor needed.
-    assert sensor._emobil_charge_start(
-        _FakeEMobil("07/23/2026 14:47:23")
-    ) == _expected(2026, 7, 23, 14, 47, 23)
-    assert sensor._emobil_charge_start(
-        _FakeEMobil("2026-07-23 14:47:23")
-    ) == _expected(2026, 7, 23, 14, 47, 23)
+@pytest.mark.parametrize(
+    ("date_order", "month", "day"),
+    [(DATE_ORDER_DAY_FIRST, 7, 5), (DATE_ORDER_MONTH_FIRST, 5, 7)],
+)
+@pytest.mark.parametrize("value", ["05/07/2026 10:00:00", "05-07-2026 10:00:00"])
+def test_ambiguous_date_follows_date_order(value, date_order, month, day):
+    """When day and month could be swapped, the date order decides."""
+    assert sensor.parse_mygekko_datetime(value, date_order) == _local(
+        2026, month, day, 10, 0, 0
+    )
 
 
-def test_charge_start_ambiguous_date_uses_duration_anchor():
-    """dd/mm vs mm/dd is resolved via the elapsed-duration anchor."""
-    # "05/07/2026" could be 5 Jul (dd/mm) or 7 May (mm/dd).
-    now = datetime(2026, 5, 7, 12, 0, 0, tzinfo=timezone.utc)
-    with patch.object(sensor.dt_util, "now", return_value=now):
-        result = sensor._emobil_charge_start(
-            _FakeEMobil("05/07/2026 10:00:00", "2h 0m 0s")
+@BOTH_DATE_ORDERS
+@pytest.mark.parametrize(
+    "value", [None, "", "18:00:00", "20h 50m 51s", "31/31/2026 10:00:00", "not a date"]
+)
+def test_unparseable_date_is_none(value, date_order):
+    """Missing or unparseable dates yield None, the sensor reads 'unknown'."""
+    assert sensor.parse_mygekko_datetime(value, date_order) is None
+
+
+@pytest.mark.parametrize(
+    ("options", "month", "day"),
+    [
+        ({}, 7, 5),
+        ({CONF_DATE_ORDER: DATE_ORDER_MONTH_FIRST}, 5, 7),
+    ],
+)
+async def test_charge_start_sensor_uses_date_order_option(hass, options, month, day):
+    """The charge start sensor reads ambiguous dates in the configured order."""
+    config_entry = MockConfigEntry(
+        domain=DOMAIN,
+        data=MOCK_DEMO_ENTRY_DATA,
+        options=options,
+        entry_id="sensor_test",
+        version=4,
+    )
+    with patch.object(
+        EMobil,
+        "charge_start_time",
+        new_callable=PropertyMock,
+        return_value="05/07/2026 10:00:00",
+    ):
+        config_entry.add_to_hass(hass)
+        assert await hass.config_entries.async_setup(config_entry.entry_id)
+        await hass.async_block_till_done()
+        entity_id = er.async_get(hass).async_get_entity_id(
+            "sensor", DOMAIN, "sensor_test_emobilsitem0charge_start_time"
         )
-    # now - 2h = 2026-05-07 10:00, so the 7 May reading wins.
-    assert result == _expected(2026, 5, 7, 10, 0, 0)
+        state = hass.states.get(entity_id).state
 
-
-def test_charge_start_none_when_missing_or_invalid():
-    """Missing or unparseable start times yield None (sensor 'unknown')."""
-    assert sensor._emobil_charge_start(_FakeEMobil(None)) is None
-    assert sensor._emobil_charge_start(_FakeEMobil("")) is None
-    # The duration field's own format must not parse as a start time.
-    assert sensor._emobil_charge_start(_FakeEMobil("20h 50m 51s")) is None
-    assert sensor._emobil_charge_start(_FakeEMobil("not a date")) is None
-
-
-def test_duration_seconds_handles_letter_and_colon_formats():
-    """Both '20h 50m 51s' and '20:50:51' style durations are read."""
-    assert sensor._emobil_charge_duration_seconds("20h 50m 51s") == 75051
-    assert sensor._emobil_charge_duration_seconds("01:23:45") == 5025
-    assert sensor._emobil_charge_duration_seconds("1d 2h 3m 4s") == 93784
-
-
-def test_duration_seconds_none_when_zero_or_empty():
-    """A zero, missing or number-less duration reads as None."""
-    assert sensor._emobil_charge_duration_seconds("0h 0m 0s") is None
-    assert sensor._emobil_charge_duration_seconds("00:00:00") is None
-    assert sensor._emobil_charge_duration_seconds("") is None
-    assert sensor._emobil_charge_duration_seconds(None) is None
+    assert dt_util.parse_datetime(state) == _local(2026, month, day, 10, 0, 0)

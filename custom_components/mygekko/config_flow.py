@@ -9,7 +9,10 @@ from homeassistant.const import CONF_API_KEY
 from homeassistant.const import CONF_IP_ADDRESS
 from homeassistant.const import CONF_PASSWORD
 from homeassistant.const import CONF_USERNAME
+from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
+from homeassistant.helpers.selector import SelectSelector
+from homeassistant.helpers.selector import SelectSelectorConfig
 from PyMyGekko import MyGekkoLocalApiClient
 from PyMyGekko import MyGekkoQueryApiClient
 from PyMyGekko.data_provider import MyGekkoError
@@ -21,7 +24,11 @@ from .const import CONF_CONNECTION_LOCAL_LABEL
 from .const import CONF_CONNECTION_MY_GEKKO_CLOUD
 from .const import CONF_CONNECTION_MY_GEKKO_CLOUD_LABEL
 from .const import CONF_CONNECTION_TYPE
+from .const import CONF_DATE_ORDER
 from .const import CONF_GEKKOID
+from .const import DATE_ORDER_DAY_FIRST
+from .const import DATE_ORDER_MONTH_FIRST
+from .const import DEFAULT_DATE_ORDER
 from .const import DOMAIN
 
 _LOGGER: logging.Logger = logging.getLogger(__name__)
@@ -56,6 +63,17 @@ LOCAL_CONNECTION_SCHEMA = vol.Schema(
     }
 )
 
+OPTIONS_SCHEMA = vol.Schema(
+    {
+        vol.Required(CONF_DATE_ORDER, default=DEFAULT_DATE_ORDER): SelectSelector(
+            SelectSelectorConfig(
+                options=[DATE_ORDER_DAY_FIRST, DATE_ORDER_MONTH_FIRST],
+                translation_key=CONF_DATE_ORDER,
+            )
+        ),
+    }
+)
+
 
 class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Config flow for mygekko."""
@@ -66,6 +84,12 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     def __init__(self):
         """Initialize."""
         self._errors = {}
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry):
+        """Return the options flow for an entry."""
+        return MyGekkoOptionsFlow()
 
     async def async_step_user(self, user_input=None):
         """Handle a flow initialized by the user."""
@@ -250,3 +274,22 @@ class MyGekkoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             # raises KeyError on an unexpected response.
             _LOGGER.debug("Could not determine the gekko name", exc_info=True)
         return None
+
+
+class MyGekkoOptionsFlow(config_entries.OptionsFlow):
+    """Options flow for mygekko."""
+
+    async def async_step_init(self, user_input=None):
+        """Manage the options of an entry."""
+        if user_input is not None:
+            return self.async_create_entry(data=user_input)
+
+        # Looked up by id instead of self.config_entry, which only newer Home
+        # Assistant versions than the minimum in hacs.json provide.
+        config_entry = self.hass.config_entries.async_get_entry(self.handler)
+        return self.async_show_form(
+            step_id="init",
+            data_schema=self.add_suggested_values_to_schema(
+                OPTIONS_SCHEMA, config_entry.options
+            ),
+        )
