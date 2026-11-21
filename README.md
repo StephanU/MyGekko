@@ -15,18 +15,19 @@ MyGekko integration for HomeAssistant using the [PyMyGekko](https://github.com/S
 
 **This component will set up the following platforms.**
 
-| Platform       | Description                                                        |
-| -------------- | ------------------------------------------------------------------ |
-| `button`       | For light groups in MyGekko                                        |
-| `camera`       | Cameras and door intercoms (called cams and door_intercom in MyGekko) |
-| `climate`      | Thermostats (called roomtemps in MyGekko)                          |
-| `cover`        | Covers (called blinds in MyGekko)                                  |
-| `light`        | Lights                                                             |
-| `switch`       | Switches (called loads in MyGekko)                                 |
-| `water_heater` | Water Heater (called hotwater_systems in MyGekko)                  |
+| Platform       | Description                                                                                                                                                        |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `button`       | For light groups in MyGekko                                                                                                                                        |
+| `camera`       | Cameras and door intercoms (called cams and door_intercom in MyGekko)                                                                                              |
+| `climate`      | Thermostats (called roomtemps in MyGekko)                                                                                                                          |
+| `cover`        | Covers (called blinds in MyGekko)                                                                                                                                  |
+| `light`        | Lights                                                                                                                                                             |
+| `switch`       | Switches (called loads in MyGekko) and charging station start/stop (emobils)                                                                                       |
+| `water_heater` | Water Heater (called hotwater_systems in MyGekko)                                                                                                                  |
 | `sensor`       | MyGekko energy_cost metrics, alarms_logics, room humidity and air quality, hot water temperatures, vent readings, weather station (meteo) and door intercom status |
-| `scene`        | MyGekko actions are added as scenes                                |
-| `select`       | Vent bypass, working mode and working level (called vents in MyGekko) |
+| `scene`        | MyGekko actions are added as scenes                                                                                                                                |
+| `select`       | Vent bypass, working mode and working level (called vents in MyGekko)                                                                                              |
+| `number`       | Charging station charge power setpoint (emobils)                                                                                                                   |
 
 ![Dashboard Screenshot][dashboard-screenshot]
 
@@ -81,12 +82,15 @@ If you want to contribute to this please read the [Contribution guidelines](CONT
 - execute `scripts/develop` to start HomeAssistant
 - execute `python3 -m pytest tests` to run the tests
 - to use PyMyGekko from git instead of PyPi add the following to the .devcontainer
+
 ```
   "mounts": [
     "source=<local path to PyMyGekko>/PyMyGekko,target=/workspaces/PyMyGekko,type=bind"
   ]
 ```
+
 - when the devcontainer is started:
+
 ```
  pip install -e /workspaces/PyMyGekko
 ```
